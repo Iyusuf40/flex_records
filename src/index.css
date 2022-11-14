@@ -1,3 +1,4 @@
+/*
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +11,72 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+*/
+
+body {
+  box-sizing: border-box;
+  margin: 0;
+  background-color: #D9D9D9;
+}
+
+.outer--container {
+  height: 100%;
+}
+
+footer {
+  height: 31px;
+  position: relative;
+  bottom: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+  text-align: center;
+  line-height: 31px;
+}
+
+header {
+  height: 31px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+  text-align: center;
+  line-height: 31px;
+}
+
+.container {
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+}
+
+.side--pane {
+  width: 20%;
+  max-width: 25%;
+  height: 80vh;
+  border-right: 1px solid rgba(0, 0, 0, 0.3);
+  padding: 20px;
+}
+
+.table--view {
+  height: 83vh;
+  padding: 20px;
+}
+
+.table--list {
+  padding-top: 20px;
+}
+
+.table--list > h3:hover {
+  color: rgba(0, 0, 255);
+  font-size: 1.2em;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.rules--buttons {
+  width: 400px;
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 20px;
+}
+
+button {
+  width: 100px;
+  color: blue;
 }
