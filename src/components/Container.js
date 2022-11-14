@@ -47,7 +47,7 @@ export default function Container() {
       }
     }
   }
-  console.log(records) 
+
   let recordState;
   let setState;
   [recordState, setState] = React.useState(records, setState) 
