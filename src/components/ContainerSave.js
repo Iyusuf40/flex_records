@@ -32,34 +32,34 @@ export default function Container() {
       }
     },
     currentTable: "table 1",
-    rowsAndColsNoSet: false,
-    archiveTablesNames: [],
+    rowsAndColsNoSet: false
   }
 
-  let recordState;
-  let setState;
-  [recordState, setState] = React.useState(records, setState) 
-
   // set the number of columns and number of rows	
-  if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables).length) {
+  if (!records.rowsAndColsNoSet && Object.keys(records.tables).length) {
     console.log("ran")
-    let copy = JSON.parse(JSON.stringify(recordState))
-    for (const table in copy.tables) {
-      if (Object.keys(copy.tables[table]["data"]).length) {
-        copy.tables[table] = {
-          ...copy.tables[table],
-	  noOfCols: copy.tables[table]["data"][Object
-		  .keys(copy.tables[table]["data"])[0]].length,
-	  noOfRows: Object.keys(copy.tables[table]["data"]).length
+    for (const table in records.tables) {
+      if (Object.keys(records.tables[table]["data"]).length) {
+        records.tables[table] = {
+          ...records.tables[table],
+	  noOfRows: records.tables[table]["data"][Object
+		  .keys(records.tables[table]["data"])[0]].length,
+	  noOfCols: Object.keys(records.tables[table]["data"]).length
 	}
       }
     }
-    copy.rowsAndColsNoSet = true
-    setState(copy)
+    records = setNoOfRowsAndColsSet(records)
   } 
   //to-do
   //is there a better way to get the noOfRows and noOfCols set?
   
+  function setNoOfRowsAndColsSet(obj) {
+    return {...obj, rowsAndColsNoSet: true}
+  }
+  
+  let recordState;
+  let setState;
+  [recordState, setState] = React.useState(records, setState) 
  
   console.log(recordState)
 
@@ -75,7 +75,7 @@ export default function Container() {
   }
 
   function createTable() {
-    console.log("clicked")
+
   }
 
   function addColumn(tableName) {
@@ -90,34 +90,6 @@ export default function Container() {
 
   }
 
-  function replaceAtIndex(array, index, value) {
-    array[index] = value;
-    return array
-  }
-
-  function updateTableView(tableName, rowIndex, colIndex, value, SN) {
-    // SN is serial number, used as key in storing rows in
-	  // records.tables.tableName.data
-    setState(prevState => {
-      return (
-        {
-          ...prevState,
-	  tables: {
-            ...prevState["tables"],
-	    [tableName]: {
-              ...prevState["tables"][tableName],
-	      data: {
-                ...prevState["tables"][tableName].data,
-		[SN]: replaceAtIndex([...prevState["tables"][tableName].data[SN]],
-			             colIndex, value)
-	      }
-	    }
-	  }
-	}
-      )
-    })
-  }
-
   return (
     <div className="container">
 	  <SidePane
@@ -130,7 +102,6 @@ export default function Container() {
 	    addColumn={addColumn}
 	    addRow={addRow}
 	    addRule={addRule}
-	    updateTableView={updateTableView}
 	  />
     </div>
   )

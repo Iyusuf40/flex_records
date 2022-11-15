@@ -25,6 +25,7 @@ body {
 }
 
 footer {
+  min-width: 1000px;
   height: 31px;
   position: relative;
   bottom: 0;
@@ -34,6 +35,7 @@ footer {
 }
 
 header {
+  min-width: 1000px;
   height: 31px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.3);
   text-align: center;
@@ -42,6 +44,7 @@ header {
 
 .container {
   min-height: 85vh;
+  min-width: 1000px;
   display: flex;
   align-items: center;
 }
@@ -57,6 +60,7 @@ header {
 .table--view {
   height: 83vh;
   padding: 20px;
+  overflow: auto;
 }
 
 .table--list {

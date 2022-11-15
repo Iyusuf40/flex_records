@@ -1,0 +1,12 @@
+.row--container {
+  padding: 2px;
+}
+
+.label--col {
+  color: red;
+  min-width: 200px;
+}
+
+input {
+  width: 50px;
+}
