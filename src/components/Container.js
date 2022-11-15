@@ -118,10 +118,10 @@ export default function Container() {
 
   function checkInvalidParams(name, noOfRows, noOfCols) {
     let error = false;
-    if (!Number(noOfRows) || Number(noOfRows) < 1 ) {
+    if (!noOfRows || noOfRows < 1 ) {
       alert("error creating table: invalid number of rows");
       error = true;
-    } else if (!Number(noOfCols) || Number(noOfCols) < 1) {
+    } else if (!noOfCols || noOfCols < 1) {
       alert("error creating table: invalid number of columns");
       error = true;
     } else if (!name) {
@@ -137,8 +137,10 @@ export default function Container() {
     // const noOfRows = prompt("enter the number of rows you want to create: ");
     // const noOfCols = prompt("enter the number of columns you want to create: ");
     const size = prompt("size of table: format rows x columns, eg, 5x5");
-    const [noOfRows, noOfCols] = size.toLowerCase().split("x") 
+    let [noOfRows, noOfCols] = size.toLowerCase().split("x") 
     // check for invalid responses
+    noOfRows = Number(noOfRows);
+    noOfCols = Number(noOfCols);
     if (checkInvalidParams(name, noOfRows, noOfCols)) {
       return null;
     }
@@ -157,10 +159,39 @@ export default function Container() {
   }
 
   function addColumn(tableName) {
-    console.log(tableName)
+    setState(prevState => (
+      {
+	      ...prevState,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+                  noOfCols: prevState.tables[tableName].noOfCols + 1
+		}
+	      }
+      })
+    )
+
   }
 
   function addRow(tableName) {
+    setState(prevState => (
+      {
+	      ...prevState,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+                  noOfRows: prevState.tables[tableName].noOfRows + 1,
+		  data: {
+                    ...prevState.tables[tableName].data,
+		    [prevState.tables[tableName].noOfRows + 1] :
+			  createArray(prevState.tables[tableName].noOfCols),
+		  }
+		}
+	      }
+      })
+    )
 
   }
 

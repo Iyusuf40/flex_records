@@ -9,12 +9,15 @@ export default function TableView(props) {
   const noOfCols = currentTable ? 
 		   props.records.tables[currentTable].noOfCols
 	           : null;
+  const noOfRows = currentTable ?
+		   props.records.tables[currentTable].noOfRows
+	           : null;
 
   const tableView = [];
   let rowIndex = 0;
   if (tableData) {
     // console.log(props.records);
-    for (const row in tableData) {
+    for (let row = 1; row <= noOfRows; row++) {
       const saveRowIndex = rowIndex
       let currentRow = tableData[row];
       let rowContainer = []
@@ -42,6 +45,7 @@ export default function TableView(props) {
 	      key={row}
 	      className="row--container"
 	    >
+	      {"" && <span className="numbering">{row}: </span>}
 	      {rowContainer}
 	    </div>
       )
@@ -49,13 +53,25 @@ export default function TableView(props) {
     }
   }
   // const tableView = <input type="text" value="12" />
-  
+   
   return (
     <div className="table--view">
       <div className="rules--buttons">
-	  <button>add column +</button>
-	  <button>add row +</button>
-	  <button>add rule +</button>
+	  <button 
+	    onClick={(e) => props.addColumn(currentTable)}
+	  >
+	    add column +
+	  </button>
+	  <button 
+	    onClick={(e) => props.addRow(currentTable)}
+	  >
+	    add row +
+	  </button>
+	  <button 
+	    onClick={(e) => props.addRule(currentTable)}
+	  >
+	    add rule +
+	  </button>
       </div>
       <div className="current--table">
 	  {tableView}
