@@ -75,6 +75,7 @@ export default function Container() {
     id: 1, // get from localstorage, or user provide or gen new uuid 
     tables: {
     },
+    altered: false,  // will be used to decide if to alert to save record
     currentTable: "",
     rowsAndColsNoSet: false,
     archiveTablesNames: [],
@@ -137,7 +138,7 @@ export default function Container() {
     // const noOfRows = prompt("enter the number of rows you want to create: ");
     // const noOfCols = prompt("enter the number of columns you want to create: ");
     const size = prompt("size of table: format rows x columns, eg, 5x5");
-    let [noOfRows, noOfCols] = size.toLowerCase().split("x") 
+    let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
     // check for invalid responses
     noOfRows = Number(noOfRows);
     noOfCols = Number(noOfCols);
@@ -147,6 +148,7 @@ export default function Container() {
     setState(prevState => (
      {
 	     ...prevState,
+	     altered: true,
 	     tables: {
 		     ...(prevState.tables),
 		     [name]: newTable(name, noOfRows, noOfCols)
@@ -162,6 +164,7 @@ export default function Container() {
     setState(prevState => (
       {
 	      ...prevState,
+	      altered: true,
 	      tables: {
                 ...prevState.tables,
 		[tableName]: {
@@ -178,6 +181,7 @@ export default function Container() {
     setState(prevState => (
       {
 	      ...prevState,
+	      altered: true,
 	      tables: {
                 ...prevState.tables,
 		[tableName]: {
@@ -226,7 +230,6 @@ export default function Container() {
       )
     })
   }
-
   return (
     <div className="container">
 	  <SidePane

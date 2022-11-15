@@ -28,7 +28,7 @@ export default function TableView(props) {
 	   key={colIndex}
 	   className={!colIndex ? "label--col" : ""}
 	   placeholder={!colIndex ? "label" : ""}
-	   value={currentRow[colIndex]}
+	   value={currentRow[colIndex] ? currentRow[colIndex] : ""}
 	   data-col-index={colIndex}
 	   data-row-index={saveRowIndex}
 	   onChange={(e) => props.updateTableView(currentTable,
