@@ -4,9 +4,8 @@ export default function TableView(props) {
 
   const currentTable = props.records.currentTable;
   const tableData = props.records.tables[currentTable].data;
-  const noOfRows = props.records.tables[currentTable].noOfRows;
+  // const noOfRows = props.records.tables[currentTable].noOfRows;
   const noOfCols = props.records.tables[currentTable].noOfCols;
-  console.log(tableData, noOfRows, noOfCols);
 
   const tableView = [];
   let rowIndex = 0;
@@ -22,6 +21,8 @@ export default function TableView(props) {
 	 className={!colIndex ? "label--col" : ""}
 	 placeholder={!colIndex ? "label" : ""}
 	 value={currentRow[colIndex]}
+	 data-col-index={colIndex}
+	 data-row-index={saveRowIndex}
 	 onChange={(e) => props.updateTableView(currentTable,
 		                                saveRowIndex, 
 		                                colIndex,
