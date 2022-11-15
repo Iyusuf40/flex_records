@@ -6,7 +6,7 @@ export default function Container() {
 
   // todo
 	// load table from database
-  let records = {
+  /*let records = {
     id: 1, // get from localstorage, or user provide or gen new uuid 
     tables: { 
       "table 1": {
@@ -36,12 +36,56 @@ export default function Container() {
     archiveTablesNames: [],
   }
 
+  */
+
+  function createArray(size) {
+    const myArray = [];
+    for (let index = 0; index < size; index++) {
+      myArray.push("");
+    }
+    return myArray;
+  }
+
+  function newData(noOfRows, noOfCols) {
+    let rows = noOfRows;
+    let cols = noOfCols;
+    const data = {};
+    for (let row = 1; row <= rows; row++) {
+      data[row] = createArray(cols); //new Array(cols);
+    }
+    return data;
+  }
+
+  function newTable(name, noOfRows, noOfCols) {
+    // tableExist()
+    // checkInvalidParams()
+    // let rows = Number(noOfRows) ? noOfRows : 1;
+    // let cols = Number(noOfCols) ? noOfCols : 1;
+    const obj = {
+        data: newData(noOfRows, noOfCols),
+	noOfRows: noOfRows,
+	noOfCols: noOfCols,
+	ruleMode: false,
+	currentRule: "",
+    }
+    return obj;
+  }
+
+  let records = {
+    id: 1, // get from localstorage, or user provide or gen new uuid 
+    tables: {
+    },
+    currentTable: "",
+    rowsAndColsNoSet: false,
+    archiveTablesNames: [],
+  }
+
   let recordState;
   let setState;
   [recordState, setState] = React.useState(records, setState) 
 
   // set the number of columns and number of rows	
-  if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables).length) {
+  if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables)) {
     console.log("ran")
     let copy = JSON.parse(JSON.stringify(recordState))
     for (const table in copy.tables) {
@@ -61,8 +105,6 @@ export default function Container() {
   //is there a better way to get the noOfRows and noOfCols set?
   
  
-  console.log(recordState)
-
   function handleTableClick (tableName) {
     setState((prevState) => {
       return (
@@ -74,8 +116,44 @@ export default function Container() {
     })
   }
 
+  function checkInvalidParams(name, noOfRows, noOfCols) {
+    let error = false;
+    if (!Number(noOfRows) || Number(noOfRows) < 1 ) {
+      alert("error creating table: invalid number of rows");
+      error = true;
+    } else if (!Number(noOfCols) || Number(noOfCols) < 1) {
+      alert("error creating table: invalid number of columns");
+      error = true;
+    } else if (!name) {
+      alert("error creating table: no name given for table");
+      error = true;
+    }
+    return error;
+  }
+
   function createTable() {
-    console.log("clicked")
+    // get name from prompt and a noOfRows and noOfCols
+    const name = prompt("enter the name of new table: ");
+    // const noOfRows = prompt("enter the number of rows you want to create: ");
+    // const noOfCols = prompt("enter the number of columns you want to create: ");
+    const size = prompt("size of table: format rows x columns, eg, 5x5");
+    const [noOfRows, noOfCols] = size.toLowerCase().split("x") 
+    // check for invalid responses
+    if (checkInvalidParams(name, noOfRows, noOfCols)) {
+      return null;
+    }
+    setState(prevState => (
+     {
+	     ...prevState,
+	     tables: {
+		     ...(prevState.tables),
+		     [name]: newTable(name, noOfRows, noOfCols)
+	     },
+	     currentTable: name,
+             rowsAndColsNoSet: true,
+     }
+    ))
+    // console.log(recordState);
   }
 
   function addColumn(tableName) {
