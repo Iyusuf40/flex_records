@@ -1,6 +1,7 @@
 import React from "react"
 import SidePane from "./SidePane"
 import TableView from "./TableView"
+import utilities from "../utilities"
 
 export default function Container() {
 
@@ -251,39 +252,9 @@ export default function Container() {
     })
   }
 
-  function sumHorizontal(data, noOfRows, noOfCols) {
-    for (const key in data) {
-      let res = 0;
-      for (let index = 0; index < (noOfCols - 1); index++) {
-	let currentData = Number(data[key][index]);
-        if (currentData) {
-          res += currentData;
-	}
-      }
-      data[key][noOfCols - 1] = res.toString();
-    }
-    return data;
-  }
-
-  function subHorizontalLeft(data, noOfRows, noOfCols) {
-    for (const key in data) {
-      const isIndexZeroNumber = Number(data[key][0]) ? true : false;
-      let res = isIndexZeroNumber ? Number(data[key][0]) : Number(data[key][1]);
-      // implement search for first index where number starts and compute from there
-      for (let index = (isIndexZeroNumber ? 1 : 2); index < (noOfCols - 1); index++) {
-	let currentData = Number(data[key][index]);
-        if (currentData) {
-          res -= currentData;
-          console.log(res);
-	}
-      }
-      data[key][noOfCols - 1] = res.toString();
-    }
-    return data;
-  }
 
   function implementRule(ruleName, currentTable){
-    // console.log(ruleName)
+    // console.log(ruleName) sum, subtractRight, subtractLeft, multiply, average
     // check if cell is empty
 	  // check if cell is bottom
 	  // decide if operate vertical or hor
@@ -304,7 +275,7 @@ export default function Container() {
          ...prevState.tables,
 	 [currentTable]: {
            ...prevState.tables[currentTable],
-           data: subHorizontalLeft(dataClone, noOfRows, noOfCols),
+           data: utilities()["sumHorizontal"](dataClone, noOfRows, noOfCols),
 	   ruleMode: false,
 	   altered: true,
 	 }
@@ -312,7 +283,7 @@ export default function Container() {
      })
    })
   }
-
+  
   return (
     <div className="container">
 	  <SidePane
