@@ -180,7 +180,26 @@ export default function Container() {
 	      }
       })
     )
+  }
 
+  function delColumn(tableName) {
+    if (recordState.currentTable === "") {
+      alert("No table selected");
+      return null;
+    }
+    setState(prevState => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+                  noOfCols: prevState.tables[tableName].noOfCols - 1,
+		}
+	      }
+      })
+    )
   }
 
   function addRow(tableName) {
@@ -206,6 +225,24 @@ export default function Container() {
 	      }
       })
     )
+  }
+
+function delRow(tableName) {
+   if (recordState.currentTable === "") {
+      alert("No table selected");
+      return null;
+   }
+   setState(prevState => {
+     let newObj = {...prevState};
+     const noOfRows = Number(newObj.tables[tableName].noOfRows);
+     delete newObj.tables[tableName].data[noOfRows];
+     newObj.tables[tableName].noOfRows = noOfRows - 1;
+     if (newObj.tables[tableName].noOfRows < 0) {
+       newObj.tables[tableName].noOfRows = 0;
+     }
+     return newObj;
+   }
+   )
   }
 
   function addRule(tableName) {
@@ -319,7 +356,9 @@ export default function Container() {
 	  <TableView
 	    records={recordState}
 	    addColumn={addColumn}
+	    delColumn={delColumn}
 	    addRow={addRow}
+	    delRow={delRow}
 	    addRule={addRule}
 	    updateTableView={updateTableView}
 	    implementRule={implementRule}

@@ -66,9 +66,19 @@ export default function TableView(props) {
 	    add column +
 	  </button>
 	  <button 
+	    onClick={(e) => props.delColumn(currentTable)}
+	  >
+	    del column -
+	  </button>
+	  <button 
 	    onClick={(e) => props.addRow(currentTable)}
 	  >
 	    add row +
+	  </button>
+	  <button 
+	    onClick={(e) => props.delRow(currentTable)}
+	  >
+	    del row -
 	  </button>
 	  <button 
 	    onClick={(e) => props.addRule(currentTable)}
