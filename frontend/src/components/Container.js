@@ -444,7 +444,7 @@ function delRow(tableName) {
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     // console.log(ruleName, currentTable, key, colIndex)
     const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
-    if (cellPlacement !== "right" && cellPlacement !== !"bottom") {
+    if (cellPlacement !== "right" && cellPlacement !== "bottom") {
       const option = prompt(`${cellPlacement} not empty. Do you want to add 
 ${cellPlacement}? type 'yes' or 'no' to cancel`);
       if (option && option.toLowerCase() === "yes") {
