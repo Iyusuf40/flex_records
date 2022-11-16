@@ -249,10 +249,12 @@ function delRow(tableName) {
       return null;
    }
    setState(prevState => {
-     let newObj = {...prevState};
+     const newObj = JSON.parse(JSON.stringify(prevState)); //{...prevState};
+     console.log("old", newObj)
      const noOfRows = Number(newObj.tables[tableName].noOfRows);
      delete newObj.tables[tableName].data[noOfRows];
      newObj.tables[tableName].noOfRows = noOfRows - 1;
+     console.log("new", newObj)
      if (newObj.tables[tableName].noOfRows < 0) {
        newObj.tables[tableName].noOfRows = 0;
      }
