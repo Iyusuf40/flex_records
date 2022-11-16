@@ -195,7 +195,9 @@ export default function Container() {
                 ...prevState.tables,
 		[tableName]: {
 		  ...prevState.tables[tableName],
-                  noOfCols: prevState.tables[tableName].noOfCols - 1,
+                  noOfCols: prevState.tables[tableName].noOfCols ? 
+			Number(prevState.tables[tableName]["noOfCols"]) - 1 : 
+			0,
 		}
 	      }
       })
