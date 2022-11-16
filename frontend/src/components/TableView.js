@@ -12,6 +12,9 @@ export default function TableView(props) {
   const noOfRows = currentTable ?
 		   props.records.tables[currentTable].noOfRows
 	           : null;
+  const table = currentTable ?
+		props.records.tables[currentTable]
+	        : {}
 
   const tableView = [];
   let rowIndex = 0;
@@ -73,6 +76,53 @@ export default function TableView(props) {
 	    add rule +
 	  </button>
       </div>
+      {
+        table.ruleMode ?  
+        <div className="rule--options">
+	  <
+	    input
+	    type="checkbox"
+	    id="sum"
+	    name="rules"
+	    onClick={(e) => props.implementRule("sum", currentTable)}
+	  />
+	  <label htmlFor="sum">sum</label>
+ 	  <
+	    input
+	    type="checkbox"
+	    id="subtract-left"
+	    name="rules"
+	    onClick={(e) => props.implementRule("subtractLeft", currentTable)}
+	  />
+	  <label htmlFor="subtract-left">subtract-left</label>
+      	  <
+	    input
+	    type="checkbox"
+	    id="subtract-right"
+	    name="rules"
+	    onClick={(e) => props.implementRule("subtractRight", currentTable)}
+	  />
+	  <label htmlFor="subtract-right">subtract-right</label>
+       	  <
+	    input
+	    type="checkbox"
+	    id="multiply"
+	    name="rules"
+	    onClick={(e) => props.implementRule("multiply", currentTable)}
+	  />
+	  <label htmlFor="multiply">multiply</label>
+	  <
+	    input
+	    type="checkbox"
+	    id="average"
+	    name="rules"
+	    onClick={(e) => props.implementRule("average", currentTable)}
+	  />
+	  <label htmlFor="average">average</label>
+
+	</div>
+        : ""
+      }
       <div className="current--table">
 	  {tableView}
       </div>

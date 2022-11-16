@@ -67,6 +67,7 @@ export default function Container() {
 	noOfCols: noOfCols,
 	ruleMode: false,
 	currentRule: "",
+	altered: true,
     }
     return obj;
   }
@@ -81,7 +82,7 @@ export default function Container() {
     archiveTablesNames: [],
   }
 
-  let recordState;
+  let recordState = null;
   let setState;
   [recordState, setState] = React.useState(records, setState) 
 
@@ -161,6 +162,10 @@ export default function Container() {
   }
 
   function addColumn(tableName) {
+    if (recordState.currentTable === "") {
+      alert("No table selected");
+      return null;
+    }
     setState(prevState => (
       {
 	      ...prevState,
@@ -178,7 +183,11 @@ export default function Container() {
   }
 
   function addRow(tableName) {
-    setState(prevState => (
+   if (recordState.currentTable === "") {
+      alert("No table selected");
+      return null;
+   }
+   setState(prevState => (
       {
 	      ...prevState,
 	      altered: true,
@@ -196,11 +205,22 @@ export default function Container() {
 	      }
       })
     )
-
   }
 
   function addRule(tableName) {
-
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+		  ruleMode: true,
+		}
+	      }
+      })
+    )
   }
 
   function replaceAtIndex(array, index, value) {
@@ -230,6 +250,69 @@ export default function Container() {
       )
     })
   }
+
+  function sumHorizontal(data, noOfRows, noOfCols) {
+    for (const key in data) {
+      let res = 0;
+      for (let index = 0; index < (noOfCols - 1); index++) {
+	let currentData = Number(data[key][index]);
+        if (currentData) {
+          res += currentData;
+	}
+      }
+      data[key][noOfCols - 1] = res.toString();
+    }
+    return data;
+  }
+
+  function subHorizontalLeft(data, noOfRows, noOfCols) {
+    for (const key in data) {
+      const isIndexZeroNumber = Number(data[key][0]) ? true : false;
+      let res = isIndexZeroNumber ? Number(data[key][0]) : Number(data[key][1]);
+      // implement search for first index where number starts and compute from there
+      for (let index = (isIndexZeroNumber ? 1 : 2); index < (noOfCols - 1); index++) {
+	let currentData = Number(data[key][index]);
+        if (currentData) {
+          res -= currentData;
+          console.log(res);
+	}
+      }
+      data[key][noOfCols - 1] = res.toString();
+    }
+    return data;
+  }
+
+  function implementRule(ruleName, currentTable){
+    // console.log(ruleName)
+    // check if cell is empty
+	  // check if cell is bottom
+	  // decide if operate vertical or hor
+    //get data
+	  //clone it
+	  //fix it
+	  //set it back
+   setState(prevState => {
+     const data = prevState.tables[currentTable].data;
+     const noOfRows = prevState.tables[currentTable].noOfRows;
+     const noOfCols = prevState.tables[currentTable].noOfCols;
+     const dataClone = {...data};
+     // call appropiate function on data
+     // set data back
+     return ({
+       ...prevState,
+       tables: {
+         ...prevState.tables,
+	 [currentTable]: {
+           ...prevState.tables[currentTable],
+           data: subHorizontalLeft(dataClone, noOfRows, noOfCols),
+	   ruleMode: false,
+	   altered: true,
+	 }
+       }
+     })
+   })
+  }
+
   return (
     <div className="container">
 	  <SidePane
@@ -243,6 +326,7 @@ export default function Container() {
 	    addRow={addRow}
 	    addRule={addRule}
 	    updateTableView={updateTableView}
+	    implementRule={implementRule}
 	  />
     </div>
   )
