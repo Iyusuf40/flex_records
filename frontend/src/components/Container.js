@@ -89,7 +89,7 @@ export default function Container() {
 
   // set the number of columns and number of rows	
   if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables)) {
-    console.log("ran")
+    // console.log("ran")
     let copy = JSON.parse(JSON.stringify(recordState))
     for (const table in copy.tables) {
       if (Object.keys(copy.tables[table]["data"]).length) {
@@ -252,6 +252,29 @@ export default function Container() {
     })
   }
 
+  // cellPlacement determines where to apply rule
+  function getRuleFunctionName(ruleName, cellPlacement) {
+    const ruleNameMapRight = {
+      "sum": "sumHorizontal",
+      "subtractRight": "subHorizontalRight",
+      "subtractLeft": "subHorizontalLeft",
+      "multiply": "mulHorizontal",
+      "average": "avgHorizontal"
+    }
+
+    const ruleNameMapBottom = {
+      "sum": "sumVertical",
+      "subtractRight": "subVerticalRight",
+      "subtractLeft": "subVerticalLeft",
+      "multiply": "mulVertical",
+      "average": "avgVertical"
+    }
+
+    if (cellPlacement === "bottom") {
+      return ruleNameMapBottom[ruleName];
+    }
+    return ruleNameMapRight[ruleName];
+  }
 
   function implementRule(ruleName, currentTable){
     // console.log(ruleName) sum, subtractRight, subtractLeft, multiply, average
@@ -262,6 +285,7 @@ export default function Container() {
 	  //clone it
 	  //fix it
 	  //set it back
+   const functionName = getRuleFunctionName(ruleName, "right");
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
@@ -275,7 +299,8 @@ export default function Container() {
          ...prevState.tables,
 	 [currentTable]: {
            ...prevState.tables[currentTable],
-           data: utilities()["sumHorizontal"](dataClone, noOfRows, noOfCols),
+	   // utilities returns an object of functions to apply rules
+           data: utilities()[functionName](dataClone, noOfRows, noOfCols),
 	   ruleMode: false,
 	   altered: true,
 	 }
