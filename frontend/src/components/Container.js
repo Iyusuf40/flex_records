@@ -137,6 +137,9 @@ export default function Container() {
   function createTable() {
     // get name from prompt and a noOfRows and noOfCols
     const name = prompt("enter the name of new table: ");
+    if (!name) {
+      return;
+    }
     // const noOfRows = prompt("enter the number of rows you want to create: ");
     // const noOfCols = prompt("enter the number of columns you want to create: ");
     const size = prompt("size of table: format rows x columns, eg, 5x5");
@@ -368,19 +371,21 @@ function delRow(tableName) {
   
   function afterRulePick(ruleName, currentTable) {
     // console.log(ruleName, currentTable);
-    setState(prevState => ({
-      ...prevState,
-      tables: {
-         ...prevState.tables,
-	 [currentTable]: {
-           ...prevState.tables[currentTable],
-           ruleMode: true,
-           currentRule: ruleName,
-	 }
-      }
-    })
-    );
-  }
+    alert(`click on the row or column you want to apply rule`);
+    setState(prevState => {
+      return ({
+	 ...prevState,
+         tables: {
+            ...prevState.tables,
+	    [currentTable]: {
+              ...prevState.tables[currentTable],
+              ruleMode: true,
+              currentRule: ruleName,
+	    },
+         },
+       });
+    });
+   }
 
   function getCurrentTable() {
     const currentTable = recordState.currentTable;
