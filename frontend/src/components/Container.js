@@ -324,7 +324,9 @@ function delRow(tableName) {
 	  //clone it
 	  //fix it
 	  //set it back
-   const functionName = getRuleFunctionName(ruleName, "bottom");
+   // const cellPlacement = getCellPlacememt();
+   const cellPlacement = "bottom";
+   const functionName = getRuleFunctionName(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
@@ -348,6 +350,87 @@ function delRow(tableName) {
    })
   }
   
+  function afterRulePick(ruleName, currentTable) {
+    // console.log(ruleName, currentTable);
+    setState(prevState => ({
+      ...prevState,
+      tables: {
+         ...prevState.tables,
+	 [currentTable]: {
+           ...prevState.tables[currentTable],
+           ruleMode: true,
+           currentRule: ruleName,
+	 }
+      }
+    })
+    );
+  }
+
+  function getCurrentTable() {
+    const currentTable = recordState.currentTable;
+    const table = recordState.tables[currentTable];
+    return table
+  }
+
+  function checkLastCol(colIndex) {
+    const table = getCurrentTable();
+    const data = table.data;
+    let empty = true;
+    for (const key in data) {
+      if (data[key][colIndex]) {
+        return false
+      }
+    }
+    return empty;
+  }
+
+  function checkLastRow(key) {
+    const table = getCurrentTable();
+    const data = table.data;
+    const row = data[key];
+    let empty = true;
+    for (let index = 0; index < row.length; index++) {
+      if (row[index]) {
+        return false
+      }
+    }
+    return empty;
+  }
+
+  function checkRowAndCols(key, colIndex, noOfRows, noOfCols) {
+    const currentTable = recordState.currentTable;
+    const rowIsEmpty = checkLastRow(key);
+    const colIsEmpty = checkLastCol(colIndex);
+    if (!rowIsEmpty && !colIsEmpty){
+      return false;
+    }
+    return colIsEmpty ? "right" : "bottom";
+  }
+
+  function checkRowsOrCols(key, colIndex, noOfRows, noOfCols){
+ 
+  }
+
+  function getCellPlacement(key, colIndex, noOfRows, noOfCols) {
+    let cellPlacement;
+    if (colIndex === noOfCols - 1 && key === noOfRows){
+      cellPlacement = checkRowAndCols(key, colIndex, noOfRows, noOfCols);
+    } else if (colIndex === noOfCols - 1) {
+      cellPlacement = checkLastCol(colIndex) ? "right" : false;
+    } else if (key === noOfRows) {
+      cellPlacement = checkLastRow(key) ? "bottom" : false;
+    } else {
+      cellPlacement = false;
+    }
+    return cellPlacement;
+  }	
+
+  function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
+    // console.log(ruleName, currentTable, key, colIndex)
+    const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
+    console.log(cellPlacement);
+  }
+
   return (
     <div className="container">
 	  <SidePane
@@ -364,6 +447,8 @@ function delRow(tableName) {
 	    addRule={addRule}
 	    updateTableView={updateTableView}
 	    implementRule={implementRule}
+	    afterRulePick={afterRulePick}
+	    pickCells={pickCells}
 	  />
     </div>
   )
