@@ -119,6 +119,22 @@ export default function TableView(props) {
 	    onClick={(e) => props.implementRule("average", currentTable)}
 	  />
 	  <label htmlFor="average">average</label>
+       	  <
+	    input
+	    type="checkbox"
+	    id="subtractTop"
+	    name="rules"
+	    onClick={(e) => props.implementRule("subtractTop", currentTable)}
+	  />
+	  <label htmlFor="subtract-top">subtract-top</label>
+	  <
+	    input
+	    type="checkbox"
+	    id="subtractBottom"
+	    name="rules"
+	    onClick={(e) => props.implementRule("subtractBottom", currentTable)}
+	  />
+	  <label htmlFor="average">subtract-bottom</label>
 
 	</div>
         : ""

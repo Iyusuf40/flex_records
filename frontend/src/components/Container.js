@@ -264,8 +264,8 @@ export default function Container() {
 
     const ruleNameMapBottom = {
       "sum": "sumVertical",
-      "subtractRight": "subVerticalRight",
-      "subtractLeft": "subVerticalLeft",
+      "subtractTop": "subVerticalTop",
+      "subtractBottom": "subVerticalBottom",
       "multiply": "mulVertical",
       "average": "avgVertical"
     }
@@ -285,7 +285,7 @@ export default function Container() {
 	  //clone it
 	  //fix it
 	  //set it back
-   const functionName = getRuleFunctionName(ruleName, "right");
+   const functionName = getRuleFunctionName(ruleName, "bottom");
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
