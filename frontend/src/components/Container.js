@@ -182,6 +182,18 @@ export default function Container() {
     )
   }
 
+  function removeCol(data, noOfCols) {
+    const copy = {...data};
+    for (const key in copy) {
+      const arr = [];
+      for (let index = 0; index < noOfCols - 1; index++){
+        arr[index] = copy[key][index];
+      }
+      copy[key] = arr;
+    }
+    return copy;
+  }
+
   function delColumn(tableName) {
     if (recordState.currentTable === "") {
       alert("No table selected");
@@ -195,6 +207,8 @@ export default function Container() {
                 ...prevState.tables,
 		[tableName]: {
 		  ...prevState.tables[tableName],
+	          data: removeCol(prevState.tables[tableName].data,
+			  prevState.tables[tableName].noOfCols),
                   noOfCols: prevState.tables[tableName].noOfCols ? 
 			Number(prevState.tables[tableName]["noOfCols"]) - 1 : 
 			0,
@@ -246,7 +260,7 @@ function delRow(tableName) {
    }
    )
   }
-
+  // console.log(recordState)
   function addRule(tableName) {
     setState((prevState) => (
       {

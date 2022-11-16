@@ -39,16 +39,6 @@ export default function TableView(props) {
 		                                colIndex,
 	                                        e.target.value,
 	                                        saveRowIndex + 1)}
-           
-	   onClick={(e) => ( table.ruleMode && table.currentRule ? props.pickCells(
-		              table.currentRule,
-		              currentTable,
-		              row,
-		              colIndex,
-		              noOfRows,
-		              noOfCols
-	                   )
-			   : "")}
 	  />
         )
         rowContainer.push(cell)
@@ -101,7 +91,7 @@ export default function TableView(props) {
         <div className="rule--options">
 	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="sum"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("sum", currentTable)}
@@ -109,7 +99,7 @@ export default function TableView(props) {
 	  <label htmlFor="sum">sum</label>
  	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="subtract-left"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("subtractLeft", currentTable)}
@@ -117,7 +107,7 @@ export default function TableView(props) {
 	  <label htmlFor="subtract-left">subtract-left</label>
       	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="subtract-right"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("subtractRight", currentTable)}
@@ -125,7 +115,7 @@ export default function TableView(props) {
 	  <label htmlFor="subtract-right">subtract-right</label>
        	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="multiply"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("multiply", currentTable)}
@@ -133,7 +123,7 @@ export default function TableView(props) {
 	  <label htmlFor="multiply">multiply</label>
 	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="average"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("average", currentTable)}
@@ -141,7 +131,7 @@ export default function TableView(props) {
 	  <label htmlFor="average">average</label>
        	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="subtractTop"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("subtractTop", currentTable)}
@@ -149,7 +139,7 @@ export default function TableView(props) {
 	  <label htmlFor="subtract-top">subtract-top</label>
 	  <
 	    input
-	    type="radio"
+	    type="checkbox"
 	    id="subtractBottom"
 	    name="rules"
 	    onClick={(e) => props.afterRulePick("subtractBottom", currentTable)}
