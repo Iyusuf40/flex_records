@@ -315,7 +315,7 @@ function delRow(tableName) {
     return ruleNameMapRight[ruleName];
   }
 
-  function implementRule(ruleName, currentTable){
+  function implementRule(ruleName, currentTable, cellPlacement) {
     // console.log(ruleName) sum, subtractRight, subtractLeft, multiply, average
     // check if cell is empty
 	  // check if cell is bottom
@@ -324,8 +324,7 @@ function delRow(tableName) {
 	  //clone it
 	  //fix it
 	  //set it back
-   // const cellPlacement = getCellPlacememt();
-   const cellPlacement = "bottom";
+   // const cellPlacement = "bottom";
    const functionName = getRuleFunctionName(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
@@ -344,6 +343,7 @@ function delRow(tableName) {
            data: utilities()[functionName](dataClone, noOfRows, noOfCols),
 	   ruleMode: false,
 	   altered: true,
+           currentRule: "",
 	 }
        }
      })
@@ -416,9 +416,9 @@ function delRow(tableName) {
     if (colIndex === noOfCols - 1 && key === noOfRows){
       cellPlacement = checkRowAndCols(key, colIndex, noOfRows, noOfCols);
     } else if (colIndex === noOfCols - 1) {
-      cellPlacement = checkLastCol(colIndex) ? "right" : false;
+      cellPlacement = checkLastCol(colIndex) ? "right" : "column";
     } else if (key === noOfRows) {
-      cellPlacement = checkLastRow(key) ? "bottom" : false;
+      cellPlacement = checkLastRow(key) ? "bottom" : "row";
     } else {
       cellPlacement = false;
     }
@@ -428,7 +428,27 @@ function delRow(tableName) {
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     // console.log(ruleName, currentTable, key, colIndex)
     const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
-    console.log(cellPlacement);
+    if (cellPlacement !== "right" && cellPlacement !== !"bottom") {
+      const option = prompt(`${cellPlacement} not empty. Do you want to add 
+${cellPlacement}? type 'yes' or 'no' to cancel`);
+      if (option && option.toLowerCase() === "yes") {
+        return null;
+      } else {
+        setState(prevState => ({
+          ...prevState,
+	  tables: {
+            ...prevState.tables,
+	    [currentTable]: {
+              ...prevState.tables[currentTable],
+	      ruleMode: false,
+	      currentRule: "",
+	    }
+	  }
+	}));
+      }
+    } else {
+      implementRule(ruleName, currentTable, cellPlacement);
+    }
   }
 
   return (
