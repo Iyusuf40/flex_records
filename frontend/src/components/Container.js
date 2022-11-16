@@ -441,6 +441,20 @@ function delRow(tableName) {
     return cellPlacement;
   }	
 
+  function checkRuleName(ruleName, cellPlacement) {
+    let correction = null;
+    if (ruleName === "subtractBottom" && cellPlacement === "right") {
+      correction = "subtractRight";
+    } else if (ruleName === "subtractTop" && cellPlacement === "right") {
+      correction = "subtractLeft";
+    } else if (ruleName === "subtractRight" && cellPlacement === "bottom") {
+      correction = "subtractBottom";
+    } else if (ruleName === "subtractLeft" && cellPlacement === "bottom") {
+      correction = "subtractTop";
+    }
+    return correction ? correction : ruleName;
+  }
+
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     // console.log(ruleName, currentTable, key, colIndex)
     const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
@@ -463,8 +477,10 @@ ${cellPlacement}? type 'yes' or 'no' to cancel`);
 	}));
       }
     } else {
-      implementRule(ruleName, currentTable, cellPlacement);
+      const ruleNameCorrection = checkRuleName(ruleName, cellPlacement);
+      implementRule(ruleNameCorrection, currentTable, cellPlacement);
     }
+
   }
 
   return (
