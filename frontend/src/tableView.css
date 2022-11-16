@@ -1,0 +1,25 @@
+.row--container {
+  padding: 2px;
+  display: flex;
+  /*width: 96%;
+  justify-content: space-between;
+  */
+}
+
+.label--col {
+  color: red;
+  min-width: 200px;
+}
+
+input {
+  width: 50px;
+}
+
+.numbering {
+  display: inline-block;
+  width: 25px;
+  height: 100%;
+  line-height: 1.5;
+  text-align: right;
+  padding-right: 2px;
+}
