@@ -9,7 +9,7 @@ export default function Container() {
   // todo
 	// load table from database
   /*let records = {
-    id: 1, // get from localstorage, or user provide or gen new uuid 
+    id: 1, // get from localStorage, or user provide or gen new uuid 
     tables: { 
       "table 1": {
 	      data: {
@@ -39,6 +39,70 @@ export default function Container() {
   }
 
   */
+
+  let flexId = localStorage.getItem("flexId");
+  if (!flexId) {
+    flexId = uuid();
+    const id = prompt(`Could not get your ID from localStorage, please enter
+your ID if you have one or skip. We will generate a new ID for you`);
+    if (id) {
+      flexId = id;
+    } else {
+      alert(`here is your ID '${flexId}'. you may store it somewhere in case 
+you want to access  your records from a different device`)
+    }
+  }
+  localStorage.setItem("flexId", flexId);
+
+  // GET RECORDS FROM BACKEND 
+	// key = <flexId>-records
+
+  /*let records = {
+    id: flexId, // get from localStorage, or user provide or gen new uuid 
+    tables: {
+    },
+    altered: false,  // will be used to decide if to alert to save record
+    currentTable: "",
+    rowsAndColsNoSet: false,
+    archiveTablesNames: [],
+    initialSaved: false
+  }*/
+ 
+  let records = getRecords();
+  const recordKey = "record" + "-" + records.id;
+
+  function getRecords() {
+    let loadedRecord = getFromStore();
+    return loadedRecord ? loadedRecord : ({
+	    id: flexId, // get from localStorage, or user provide or gen new uuid 
+	    tables: {
+	    },
+	    altered: false,  // will be used to decide if to alert to save record
+	    currentTable: "",
+	    rowsAndColsNoSet: false,
+	    archiveTablesNames: [], 
+    });
+  }
+
+  function getFromStore(recordKey) {
+    let load = localStorage.getItem(recordKey);
+    if (load) {
+      return JSON.parse(load);
+    }
+    return null;
+  }
+
+  let recordState = null;
+  let setState;
+  [recordState, setState] = React.useState(records, setState) 
+
+  function save(record, recordKey) {
+    console.log(record);
+    const json = JSON.stringify(record);
+    localStorage.setItem(recordKey, json);
+  }
+
+  const intervalID = setTimeout(save, 3000, recordState);
 
   function createArray(size) {
     const myArray = [];
@@ -73,20 +137,6 @@ export default function Container() {
     }
     return obj;
   }
-  // const id = uuid();
-  let records = {
-    id: 1, // get from localstorage, or user provide or gen new uuid 
-    tables: {
-    },
-    altered: false,  // will be used to decide if to alert to save record
-    currentTable: "",
-    rowsAndColsNoSet: false,
-    archiveTablesNames: [],
-  }
-
-  let recordState = null;
-  let setState;
-  [recordState, setState] = React.useState(records, setState) 
 
   // set the number of columns and number of rows	
   if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables)) {
