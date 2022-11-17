@@ -134,6 +134,21 @@ export default function Container() {
     return error;
   }
 
+  function checkLimits(noOfRows, noOfCols) {
+    const totalCells = noOfRows * noOfCols;
+    if (totalCells > 10000) {
+      const resp = prompt(`You are trying to create ${totalCells} number of cells, 
+we advice you break the table into smaller tables else the app will be slow or 
+worst case you might make your 
+system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
+      if (resp.toLowerCase() === "yes") {
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   function createTable() {
     // get name from prompt and a noOfRows and noOfCols
     const name = prompt("enter the name of new table: ");
@@ -149,6 +164,10 @@ export default function Container() {
     noOfCols = Number(noOfCols);
     if (checkInvalidParams(name, noOfRows, noOfCols)) {
       return null;
+    }
+    const isWithinLimits = checkLimits(noOfRows, noOfCols);
+    if (!isWithinLimits) {
+      return;
     }
     setState(prevState => (
      {
