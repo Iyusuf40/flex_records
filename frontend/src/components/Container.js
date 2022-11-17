@@ -54,13 +54,13 @@ you want to access  your records from a different device`)
   }
   localStorage.setItem("flexId", flexId);
  
-  let records = getRecords();
   let recordKey = `record-${flexId}`;
+  let records = getRecords(recordKey);
 
-  function getRecords() {
-    let loadedRecord = getFromStore();
+  function getRecords(recordKey) {
+    let loadedRecord = getFromStore(recordKey);
     return loadedRecord ? loadedRecord : ({
-	    id: flexId, 
+	    id: recordKey, 
 	    tables: {
 	    },
 	    altered: false,
@@ -87,7 +87,7 @@ you want to access  your records from a different device`)
     localStorage.setItem(recordKey, json);
   }
 
-  setTimeout(save, 3000, recordState);
+  setTimeout(save, 3000, recordState, recordKey);
 
   function createArray(size) {
     const myArray = [];
