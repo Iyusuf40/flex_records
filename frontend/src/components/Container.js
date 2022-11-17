@@ -73,7 +73,7 @@ you want to access  your records from a different device`)
   function getFromStore(recordKey) {
     let load = localStorage.getItem(recordKey);
     if (load) {
-      return JSON.parse(load);
+      return JSON.parse(load); // when using fetch setState instead
     }
     return null;
   }
@@ -191,8 +191,14 @@ system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
     if (!name) {
       return;
     }
-    // const noOfRows = prompt("enter the number of rows you want to create: ");
-    // const noOfCols = prompt("enter the number of columns you want to create: ");
+
+    if (recordState.tables[name]) {
+      const option = prompt(`Table ${name} already exist, if you type 'yes' it
+will be overwritten`)
+      if (option && option.toLowerCase() !== "yes"){
+       return;
+      }
+    }
     const size = prompt("size of table: format rows x columns, eg, 5x5");
     let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
     // check for invalid responses
