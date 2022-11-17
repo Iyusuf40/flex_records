@@ -1,4 +1,5 @@
 import React from "react"
+import uuid from 'react-uuid';
 import SidePane from "./SidePane"
 import TableView from "./TableView"
 import utilities from "../utilities"
@@ -72,7 +73,7 @@ export default function Container() {
     }
     return obj;
   }
-
+  // const id = uuid();
   let records = {
     id: 1, // get from localstorage, or user provide or gen new uuid 
     tables: {
@@ -141,7 +142,7 @@ export default function Container() {
 we advice you break the table into smaller tables else the app will be slow or 
 worst case you might make your 
 system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
-      if (resp.toLowerCase() === "yes") {
+      if (resp && resp.toLowerCase() === "yes") {
         return true;
       }
       return false;
@@ -484,7 +485,40 @@ ${cellPlacement}? type 'yes' or 'no' to cancel`);
     } else {
       implementRule(ruleName, currentTable, cellPlacement);
     }
+  }
 
+  function deleteTable(tableName) {
+    setState(prevState => {
+      const copy = {...prevState};
+      delete copy.tables[tableName];
+      copy.currentTable = "";
+      return copy
+    })
+  }
+
+  function changeTableName(tableName, option) {
+     setState(prevState => {
+      const copy = JSON.parse(JSON.stringify(prevState));
+      const tableCopy = JSON.parse(JSON.stringify(copy.tables[tableName]));
+      delete copy.tables[tableName];
+      copy.tables[option] = {...tableCopy};
+      copy.currentTable = option;
+      return copy;
+    })
+   
+  }
+
+  function modifyTable(tableName) {
+    const option = prompt(`Type 'delete' if you wish to delete the current table
+or any other word(s) to rename it as such`);
+    if (!option){
+      return;
+    }
+    if (option.toLowerCase() === "delete") {
+      deleteTable(tableName);
+    } else {
+      changeTableName(tableName, option);
+    }
   }
 
   return (
@@ -493,6 +527,7 @@ ${cellPlacement}? type 'yes' or 'no' to cancel`);
 	    records={recordState}
 	    handleTableClick={handleTableClick}
 	    createTable={createTable}
+	    modifyTable={modifyTable}
 	  />
 	  <TableView
 	    records={recordState}

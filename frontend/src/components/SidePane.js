@@ -5,6 +5,7 @@ export default function SidePane(props) {
   const tables = props.records.tables;
   const tableList = [];
   const currentTable = props.records.currentTable;
+  // const table = props.records.tables[currentTable];
 
   // create array of JSX
   for (const key in tables) {
@@ -24,6 +25,13 @@ export default function SidePane(props) {
 	  create table +
       </button> <br />
       <div className="table--list">
+	{currentTable ? 
+		<button
+		 onClick={(event) => props.modifyTable(currentTable)}
+		>
+		 modify table
+		</button>: 
+		""}
 	{tableList}
       </div>
     </div>
