@@ -53,31 +53,17 @@ you want to access  your records from a different device`)
     }
   }
   localStorage.setItem("flexId", flexId);
-
-  // GET RECORDS FROM BACKEND 
-	// key = <flexId>-records
-
-  /*let records = {
-    id: flexId, // get from localStorage, or user provide or gen new uuid 
-    tables: {
-    },
-    altered: false,  // will be used to decide if to alert to save record
-    currentTable: "",
-    rowsAndColsNoSet: false,
-    archiveTablesNames: [],
-    initialSaved: false
-  }*/
  
   let records = getRecords();
-  const recordKey = "record" + "-" + records.id;
+  let recordKey = `record-${flexId}`;
 
   function getRecords() {
     let loadedRecord = getFromStore();
     return loadedRecord ? loadedRecord : ({
-	    id: flexId, // get from localStorage, or user provide or gen new uuid 
+	    id: flexId, 
 	    tables: {
 	    },
-	    altered: false,  // will be used to decide if to alert to save record
+	    altered: false,
 	    currentTable: "",
 	    rowsAndColsNoSet: false,
 	    archiveTablesNames: [], 
@@ -97,12 +83,11 @@ you want to access  your records from a different device`)
   [recordState, setState] = React.useState(records, setState) 
 
   function save(record, recordKey) {
-    console.log(record);
     const json = JSON.stringify(record);
     localStorage.setItem(recordKey, json);
   }
 
-  const intervalID = setTimeout(save, 3000, recordState);
+  setTimeout(save, 3000, recordState);
 
   function createArray(size) {
     const myArray = [];
@@ -323,11 +308,9 @@ function delRow(tableName) {
    }
    setState(prevState => {
      const newObj = JSON.parse(JSON.stringify(prevState)); //{...prevState};
-     console.log("old", newObj)
      const noOfRows = Number(newObj.tables[tableName].noOfRows);
      delete newObj.tables[tableName].data[noOfRows];
      newObj.tables[tableName].noOfRows = noOfRows - 1;
-     console.log("new", newObj)
      if (newObj.tables[tableName].noOfRows < 0) {
        newObj.tables[tableName].noOfRows = 0;
      }
