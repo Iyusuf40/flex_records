@@ -314,16 +314,16 @@ function delRow(tableName) {
   function getRuleFunctionName(ruleName, cellPlacement) {
     const ruleNameMapRight = {
       "sum": "sumHorizontal",
-      "subtractRight": "subHorizontalRight",
-      "subtractLeft": "subHorizontalLeft",
+      "subtractReverse": "subHorizontalRight",
+      "subtract": "subHorizontalLeft",
       "multiply": "mulHorizontal",
       "average": "avgHorizontal"
     }
 
     const ruleNameMapBottom = {
       "sum": "sumVertical",
-      "subtractTop": "subVerticalTop",
-      "subtractBottom": "subVerticalBottom",
+      "subtract": "subVerticalTop",
+      "subtractReverse": "subVerticalBottom",
       "multiply": "mulVertical",
       "average": "avgVertical"
     }
@@ -419,17 +419,12 @@ function delRow(tableName) {
   }
 
   function checkRowAndCols(key, colIndex, noOfRows, noOfCols) {
-    const currentTable = recordState.currentTable;
     const rowIsEmpty = checkLastRow(key);
     const colIsEmpty = checkLastCol(colIndex);
     if (!rowIsEmpty && !colIsEmpty){
       return false;
     }
     return colIsEmpty ? "right" : "bottom";
-  }
-
-  function checkRowsOrCols(key, colIndex, noOfRows, noOfCols){
- 
   }
 
   function getCellPlacement(key, colIndex, noOfRows, noOfCols) {
@@ -445,20 +440,6 @@ function delRow(tableName) {
     }
     return cellPlacement;
   }	
-
-  function checkRuleName(ruleName, cellPlacement) {
-    let correction = null;
-    if (ruleName === "subtractBottom" && cellPlacement === "right") {
-      correction = "subtractRight";
-    } else if (ruleName === "subtractTop" && cellPlacement === "right") {
-      correction = "subtractLeft";
-    } else if (ruleName === "subtractRight" && cellPlacement === "bottom") {
-      correction = "subtractBottom";
-    } else if (ruleName === "subtractLeft" && cellPlacement === "bottom") {
-      correction = "subtractTop";
-    }
-    return correction ? correction : ruleName;
-  }
 
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     // console.log(ruleName, currentTable, key, colIndex)
@@ -482,8 +463,7 @@ ${cellPlacement}? type 'yes' or 'no' to cancel`);
 	}));
       }
     } else {
-      const ruleNameCorrection = checkRuleName(ruleName, cellPlacement);
-      implementRule(ruleNameCorrection, currentTable, cellPlacement);
+      implementRule(ruleName, currentTable, cellPlacement);
     }
 
   }

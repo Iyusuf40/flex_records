@@ -110,19 +110,19 @@ export default function TableView(props) {
  	  <
 	    input
 	    type="radio"
-	    id="subtract-left"
+	    id="subtract"
 	    name="rules"
-	    onClick={(e) => props.afterRulePick("subtractLeft", currentTable)}
+	    onClick={(e) => props.afterRulePick("subtract", currentTable)}
 	  />
-	  <label htmlFor="subtract-left">subtract-left</label>
+	  <label htmlFor="subtract">subtract</label>
       	  <
 	    input
 	    type="radio"
-	    id="subtract-right"
+	    id="subtractReverse"
 	    name="rules"
-	    onClick={(e) => props.afterRulePick("subtractRight", currentTable)}
+	    onClick={(e) => props.afterRulePick("subtractReverse", currentTable)}
 	  />
-	  <label htmlFor="subtract-right">subtract-right</label>
+	  <label htmlFor="subtractReverse">subtract-reverse</label>
        	  <
 	    input
 	    type="radio"
@@ -139,22 +139,6 @@ export default function TableView(props) {
 	    onClick={(e) => props.afterRulePick("average", currentTable)}
 	  />
 	  <label htmlFor="average">average</label>
-       	  <
-	    input
-	    type="radio"
-	    id="subtractTop"
-	    name="rules"
-	    onClick={(e) => props.afterRulePick("subtractTop", currentTable)}
-	  />
-	  <label htmlFor="subtract-top">subtract-top</label>
-	  <
-	    input
-	    type="radio"
-	    id="subtractBottom"
-	    name="rules"
-	    onClick={(e) => props.afterRulePick("subtractBottom", currentTable)}
-	  />
-	  <label htmlFor="average">subtract-bottom</label>
 
 	</div>
         : ""

@@ -4,6 +4,7 @@ export default function SidePane(props) {
   // console.log(props.records.tables)
   const tables = props.records.tables;
   const tableList = [];
+  const currentTable = props.records.currentTable;
 
   // create array of JSX
   for (const key in tables) {
@@ -11,6 +12,7 @@ export default function SidePane(props) {
       <h3
 	onClick={(event) => props.handleTableClick(key)}
 	key={key}
+	className={key === currentTable ? "current--table": ""}
         data-name={key}>
         {key}
       </h3>
