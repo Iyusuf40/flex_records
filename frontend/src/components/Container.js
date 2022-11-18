@@ -67,7 +67,7 @@ you want to access  your records from a different device`)
     if (init){
       return;
     }
-    setInit(true);
+    setInit(true); // set init the first time of load
     let loadedRecord = getFromStore(recordKey);
     return loadedRecord ? loadedRecord : ({
 	    id: recordKey, 
@@ -98,6 +98,7 @@ you want to access  your records from a different device`)
     localStorage.setItem(recordKey, json);
   }
 
+  // repeatedly save recordState
   setTimeout(save, 3000, recordState, recordKey);
 
   function createArray(size) {
@@ -134,7 +135,9 @@ you want to access  your records from a different device`)
     return obj;
   }
 
-  // set the number of columns and number of rows	
+  // set the number of columns and number of rows
+	// this block of code is irrelevant now. Useful prior to
+	// createTable implementation
   if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables)) {
     // console.log("ran")
     let copy = JSON.parse(JSON.stringify(recordState))
@@ -435,6 +438,9 @@ function delRow(tableName) {
     return array
   }
 
+  /**
+   * updateTableView - handles text changes in cells
+   */
   function updateTableView(tableName, rowIndex, colIndex, value, SN) {
     // SN is serial number, used as key in storing rows in
 	  // records.tables.tableName.data
@@ -483,6 +489,12 @@ function delRow(tableName) {
     return ruleNameMapRight[ruleName];
   }
 
+  /**
+   * applyRuleOnModification - reapplies the previously set rule on
+   * new columns or rows created
+   *
+   * currentState -> currentState of records object
+   */
   function applyRuleOnModification (currentState) {
     if (currentState.tables[currentState.currentTable].prevRule) {
       const currentTable = currentState.currentTable;
@@ -492,8 +504,18 @@ function delRow(tableName) {
     }
   }
 
+  /**
+   * implementRule - implements computations on each cell based on ruleName
+   * and cellPlacement on the currentTable in view
+   *
+   * ruleName - the name of rule to apply e.g sum
+   *
+   * cellPlacement - helps to decide the order of computation
+   * if set to right: comptations will be done from left to right
+   * or right to left but if set to bottom computations will be done
+   * vertically
+   */
   function implementRule(ruleName, currentTable, cellPlacement) {
-    // console.log(ruleName) sum, subtractRight, subtractLeft, multiply, average
     // check if cell is empty
 	  // check if cell is bottom
 	  // decide if operate vertical or hor
@@ -501,7 +523,8 @@ function delRow(tableName) {
 	  //clone it
 	  //fix it
 	  //set it back
-   // const cellPlacement = "bottom";
+
+   /* gets the function name to apply as rule */
    const functionName = getRuleFunctionName(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
@@ -528,9 +551,13 @@ function delRow(tableName) {
      })
    })
   }
-  
+
+  /**
+   * afterRulePick - handles event after user chooses a rule to apply.
+   * sets the currentTable to ruleMode which signals for rule
+   * application
+   */
   function afterRulePick(ruleName, currentTable) {
-    // console.log(ruleName, currentTable);
     alert(`click on the row or column you want to apply rule`);
     setState(prevState => {
       return ({
@@ -553,6 +580,10 @@ function delRow(tableName) {
     return table
   }
 
+  /**
+   * checkLastCol - checks if column at at the right edge is
+   * empty to permit saving of data
+   */
   function checkLastCol(colIndex) {
     const table = getCurrentTable();
     const data = table.data;
@@ -565,6 +596,10 @@ function delRow(tableName) {
     return empty;
   }
 
+  /**
+   * checkLastRow - checks if column at at the bottom edge is
+   * empty to permit saving of data
+   */
   function checkLastRow(key) {
     const table = getCurrentTable();
     const data = table.data;
@@ -578,6 +613,10 @@ function delRow(tableName) {
     return empty;
   }
 
+  /**
+   * checkRowAndCols - returns where to save applied rule 
+   * computation results
+   */
   function checkRowAndCols(key, colIndex, noOfRows, noOfCols) {
     const rowIsEmpty = checkLastRow(key);
     const colIsEmpty = checkLastCol(colIndex);
@@ -587,6 +626,10 @@ function delRow(tableName) {
     return colIsEmpty ? "right" : "bottom";
   }
 
+  /**
+   * getCellPlacement - brings in helper functions together to
+   * determine where to place computed data
+   */
   function getCellPlacement(key, colIndex, noOfRows, noOfCols) {
     let cellPlacement;
     if (colIndex === noOfCols - 1 && key === noOfRows){
@@ -601,8 +644,12 @@ function delRow(tableName) {
     return cellPlacement;
   }	
 
+  /**
+   * pickCells - after rule has been chosen, pickCells listens for cell click
+   * and determines if to go ahead with computations after the necassary 
+   * conditions are met
+   */
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
-    // console.log(ruleName, currentTable, key, colIndex)
     const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
     if (cellPlacement !== "right" && cellPlacement !== "bottom") {
       const option = prompt(`${cellPlacement} not empty. Do you want to add 
