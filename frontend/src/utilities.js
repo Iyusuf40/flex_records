@@ -1,7 +1,7 @@
 function checkIndexZeroVertical(data) {
      let bool = (
 	              typeof(Number(data[1][0])) === "number"
-	              && data[1][0].length
+	              && data[1][0]
                       ) 
 		      ? true : false;
      return bool; 
@@ -140,7 +140,7 @@ function subHorizontalRight(data, noOfRows, noOfCols) {
 function getStartIndex(key, data) {
      let startIndex = (
 	              typeof(Number(data[key][0])) === "number"
-	              && data[key][0].length
+	              && data[key][0]
                       ) 
 		      ? 0 : 1;
      return startIndex; 
