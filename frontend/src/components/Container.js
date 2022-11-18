@@ -242,6 +242,10 @@ will be overwritten`)
       alert("No table selected");
       return null;
     }
+
+    if (!recordState.tables[tableName].noOfRows) {
+      return null;
+    }
     setState(prevState => (
       {
 	      ...prevState,

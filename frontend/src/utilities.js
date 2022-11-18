@@ -17,7 +17,7 @@ function mulVertical(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = Number(data[1][0]) ? true : false;
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 1;
-    if (!data[1][index]) {
+    if (!data[1][index] || !Number(data[1][index])) {
       res = 0;
     }
     for (const key in data) {
