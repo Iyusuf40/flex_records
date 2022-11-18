@@ -354,6 +354,60 @@ function delRow(tableName) {
     )
   }
 
+  function increaseCellSize(tableName) {
+    setState((prevState) => {
+      const currentSize = prevState.tables[tableName].cellSize;
+      let size = 0;
+      if (currentSize) {
+        size = currentSize + 1;
+	size = size > 3 ? 3 : size;
+      } else {
+        size = 1;
+      }
+      
+      return (
+	   {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+		  cellSize: size,
+		}
+	      }
+          }
+       )
+      }
+    )
+  }
+
+  function decreaseCellSize(tableName) {
+    setState((prevState) => {
+      const currentSize = prevState.tables[tableName].cellSize;
+      let size = 0;
+      if (currentSize) {
+        size = currentSize - 1;
+	size = size < 0 ? 0 : size;
+      } else {
+        size = 0;
+      }
+      
+      return ({
+	      ...prevState,
+	      altered: true,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+		  cellSize: size,
+		}
+	      }
+      })
+    }
+   )
+  }
+
   function clearRule(tableName) {
     setState((prevState) => (
       {
@@ -625,6 +679,8 @@ or any other word(s) to rename it as such`);
 	    afterRulePick={afterRulePick}
 	    pickCells={pickCells}
 	    clearRule={clearRule}
+	    increaseCellSize={increaseCellSize}
+	    decreaseCellSize={decreaseCellSize}
 	  />
     </div>
   )

@@ -21,6 +21,18 @@ input {
   width: 50px;
 }
 
+.input-1 {
+  width: 75px;
+}
+
+.input-2 {
+ width: 150px;
+}
+
+.input-3 {
+ width: 200px;
+}
+
 .numbering {
   display: inline-block;
   width: 25px;

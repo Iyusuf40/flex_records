@@ -16,6 +16,21 @@ export default function TableView(props) {
 		props.records.tables[currentTable]
 	        : {}
 
+  const className = getClassName(table);
+
+  function getClassName(table) {
+    if (!table.cellSize) {
+      console.log(table)
+      return null;
+    }
+    const map = {
+      1: "input-1",
+      2: "input-2",
+      3: "input-3"
+    }
+    return map[table.cellSize];
+  }
+
   const tableView = [];
   let rowIndex = 0;
   if (tableData) {
@@ -29,7 +44,7 @@ export default function TableView(props) {
           <
 	   input type="text"
 	   key={colIndex}
-	   className={!colIndex ? "label--col" : ""}
+	   className={!colIndex ? "label--col" : (className ? className: "")}
 	   placeholder={!colIndex ? "label" : ""}
 	   value={currentRow[colIndex] ? currentRow[colIndex] : ""}
 	   data-col-index={colIndex}
@@ -100,6 +115,17 @@ export default function TableView(props) {
 	  >
 	    clear rule -
 	  </button>
+	  <button 
+	    onClick={(e) => props.increaseCellSize(currentTable)}
+	  >
+	    cell size +
+	  </button>
+	  <button 
+	    onClick={(e) => props.decreaseCellSize(currentTable)}
+	  >
+	    cell size -
+	  </button>
+
       </div>
       {
         table.ruleMode ?  
