@@ -20,7 +20,6 @@ export default function TableView(props) {
 
   function getClassName(table) {
     if (!table.cellSize) {
-      console.log(table)
       return null;
     }
     const map = {
