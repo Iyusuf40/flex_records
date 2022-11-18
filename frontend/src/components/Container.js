@@ -337,7 +337,7 @@ function delRow(tableName) {
    }
    )
   }
-  // console.log(recordState)
+
   function addRule(tableName) {
     setState((prevState) => (
       {
@@ -348,6 +348,24 @@ function delRow(tableName) {
 		[tableName]: {
 		  ...prevState.tables[tableName],
 		  ruleMode: true,
+		}
+	      }
+      })
+    )
+  }
+
+  function clearRule(tableName) {
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+		  ruleMode: false,
+		  prevRule: "",
+		  cellPlacement: "",
 		}
 	      }
       })
@@ -606,6 +624,7 @@ or any other word(s) to rename it as such`);
 	    implementRule={implementRule}
 	    afterRulePick={afterRulePick}
 	    pickCells={pickCells}
+	    clearRule={clearRule}
 	  />
     </div>
   )

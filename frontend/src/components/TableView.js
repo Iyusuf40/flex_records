@@ -95,6 +95,11 @@ export default function TableView(props) {
 	  >
 	    add rule +
 	  </button>
+	  <button 
+	    onClick={(e) => props.clearRule(currentTable)}
+	  >
+	    clear rule -
+	  </button>
       </div>
       {
         table.ruleMode ?  

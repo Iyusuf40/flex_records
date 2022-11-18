@@ -1,3 +1,9 @@
+.table--view {
+  height: 83vh;
+  padding: 20px;
+  overflow: auto;
+}
+
 .row--container {
   padding: 2px;
   display: flex;
@@ -27,3 +33,15 @@ input {
 .rule--options {
   padding-left: 20px;
 }
+
+.rule--container {
+  width: 120%;
+}
+
+.rules--buttons {
+  width: 650px;
+  display: flex;
+  justify-content: space-around;
+  padding-bottom: 20px;
+}
+
