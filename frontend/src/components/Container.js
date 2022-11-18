@@ -54,10 +54,20 @@ you want to access  your records from a different device`)
   }
   localStorage.setItem("flexId", flexId);
  
-  let recordKey = `record-${flexId}`;
-  let records = getRecords(recordKey);
+  let init = null;
+  let setInit;
 
-  function getRecords(recordKey) {
+  // setup initial load and use as condition to fetch data from store
+  [init, setInit] = React.useState(init, setInit);
+
+  let recordKey = `record-${flexId}`;
+  let records = getRecords(recordKey, init);
+
+  function getRecords(recordKey, init) {
+    if (init){
+      return;
+    }
+    setInit(true);
     let loadedRecord = getFromStore(recordKey);
     return loadedRecord ? loadedRecord : ({
 	    id: recordKey, 
@@ -80,7 +90,8 @@ you want to access  your records from a different device`)
 
   let recordState = null;
   let setState;
-  [recordState, setState] = React.useState(records, setState) 
+
+  [recordState, setState] = React.useState(records, setState);
 
   function save(record, recordKey) {
     const json = JSON.stringify(record);
@@ -244,6 +255,7 @@ will be overwritten`)
 	      }
       })
     )
+    applyRuleOnModification(recordState);
   }
 
   function removeCol(data, noOfCols) {
@@ -305,6 +317,7 @@ will be overwritten`)
 	      }
       })
     )
+    applyRuleOnModification(recordState);
   }
 
 function delRow(tableName) {
@@ -367,6 +380,7 @@ function delRow(tableName) {
 	}
       )
     })
+    applyRuleOnModification(recordState);
   }
 
   // cellPlacement determines where to apply rule
@@ -391,6 +405,15 @@ function delRow(tableName) {
       return ruleNameMapBottom[ruleName];
     }
     return ruleNameMapRight[ruleName];
+  }
+
+  function applyRuleOnModification (currentState) {
+    if (currentState.tables[currentState.currentTable].prevRule) {
+      const currentTable = currentState.currentTable;
+      const ruleName = currentState.tables[currentTable].prevRule;
+      const cellPlacement = currentState.tables[currentTable].cellPlacement;
+      implementRule(ruleName, currentTable, cellPlacement);
+    }
   }
 
   function implementRule(ruleName, currentTable, cellPlacement) {
@@ -421,6 +444,8 @@ function delRow(tableName) {
            data: utilities()[functionName](dataClone, noOfRows, noOfCols),
 	   ruleMode: false,
 	   altered: true,
+	   prevRule: ruleName,
+	   cellPlacement: cellPlacement,
            currentRule: "",
 	 }
        }
@@ -505,10 +530,10 @@ function delRow(tableName) {
     const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
     if (cellPlacement !== "right" && cellPlacement !== "bottom") {
       const option = prompt(`${cellPlacement} not empty. Do you want to add 
-${cellPlacement}? type 'yes' or 'no' to cancel`);
+${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
       if (option && option.toLowerCase() === "yes") {
         return null;
-      } else {
+      } else if (option && option.toLowerCase() !== "overwrite") {
         setState(prevState => ({
           ...prevState,
 	  tables: {
@@ -520,6 +545,8 @@ ${cellPlacement}? type 'yes' or 'no' to cancel`);
 	    }
 	  }
 	}));
+      } else {
+        implementRule(ruleName, currentTable, cellPlacement);
       }
     } else {
       implementRule(ruleName, currentTable, cellPlacement);
