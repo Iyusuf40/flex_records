@@ -19,7 +19,7 @@ export default function TableView(props) {
   const className = getClassName(table);
 
   function getClassName(table) {
-    if (!table.cellSize) {
+    if (!table && !table.cellSize) {
       return null;
     }
     const map = {
@@ -174,7 +174,7 @@ export default function TableView(props) {
         : ""
       }
       <div className="current--table">
-	  {tableView}
+	  {tableView.length ? tableView : <h1>No tables in record</h1>}
       </div>
     </div>
   )

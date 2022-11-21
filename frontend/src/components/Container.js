@@ -41,6 +41,10 @@ export default function Container() {
   */
 
   let flexId = localStorage.getItem("flexId");
+  const postUrl = "http://localhost:3001/records";
+  const putUrl = "http://localhost:3001/records";
+  let getUrl = "http://localhost:3001/records/";
+
   if (!flexId) {
     flexId = uuid();
     const id = prompt(`Could not get your ID from localStorage, please enter
@@ -53,7 +57,7 @@ you want to access  your records from a different device`)
     }
   }
   localStorage.setItem("flexId", flexId);
- 
+
   let init = null;
   let setInit;
 
@@ -67,10 +71,11 @@ you want to access  your records from a different device`)
     if (init){
       return;
     }
-    setInit(true); // set init the first time of load
-    let loadedRecord = getFromStore(recordKey);
+    // setInit(true); // set init the first time of load
+    let loadedRecord = null; // getFromStore(recordKey);
+    getFromBackend(getUrl, flexId);
     return loadedRecord ? loadedRecord : ({
-	    id: recordKey, 
+	    id: flexId, 
 	    tables: {
 	    },
 	    altered: false,
@@ -78,6 +83,17 @@ you want to access  your records from a different device`)
 	    rowsAndColsNoSet: false,
 	    archiveTablesNames: [], 
     });
+  }
+
+  async function getFromBackend(url, id) {
+    let resp = null;
+    await fetch(url + id).then(data => data.json()).then((data) => {
+      resp = data
+    });
+    if (Object.keys(resp).length) {
+      setState(resp);
+    }
+    setInit(true); // set init the first time of load
   }
 
   function getFromStore(recordKey) {
@@ -93,13 +109,34 @@ you want to access  your records from a different device`)
 
   [recordState, setState] = React.useState(records, setState);
 
-  function save(record, recordKey) {
+  function save(record, recordKey, init) {
+    if (!init) {
+      return;
+    }
     const json = JSON.stringify(record);
-    localStorage.setItem(recordKey, json);
+    // localStorage.setItem(recordKey, json);
+    fetch(putUrl, {
+      method: "PUT",
+      body: json,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+  }
+
+  function persist(record) {
+    const json = JSON.stringify(record);
+    fetch(postUrl, {
+      method: "POST",
+      body: json,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
   }
 
   // repeatedly save recordState
-  setTimeout(save, 3000, recordState, recordKey);
+  setTimeout(save, 3000, recordState, recordKey, init);
 
   function createArray(size) {
     const myArray = [];
@@ -225,19 +262,23 @@ will be overwritten`)
     if (!isWithinLimits) {
       return;
     }
-    setState(prevState => (
-     {
-	     ...prevState,
-	     altered: true,
-	     tables: {
-		     ...(prevState.tables),
-		     [name]: newTable(name, noOfRows, noOfCols)
-	     },
-	     currentTable: name,
-             rowsAndColsNoSet: true,
-     }
-    ))
-    // console.log(recordState);
+    setState(prevState => {
+	  let copy = (
+	     {
+		     ...prevState,
+		     altered: true,
+		     tables: {
+			     ...(prevState.tables),
+			     [name]: newTable(name, noOfRows, noOfCols)
+		     },
+		     currentTable: name,
+		     rowsAndColsNoSet: true,
+	     }
+    )
+    persist(copy);
+    return copy;
+    }
+    )
   }
 
   function addColumn(tableName) {
