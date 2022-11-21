@@ -96,13 +96,15 @@ you want to access  your records from a different device`)
     setInit(true); // set init the first time of load
   }
 
-  function getFromStore(recordKey) {
+  /*
+   * function getFromStore(recordKey) {
     let load = localStorage.getItem(recordKey);
     if (load) {
       return JSON.parse(load); // when using fetch setState instead
     }
     return null;
   }
+  */
 
   let recordState = null;
   let setState;
