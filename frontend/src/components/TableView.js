@@ -174,7 +174,7 @@ export default function TableView(props) {
         : ""
       }
       <div className="current--table">
-	  {tableView.length ? tableView : <h1>No tables in record</h1>}
+	  {tableView.length ? tableView : <h1>Loading...</h1>}
       </div>
     </div>
   )

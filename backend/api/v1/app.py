@@ -39,12 +39,12 @@ def create_records():
         con.insert_one(to_save)
     except Exception:
         error = True
-        pass
+        res = con.find_one({"_id": key})
     con.close()
     if not error:
         return json_util.dumps(req), 201
     else:
-        return json_util.dumps({}), 409
+        return json_util.dumps(res), 200
 
 
 @app.route("/records", methods=["PUT"], strict_slashes=False)
