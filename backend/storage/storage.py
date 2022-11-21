@@ -80,4 +80,10 @@ class Storage:
             return json_util.loads(data)
         return data
 
+    def get_collection_names(self):
+        """ get a list of all collections in db"""
+        return self.db.list_collection_names()
 
+    def get_collections(self):
+        """ returns the collections in db """
+        return self.db.list_collections()
