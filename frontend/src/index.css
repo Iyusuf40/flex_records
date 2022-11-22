@@ -34,14 +34,6 @@ footer {
   line-height: 31px;
 }
 
-header {
-  min-width: 1000px;
-  height: 31px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
-  text-align: center;
-  line-height: 31px;
-}
-
 .container {
   min-height: 85vh;
   min-width: 1000px;

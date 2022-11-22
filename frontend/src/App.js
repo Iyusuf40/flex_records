@@ -2,49 +2,55 @@
 import './App.css';*/
 
 import React from "react";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
 import Container from "./components/Container"
+import Index from "./components/Index"
+import Docs from "./components/Docs"
+import Tutorial from "./components/Tutorial"
+import Root from "./components/Root"
+import {
+  createBrowserRouter,
+  RouterProvider,
+  /*Route,*/
+} from "react-router-dom";
 
-/*
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
-*/
 
-/*
- * const n = []
-for (let i = 0; i < 1; i++){
-  n.push(
-  <div> <h1> hi </h1> </div>
-	  )
-}
-*/
+const router = createBrowserRouter([
+      {
+	path: "/",
+	element: <Root />,
+	children: [
+	  {
+	    index: true,
+	    element: <Index />,
+	  },
+	  {
+	    path: "records",
+	    element: <Container />,
+	  },
+	  {
+	    path: "docs",
+	    element: <Docs />,
+	  },
+	  {
+	    path: "tutorial",
+	    element: <Tutorial />,
+	  },
+	],
+   }
+]);
 
+/**
+ * routes:
+ * /
+ * records
+ * docs
+ * tutorial
+ */
 
 function App() {
   return (
     <div className="outer--container">
-	  <Header />
-	  <Container />
-	  <Footer />
+	  <RouterProvider router={router} />
     </div>
   )
 }
