@@ -58,7 +58,6 @@ function avgVertical(data, noOfRows, noOfCols) {
         }
       }
     }
-    console.log(res, count)
     data[noOfRows][index] = parseFloat((res / count).toString()).toFixed(2);
   }
   return data;
