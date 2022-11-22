@@ -726,7 +726,7 @@ function delRow(tableName) {
     if (cellPlacement !== "right" && cellPlacement !== "bottom") {
       const option = prompt(`${cellPlacement} not empty. Do you want to add 
 ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
-      if (option && option.toLowerCase() === "yes") {
+      if (option && option.toLowerCase() === "yes" || option) {
         return null;
       } else if (option && option.toLowerCase() !== "overwrite") {
         setState(prevState => ({
