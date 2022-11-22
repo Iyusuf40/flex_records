@@ -62,13 +62,13 @@ you want to access  your records from a different device`)
   let setInit;
 
   // setup initial load and use as condition to fetch data from store
-  [init, setInit] = React.useState(init, setInit);
+  [init, setInit] = React.useState({loaded: false, saved: false}, setInit);
 
   let recordKey = `record-${flexId}`;
   let records = getRecords(recordKey, init);
 
   function getRecords(recordKey, init) {
-    if (init){
+    if (init.loaded){
       return;
     }
     // setInit(true); // set init the first time of load
@@ -93,7 +93,7 @@ you want to access  your records from a different device`)
     if (Object.keys(resp).length) {
       setState(resp);
     }
-    setInit(true); // set init the first time of load
+    setInit({loaded: true, saved: false}); // set init the first time of load
   }
 
   async function setAltUser(url, id) {
@@ -124,13 +124,13 @@ you want to access  your records from a different device`)
 
   [recordState, setState] = React.useState(records, setState);
 
-  function save(record, recordKey, init) {
-    if (!init) {
+  async function save(record, recordKey, init) {
+    if (!init.loaded) {
       return;
     }
     const json = JSON.stringify(record);
     // localStorage.setItem(recordKey, json);
-    fetch(putUrl, {
+    await fetch(putUrl, {
       method: "PUT",
       body: json,
       headers: {
@@ -139,6 +139,9 @@ you want to access  your records from a different device`)
     })
   }
 
+  /**
+   * persists newly created records
+   */
   function persist(record) {
     const json = JSON.stringify(record);
     fetch(postUrl, {
@@ -150,8 +153,17 @@ you want to access  your records from a different device`)
     })
   }
 
-  // repeatedly save recordState
-  setTimeout(save, 3000, recordState, recordKey, init);
+  /*async function shouldSave(recordState, init) {
+    if (!init.saved) { 
+      await setTimeout(save, 3000, recordState, recordKey, init);
+      setInit({loaded: true, saved: true});
+    } else {
+      //
+    }
+  }*/
+
+  // shouldSave(recordState, init);
+  setTimeout(save, 1000, recordState, recordKey, init);
 
   function createArray(size) {
     const myArray = [];
@@ -471,6 +483,9 @@ function delRow(tableName) {
    )
   }
 
+  /**
+   * unsets rules for the current table
+   */
   function clearRule(tableName) {
     setState((prevState) => (
       {
@@ -519,6 +534,7 @@ function delRow(tableName) {
       )
     })
     applyRuleOnModification(recordState);
+    //setInit({loaded: true, saved: false});
   }
 
   // cellPlacement determines where to apply rule
