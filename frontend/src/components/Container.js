@@ -52,11 +52,15 @@ your ID if you have one or skip. We will generate a new ID for you`);
     if (id) {
       getAltUser(getUrl, id);
     } else {
+      localStorage.setItem("flexId", flexId);
       alert(`here is your ID '${flexId}'. you may store it somewhere in case 
 you want to access  your records from a different device`)
     }
   }
-  localStorage.setItem("flexId", flexId);
+
+  if (flexId) {
+    localStorage.setItem("flexId", flexId);
+  }
 
   let init = null;
   let setInit;
@@ -96,10 +100,11 @@ you want to access  your records from a different device`)
     } else {
       let id = prompt(`User not found, enter correct ID or skip, we will generate one for you`);
       if (id) {
-        getAltUser(url, id);
+        return await getAltUser(url, id);
       }
+      id = uuid();
       localStorage.setItem("flexId", id);
-      alert(`here is your ID '${flexId}'. you may store it somewhere in case 
+      alert(`here is your ID '${id}'. you may store it somewhere in case 
 you want to access  your records from a different device`)
       return;
     }
