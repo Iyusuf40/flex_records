@@ -24,6 +24,11 @@ export default function SidePane(props) {
       <button onClick={props.createTable}>
 	  create table +
       </button> <br />
+      <br />
+      <button onClick={props.switchUser}>
+	  switch user
+      </button> <br />
+
       <div className="table--list">
 	{currentTable ? 
 		<button

@@ -96,6 +96,19 @@ you want to access  your records from a different device`)
     setInit(true); // set init the first time of load
   }
 
+  async function setAltUser(url, id) {
+    let resp = null;
+    await fetch(url + id).then(data => data.json()).then((data) => {
+      resp = data
+    });
+    if (Object.keys(resp).length) {
+      setState(resp);
+      localStorage.setItem("flexId", id);;
+    } else {
+      alert("User not found");
+    }
+  }
+
   /*
    * function getFromStore(recordKey) {
     let load = localStorage.getItem(recordKey);
@@ -753,6 +766,20 @@ or any other word(s) to rename it as such`);
     }
   }
 
+  async function switchUser() {
+    const id = prompt("enter user ID:")
+    if (!id) {
+      return;
+    }
+
+    if (typeof(id) !== "string" || id.length !== 36) {
+      alert("No such ID in our records");
+      return;
+    }
+
+    await setAltUser(getUrl, id);
+  }
+
   return (
     <div className="container">
 	  <SidePane
@@ -760,6 +787,7 @@ or any other word(s) to rename it as such`);
 	    handleTableClick={handleTableClick}
 	    createTable={createTable}
 	    modifyTable={modifyTable}
+	    switchUser={switchUser}
 	  />
 	  <TableView
 	    records={recordState}
