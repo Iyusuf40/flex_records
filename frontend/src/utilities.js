@@ -1,7 +1,7 @@
 function checkIndexZeroVertical(data) {
      let bool = (
-	              typeof(Number(data[1][0])) === "number"
-	              && data[1][0]
+	              Number(data[1][0])
+	              && data[1][0].length
                       ) 
 		      ? true : false;
      return bool; 
@@ -33,7 +33,7 @@ function mulVertical(data, noOfRows, noOfCols) {
     }
     for (const key in data) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number' && Number(key) !== noOfRows) {
+      if (currentData && Number(key) !== noOfRows) {
         res *= currentData;
       }
     }
@@ -49,7 +49,7 @@ function avgVertical(data, noOfRows, noOfCols) {
     let count = 0;
     for (const key in data) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number' && Number(key) !== noOfRows) {
+      if (currentData && Number(key) !== noOfRows) {
         res += currentData;
 	count++;
       }
@@ -65,7 +65,7 @@ function subVerticalTop(data, noOfRows, noOfCols) {
     let res = data[1][index];
     for (let key = 2; key <= noOfRows; key++) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number' && Number(key) !== noOfRows) {
+      if (currentData && Number(key) !== noOfRows) {
         res -= currentData;
       }
     }
@@ -80,7 +80,7 @@ function subVerticalBottom(data, noOfRows, noOfCols) {
     let res = data[Number(noOfRows) - 1][index];
     for (let key = Number(noOfRows) - 2; key > 0; key--) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number') {
+      if (currentData) {
         res -= currentData;
       }
     }
@@ -111,7 +111,7 @@ function subHorizontalLeft(data, noOfRows, noOfCols) {
     // implement search for first index where number starts and compute from there
     for (let index = (isIndexZeroNumber ? 1 : 2); index < (noOfCols - 1); index++) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number') {
+      if (currentData) {
         res -= currentData;
       }
     }
@@ -128,7 +128,7 @@ function subHorizontalRight(data, noOfRows, noOfCols) {
     // implement search for first index where number starts and compute from there
     for (let index = noOfCols - 3; index >= 0; index--) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number') {
+      if (currentData) {
         res -= currentData;
       }
     }
@@ -139,8 +139,8 @@ function subHorizontalRight(data, noOfRows, noOfCols) {
 
 function getStartIndex(key, data) {
      let startIndex = (
-	              typeof(Number(data[key][0])) === "number"
-	              && data[key][0]
+	              Number(data[key][0])
+	              && data[key][0].length
                       ) 
 		      ? 0 : 1;
      return startIndex; 
@@ -153,7 +153,7 @@ function avgHorizontal(data, noOfRows, noOfCols) {
    let count = 0;
     for (let index = startIndex; index < (noOfCols - 1); index++) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number') {
+      if (currentData) {
         res += currentData;
         count++;
       }
@@ -172,7 +172,7 @@ function mulHorizontal(data, noOfRows, noOfCols) {
     let startIndex = getStartIndex(key, data);
     for (let index = startIndex; index < (noOfCols - 1); index++) {
       let currentData = Number(data[key][index]);
-      if (typeof(currentData) === 'number') {
+      if (currentData) {
         res *= currentData;
       }
     }
