@@ -50,7 +50,7 @@ export default function Container() {
     const id = prompt(`Could not get your ID from localStorage, please enter
 your ID if you have one or skip. We will generate a new ID for you`);
     if (id) {
-      flexId = id;
+      getAltUser(getUrl, id);
     } else {
       alert(`here is your ID '${flexId}'. you may store it somewhere in case 
 you want to access  your records from a different device`)
@@ -72,9 +72,8 @@ you want to access  your records from a different device`)
       return;
     }
     // setInit(true); // set init the first time of load
-    let loadedRecord = null; // getFromStore(recordKey);
     getFromBackend(getUrl, flexId);
-    return loadedRecord ? loadedRecord : ({
+    return ({
 	    id: flexId, 
 	    tables: {
 	    },
@@ -85,7 +84,28 @@ you want to access  your records from a different device`)
     });
   }
 
-  async function getFromBackend(url, id) {
+  async function getAltUser(url, id) {
+    let resp = null;
+    await fetch(url + id).then(data => data.json()).then((data) => {
+      resp = data
+    });
+    if (resp && Object.keys(resp).length) {
+      setState(resp);
+      localStorage.setItem("flexId", id);
+      return;
+    } else {
+      let id = prompt(`User not found, enter correct ID or skip, we will generate one for you`);
+      if (id) {
+        getAltUser(url, id);
+      }
+      localStorage.setItem("flexId", id);
+      alert(`here is your ID '${flexId}'. you may store it somewhere in case 
+you want to access  your records from a different device`)
+      return;
+    }
+  }
+
+ async function getFromBackend(url, id) {
     let resp = null;
     await fetch(url + id).then(data => data.json()).then((data) => {
       resp = data
