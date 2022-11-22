@@ -33,8 +33,10 @@ function mulVertical(data, noOfRows, noOfCols) {
     }
     for (const key in data) {
       let currentData = Number(data[key][index]);
-      if (currentData && Number(key) !== noOfRows) {
-        res *= currentData;
+      if (currentData === 0 || currentData) {
+        if (Number(key) !== noOfRows) {
+	  res *= currentData;
+	}
       }
     }
     data[noOfRows][index] = res.toString();
@@ -49,11 +51,14 @@ function avgVertical(data, noOfRows, noOfCols) {
     let count = 0;
     for (const key in data) {
       let currentData = Number(data[key][index]);
-      if (currentData && Number(key) !== noOfRows) {
-        res += currentData;
-	count++;
+      if (currentData === 0 || currentData) {
+        if (Number(key) !== noOfRows) {
+	  res += currentData;
+	  count++;
+        }
       }
     }
+    console.log(res, count)
     data[noOfRows][index] = parseFloat((res / count).toString()).toFixed(2);
   }
   return data;
@@ -153,7 +158,7 @@ function avgHorizontal(data, noOfRows, noOfCols) {
    let count = 0;
     for (let index = startIndex; index < (noOfCols - 1); index++) {
       let currentData = Number(data[key][index]);
-      if (currentData) {
+      if (currentData === 0 || currentData) {
         res += currentData;
         count++;
       }
@@ -172,7 +177,7 @@ function mulHorizontal(data, noOfRows, noOfCols) {
     let startIndex = getStartIndex(key, data);
     for (let index = startIndex; index < (noOfCols - 1); index++) {
       let currentData = Number(data[key][index]);
-      if (currentData) {
+      if (currentData === 0 || currentData) {
         res *= currentData;
       }
     }
