@@ -877,7 +877,7 @@ or a range ex 3-7`)
         return false;
       }
     } else {
-      if (Number(startIndex) >= Number(noOfCols) - 1 || Number(startIndex) < 0) {
+      if (Number(startIndex) >= Number(noOfCols) || Number(startIndex) < 1) {
         return false;
       }
     }
@@ -1009,7 +1009,7 @@ to column if response is not one of the two`);
         applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
 		        Number(noOfRows), Number(noOfCols), cellPlacement);
       } else {
-        applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
+        applyRuleAdvCol(startIndex - 1, endIndex, ruleName, currentTable, 
 		        Number(noOfRows), Number(noOfCols), cellPlacement);
       }
     } else {
@@ -1020,7 +1020,7 @@ to column if response is not one of the two`);
 		         Number(noOfRows), Number(noOfCols), cellPlacement);
       } else {
          let endIndex = Number(colIndex) - 1;
-	 applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
+	 applyRuleAdvCol(startIndex - 1, endIndex, ruleName, currentTable, 
 		         Number(noOfRows), Number(noOfCols), cellPlacement);
       }
     }

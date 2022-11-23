@@ -30,13 +30,13 @@ function mulVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 1;
-    let correctedIndex = startIndex;
-    /*let checkCol = checkColIndexZeroVertical(data, index);
-    correctedIndex = checkCol ? 1 : 2;*/
+    let correctedIndex;
+    let checkCol = checkColIndexZeroVertical(data, index, startIndex);
+    correctedIndex = checkCol ? startIndex : startIndex + 1;
     if (!data[correctedIndex][index] || !Number(data[correctedIndex][index])) {
       res = 0;
     }
-    for (let key = startIndex; key < endIndex; key++) {
+    for (let key = checkCol ? startIndex : startIndex + 1; key <= endIndex; key++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
 	  res *= currentData;
@@ -54,7 +54,8 @@ function avgVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 0;
     let count = 0;
-    for (let key = startIndex; key <= endIndex; key++) {
+    let checkCol = checkColIndexZeroVertical(data, index, startIndex);
+    for (let key = checkCol ? startIndex : startIndex + 1; key <= endIndex; key++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
 	  res += currentData;
@@ -68,11 +69,11 @@ function avgVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   return data;
 }
 
-function checkColIndexZeroVertical(data, idx) {
+function checkColIndexZeroVertical(data, idx, stIdx) {
      let bool = (
-	              (Number(data[1][idx]) ||
-		      (Number(data[1][idx])) === 0)
-	              && data[1][idx].length
+	              (Number(data[stIdx][idx]) ||
+		      (Number(data[stIdx][idx])) === 0)
+	              && data[stIdx][idx].length
                       ) 
 		      ? true : false;
      return bool; 
@@ -81,9 +82,10 @@ function checkColIndexZeroVertical(data, idx) {
 function subVerticalTopAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
-    let checkCol = true; // checkColIndexZeroVertical(data, index);
-    let res = checkCol ? data[startIndex + 1][index] :  data[startIndex + 2][index];
-    for (let key = startIndex + 1; key <= endIndex; key++) {
+    let checkCol = checkColIndexZeroVertical(data, index, startIndex);
+    let res = checkCol ? data[startIndex][index] :  data[startIndex + 1][index];
+    for (let key = checkCol ? startIndex + 1 : startIndex + 2; 
+	    key <= endIndex; key++) {
       let currentData = Number(data[key][index]);
       if (currentData && Number(key) !== (endIndex + 1)) {
         res -= currentData;
@@ -215,11 +217,12 @@ function avgHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
 function mulHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (const key in data) {
     let res = 1;
-    if (!Number(data[key][startIndex])) {
+    if (!Number(data[key][startIndex]) && !Number(data[key][startIndex + 1])) {
       res = 0;
     }
-    // let startIndexNative = getStartIndex(key, data);
-    for (let index = startIndex; index <= endIndex; index++) {
+    let startIndexNative = getStartIndex(key, data, startIndex);
+    for (let index = startIndexNative ? startIndex + 1 : startIndex; 
+	    index <= endIndex; index++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         res *= currentData;
