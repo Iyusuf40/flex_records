@@ -988,7 +988,7 @@ to column if response is not one of the two`);
     if (!choice) {
       return;
     }
-    if (choice && choice.toLowerCase() == "row") {
+    if (choice && choice.toLowerCase() === "row") {
       cellPlacement = "bottom";
     } else {
       cellPlacement = "right";
