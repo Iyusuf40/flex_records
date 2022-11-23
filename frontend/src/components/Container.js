@@ -3,6 +3,7 @@ import uuid from 'react-uuid';
 import SidePane from "./SidePane"
 import TableView from "./TableView"
 import utilities from "../utilities"
+import advancedutils from "../advancedutils"
 
 export default function Container() {
 
@@ -448,11 +449,30 @@ function delRow(tableName) {
 		[tableName]: {
 		  ...prevState.tables[tableName],
 		  ruleMode: true,
+		  ruleModeAdv: false,
 		}
 	      }
       })
     )
   }
+
+  function addRuleAdv(tableName) {
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+                ...prevState.tables,
+		[tableName]: {
+		  ...prevState.tables[tableName],
+		  ruleModeAdv: true,
+		  ruleMode: false,
+		}
+	      }
+      })
+    )
+  }
+
 
   function increaseCellSize(tableName) {
     setState((prevState) => {
@@ -521,8 +541,10 @@ function delRow(tableName) {
 		[tableName]: {
 		  ...prevState.tables[tableName],
 		  ruleMode: false,
+	          ruleModeAdv: false,
 		  prevRule: "",
 		  cellPlacement: "",
+		  currentRule: "",
 		}
 	      }
       })
@@ -586,6 +608,30 @@ function delRow(tableName) {
     return ruleNameMapRight[ruleName];
   }
 
+  // cellPlacement determines where to apply rule
+  function getRuleFunctionNameAdv(ruleName, cellPlacement) {
+    const ruleNameMapRight = {
+      "sum": "sumHorizontalAdv",
+      "subtractReverse": "subHorizontalRightAdv",
+      "subtract": "subHorizontalLeftAdv",
+      "multiply": "mulHorizontalAdv",
+      "average": "avgHorizontalAdv"
+    }
+
+    const ruleNameMapBottom = {
+      "sum": "sumVerticalAdv",
+      "subtract": "subVerticalTopAdv",
+      "subtractReverse": "subVerticalBottomAdv",
+      "multiply": "mulVerticalAdv",
+      "average": "avgVerticalAdv"
+    }
+
+    if (cellPlacement === "bottom") {
+      return ruleNameMapBottom[ruleName];
+    }
+    return ruleNameMapRight[ruleName];
+  }
+
   /**
    * applyRuleOnModification - reapplies the previously set rule on
    * new columns or rows created
@@ -593,6 +639,7 @@ function delRow(tableName) {
    * currentState -> currentState of records object
    */
   function applyRuleOnModification (currentState) {
+    /* apply advanced here */
     if (currentState.tables[currentState.currentTable].prevRule) {
       const currentTable = currentState.currentTable;
       const ruleName = currentState.tables[currentTable].prevRule;
@@ -664,6 +711,28 @@ function delRow(tableName) {
 	    [currentTable]: {
               ...prevState.tables[currentTable],
               ruleMode: true,
+              currentRule: ruleName,
+	    },
+         },
+       });
+    });
+   }
+
+  /**
+   * afterRulePickAdv - handles event after user chooses an advanced rule to apply.
+   * sets the currentTable to ruleModeAdv which signals for rule
+   * application
+   */
+  function afterRulePickAdv(ruleName, currentTable) {
+    alert(`click on the row or column you want to apply rule`);
+    setState(prevState => {
+      return ({
+	 ...prevState,
+         tables: {
+            ...prevState.tables,
+	    [currentTable]: {
+              ...prevState.tables[currentTable],
+              ruleModeAdv: true,
               currentRule: ruleName,
 	    },
          },
@@ -784,6 +853,181 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
     }
   }
 
+  function askForRange(cellPlacement, index) {
+    let choiceName = cellPlacement === "right" ? "column": "row";
+    let opp = cellPlacement === "right" ? "row": "column";
+    const range = prompt(`you chose ${choiceName} number ${index},
+please specify from what ${opp} to apply rule. you can specify a single value
+or a range ex 3-7`)
+    return range;
+  }
+
+
+  function isNumber(val) {
+    if (Number(val) === 0 || Number(val)) {
+      return true;
+    }
+    return false;
+  }
+
+
+  function checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols) {
+    if (cellPlacement === "bottom") {
+      if (Number(startIndex) >= Number(noOfRows) || Number(startIndex) < 1) {
+        return false;
+      }
+    } else {
+      if (Number(startIndex) >= Number(noOfCols) - 1 || Number(startIndex) < 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols) {
+    if (cellPlacement === "bottom") {
+      if (Number(endIndex) > Number(noOfRows) || Number(endIndex) < 1 ) {
+        return false;
+      }
+    } else {
+      if (Number(endIndex) > Number(noOfCols) - 1 || Number(endIndex) < 1) {
+	return false;
+      }
+    }
+    return true;
+  }
+
+  function parseRange(range, index, cellPlacement, noOfRows, noOfCols) {
+    let list = range.split("-");
+    let startIndex;
+    let endIndex;
+    if (list.length > 1) {
+      startIndex = list[0];
+      endIndex = list[1];
+      if (!isNumber(startIndex) || !isNumber(endIndex)) {
+        return false;
+      }
+      if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols) ||
+          !checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols)){
+        return false;
+      }
+      return ([Number(startIndex), Number(endIndex)]);
+    } else {
+      startIndex = list[0];
+      if (!isNumber(startIndex)) {
+        return false;
+      }
+      if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols)) {
+        return false;
+      }
+      return ([Number(startIndex)]);
+    }
+  }
+
+  function applyRuleAdvRow(starIndex, endIndex, ruleName, currentTable, 
+	  noOfRows, noOfCols, cellPlacement) {
+   const functionName = getRuleFunctionName(ruleName, cellPlacement);
+   setState(prevState => {
+     const data = prevState.tables[currentTable].data;
+     const noOfRows = prevState.tables[currentTable].noOfRows;
+     const noOfCols = prevState.tables[currentTable].noOfCols;
+     const dataClone = {...data};
+     // call appropiate function on data
+     // set data back
+     return ({
+       ...prevState,
+       tables: {
+         ...prevState.tables,
+	 [currentTable]: {
+           ...prevState.tables[currentTable],
+	   // utilities returns an object of functions to apply rules
+           data: utilities()[functionName](dataClone, noOfRows, noOfCols),
+	   ruleMode: false,
+	   altered: true,
+	   prevRule: ruleName,
+	   cellPlacement: cellPlacement,
+           currentRule: "",
+	 }
+       }
+     })
+   })
+  }
+
+  function applyRuleAdvCol(starIndex, endIndex, ruleName, currentTable, 
+	  noOfRows, noOfCols, cellPlacement) {
+   const functionName = getRuleFunctionName(ruleName, cellPlacement);
+   setState(prevState => {
+     const data = prevState.tables[currentTable].data;
+     const noOfRows = prevState.tables[currentTable].noOfRows;
+     const noOfCols = prevState.tables[currentTable].noOfCols;
+     const dataClone = {...data};
+     // call appropiate function on data
+     // set data back
+     return ({
+       ...prevState,
+       tables: {
+         ...prevState.tables,
+	 [currentTable]: {
+           ...prevState.tables[currentTable],
+	   // utilities returns an object of functions to apply rules
+           data: utilities()[functionName](dataClone, noOfRows, noOfCols),
+	   ruleMode: false,
+	   altered: true,
+	   prevRule: ruleName,
+	   cellPlacement: cellPlacement,
+           currentRule: "",
+	 }
+       }
+     })
+   })
+  }
+
+  function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
+    const choice = prompt(`Where do you want to apply rule? please type 'row' or
+'col' to apply rule accross this row or along this column respectively. will default 
+to column if response is not one of the two`);
+    let cellPlacement;
+    if (choice && choice.toLowerCase() == "row") {
+      cellPlacement = "bottom";
+    } else {
+      cellPlacement = "right";
+    }
+    let index = cellPlacement === "bottom" ? key : (colIndex + 1);
+    const range = askForRange(cellPlacement, index);
+    if (!range) {
+      return;
+    }
+    const parsedRange = parseRange(range, index, cellPlacement, noOfRows, noOfCols); 
+    if (!parsedRange) {
+      return;
+    }
+    if (parsedRange.length > 1) {
+      let startIndex = parsedRange[0];
+      let endIndex = parsedRange[1];
+      if (startIndex >= endIndex) {
+        return;
+      }
+      if (cellPlacement === "bottom" ) {
+        applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, Number(noOfRows), 
+		        Number(noOfCols), cellPlacement);
+      } else {
+        applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, Number(noOfRows), 
+		        Number(noOfCols), cellPlacement);
+      }
+    } else {
+      let startIndex = parsedRange[0];
+      if (cellPlacement === "bottom" ) {
+	 let endIndex = Number(key) - 1;
+	 applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, Number(noOfRows), 
+		         Number(noOfCols), cellPlacement);
+      } else {
+         let endIndex = Number(colIndex) - 1;
+	 applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, Number(noOfRows), 
+		        Number(noOfCols), cellPlacement);
+      }
+    }
+  }
+
   function deleteTable(tableName) {
     setState(prevState => {
       const copy = {...prevState};
@@ -848,10 +1092,13 @@ or any other word(s) to rename it as such`);
 	    addRow={addRow}
 	    delRow={delRow}
 	    addRule={addRule}
+	    addRuleAdv={addRuleAdv}
 	    updateTableView={updateTableView}
 	    implementRule={implementRule}
 	    afterRulePick={afterRulePick}
+	    afterRulePickAdv={afterRulePickAdv}
 	    pickCells={pickCells}
+	    pickCellsAdv={pickCellsAdv}
 	    clearRule={clearRule}
 	    increaseCellSize={increaseCellSize}
 	    decreaseCellSize={decreaseCellSize}

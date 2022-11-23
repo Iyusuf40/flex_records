@@ -62,7 +62,16 @@ export default function TableView(props) {
 		              noOfRows,
 		              noOfCols
 	                   )
-			   : "")}
+			   : (table.ruleModeAdv && table.currentRule ? props.pickCellsAdv(
+                              table.currentRule,
+			      currentTable,
+			      row,
+			      colIndex,
+			      noOfRows,
+			      noOfCols
+			   )
+		           : "")
+	   )}
 	  />
         )
         rowContainer.push(cell)
@@ -108,6 +117,11 @@ export default function TableView(props) {
 	    onClick={(e) => props.addRule(currentTable)}
 	  >
 	    add rule +
+	  </button>
+	  <button 
+	    onClick={(e) => props.addRuleAdv(currentTable)}
+	  >
+	    advanced +
 	  </button>
 	  <button 
 	    onClick={(e) => props.clearRule(currentTable)}
@@ -173,6 +187,54 @@ export default function TableView(props) {
 	</div>
         : ""
       }
+      {
+        table.ruleModeAdv ?  
+        <div className="rule--options">
+	  <
+	    input
+	    type="radio"
+	    id="sum"
+	    name="rules"
+	    onClick={(e) => props.afterRulePickAdv("sum", currentTable)}
+	  />
+	  <label htmlFor="sum">sum adv</label>
+ 	  <
+	    input
+	    type="radio"
+	    id="subtract"
+	    name="rules"
+	    onClick={(e) => props.afterRulePickAdv("subtract", currentTable)}
+	  />
+	  <label htmlFor="subtract">subtract adv</label>
+      	  <
+	    input
+	    type="radio"
+	    id="subtractReverse"
+	    name="rules"
+	    onClick={(e) => props.afterRulePickAdv("subtractReverse", currentTable)}
+	  />
+	  <label htmlFor="subtractReverse">subtract-reverse adv</label>
+       	  <
+	    input
+	    type="radio"
+	    id="multiply"
+	    name="rules"
+	    onClick={(e) => props.afterRulePickAdv("multiply", currentTable)}
+	  />
+	  <label htmlFor="multiply">multiply adv</label>
+	  <
+	    input
+	    type="radio"
+	    id="average"
+	    name="rules"
+	    onClick={(e) => props.afterRulePickAdv("average", currentTable)}
+	  />
+	  <label htmlFor="average">average adv</label>
+
+	</div>
+        : ""
+      }
+
       <div className="current--table">
 	  {tableView.length ? tableView : <h1>Loading...</h1>}
       </div>
