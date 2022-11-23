@@ -926,7 +926,7 @@ or a range ex 3-7`)
 
   function applyRuleAdvRow(starIndex, endIndex, ruleName, currentTable, 
 	  noOfRows, noOfCols, cellPlacement) {
-   const functionName = getRuleFunctionName(ruleName, cellPlacement);
+   const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
@@ -941,11 +941,10 @@ or a range ex 3-7`)
 	 [currentTable]: {
            ...prevState.tables[currentTable],
 	   // utilities returns an object of functions to apply rules
-           data: utilities()[functionName](dataClone, noOfRows, noOfCols),
-	   ruleMode: false,
+           data: advancedutils()[functionName](dataClone, noOfRows, 
+		                noOfCols, starIndex, endIndex),
+	   ruleModeAdv: false,
 	   altered: true,
-	   prevRule: ruleName,
-	   cellPlacement: cellPlacement,
            currentRule: "",
 	 }
        }
@@ -955,7 +954,7 @@ or a range ex 3-7`)
 
   function applyRuleAdvCol(starIndex, endIndex, ruleName, currentTable, 
 	  noOfRows, noOfCols, cellPlacement) {
-   const functionName = getRuleFunctionName(ruleName, cellPlacement);
+   const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
@@ -970,12 +969,11 @@ or a range ex 3-7`)
 	 [currentTable]: {
            ...prevState.tables[currentTable],
 	   // utilities returns an object of functions to apply rules
-           data: utilities()[functionName](dataClone, noOfRows, noOfCols),
-	   ruleMode: false,
+           data: advancedutils()[functionName](dataClone, noOfRows, 
+		              noOfCols, starIndex, endIndex),
+	   ruleModeAdv: false,
 	   altered: true,
-	   prevRule: ruleName,
-	   cellPlacement: cellPlacement,
-           currentRule: "",
+	   currentRule: "",
 	 }
        }
      })
