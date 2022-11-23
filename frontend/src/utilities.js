@@ -1,6 +1,6 @@
 function checkIndexZeroVertical(data) {
      let bool = (
-	              Number(data[1][0])
+	              (Number(data[1][0]) || Number(data[1][0]) === 0)
 	              && data[1][0].length
                       ) 
 		      ? true : false;
@@ -30,10 +30,13 @@ function mulVertical(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = checkIndexZeroVertical(data);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 1;
-    if (!data[1][index] || !Number(data[1][index])) {
+    let correctedIndex;
+    let checkCol = checkColIndexZeroVertical(data, index);
+    correctedIndex = checkCol ? 1 : 2;
+    if (!data[correctedIndex][index] || !Number(data[correctedIndex][index])) {
       res = 0;
     }
-    for (const key in data) {
+    for (let key = checkCol ? 1 : 2; key <= noOfRows; key++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         if (Number(key) !== noOfRows) {
@@ -53,7 +56,9 @@ function avgVertical(data, noOfRows, noOfCols) {
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 0;
     let count = 0;
-    for (const key in data) {
+    let checkCol = checkColIndexZeroVertical(data, index);
+    // let correctedIndex = checkCol ? 1 : 2;
+    for (let key = checkCol ? 1 : 2; key <= noOfRows; key++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         if (Number(key) !== noOfRows) {
@@ -71,7 +76,8 @@ function avgVertical(data, noOfRows, noOfCols) {
 
 function checkColIndexZeroVertical(data, idx) {
      let bool = (
-	              Number(data[1][idx])
+	              (Number(data[1][idx]) ||
+		      (Number(data[1][idx])) === 0)
 	              && data[1][idx].length
                       ) 
 		      ? true : false;
@@ -180,7 +186,8 @@ function subHorizontalRight(data, noOfRows, noOfCols) {
 
 function getStartIndex(key, data) {
      let startIndex = (
-	              Number(data[key][0])
+	              (Number(data[key][0]) ||
+                       Number(data[key][0]) === 0)
 	              && data[key][0].length
                       ) 
 		      ? 0 : 1;
