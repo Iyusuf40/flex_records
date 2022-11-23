@@ -925,7 +925,7 @@ or a range ex 3-7`)
   }
 
   function applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement) {
+	  noOfRows, noOfCols, cellPlacement, saveIndex) {
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
@@ -942,7 +942,7 @@ or a range ex 3-7`)
            ...prevState.tables[currentTable],
 	   // utilities returns an object of functions to apply rules
            data: advancedutils()[functionName](dataClone, noOfRows, 
-		                noOfCols, startIndex, endIndex),
+		                noOfCols, startIndex, endIndex, saveIndex),
 	   ruleModeAdv: false,
 	   altered: true,
            currentRule: "",
@@ -953,7 +953,7 @@ or a range ex 3-7`)
   }
 
   function applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement) {
+	  noOfRows, noOfCols, cellPlacement, saveIndex) {
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
@@ -970,7 +970,7 @@ or a range ex 3-7`)
            ...prevState.tables[currentTable],
 	   // utilities returns an object of functions to apply rules
            data: advancedutils()[functionName](dataClone, noOfRows, 
-		              noOfCols, startIndex, endIndex),
+		              noOfCols, startIndex, endIndex, saveIndex),
 	   ruleModeAdv: false,
 	   altered: true,
 	   currentRule: "",
@@ -1002,26 +1002,27 @@ to column if response is not one of the two`);
     if (parsedRange.length > 1) {
       let startIndex = parsedRange[0];
       let endIndex = parsedRange[1];
+      console.log(startIndex, endIndex)
       if (startIndex >= endIndex) {
         return;
       }
       if (cellPlacement === "bottom" ) {
         applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-		        Number(noOfRows), Number(noOfCols), cellPlacement);
+		        Number(noOfRows), Number(noOfCols), cellPlacement, key);
       } else {
-        applyRuleAdvCol(startIndex - 1, endIndex, ruleName, currentTable, 
-		        Number(noOfRows), Number(noOfCols), cellPlacement);
+        applyRuleAdvCol(startIndex - 1, endIndex - 1, ruleName, currentTable, 
+		        Number(noOfRows), Number(noOfCols), cellPlacement, colIndex);
       }
     } else {
       let startIndex = parsedRange[0];
       if (cellPlacement === "bottom" ) {
 	 let endIndex = Number(key) - 1;
 	 applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-		         Number(noOfRows), Number(noOfCols), cellPlacement);
+		         Number(noOfRows), Number(noOfCols), cellPlacement, key);
       } else {
          let endIndex = Number(colIndex) - 1;
 	 applyRuleAdvCol(startIndex - 1, endIndex, ruleName, currentTable, 
-		         Number(noOfRows), Number(noOfCols), cellPlacement);
+		         Number(noOfRows), Number(noOfCols), cellPlacement, colIndex);
       }
     }
   }

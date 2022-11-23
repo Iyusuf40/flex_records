@@ -8,7 +8,7 @@ function checkIndexZeroVertical(data, key) {
 
 }
 
-function sumVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIndex) {
+function sumVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 0;
@@ -18,14 +18,14 @@ function sumVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveInde
         res += currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[saveIndex][index]))) {
-      data[saveIndex][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[endIndex + 1][index]))) {
+      data[endIndex + 1][index] = res.toString();
     }
   }
   return data;
 }
 
-function mulVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIndex) {
+function mulVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   // const isIndexZeroNumber = Number(data[1][0]) ? true : false;
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
@@ -42,14 +42,14 @@ function mulVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveInde
 	  res *= currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[saveIndex][index]))) {
-      data[saveIndex][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[endIndex + 1][index]))) {
+      data[endIndex + 1][index] = res.toString();
     }
   }
   return data;
 }
 
-function avgVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIndex) {
+function avgVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = 0;
@@ -62,8 +62,8 @@ function avgVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveInde
 	  count++;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[saveIndex][index]))) {
-      data[saveIndex][index] = parseFloat((res / count).toString()).toFixed(2);
+    if ((res === 0 || res) && (isTextInCell(data[endIndex + 1][index]))) {
+      data[endIndex + 1][index] = parseFloat((res / count).toString()).toFixed(2);
     }
   }
   return data;
@@ -79,8 +79,7 @@ function checkColIndexZeroVertical(data, idx, stIdx) {
      return bool; 
 }
 
-function subVerticalTopAdv(data, noOfRows, noOfCols, startIndex, endIndex, 
-	saveIndex) {
+function subVerticalTopAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let checkCol = checkColIndexZeroVertical(data, index, startIndex);
@@ -92,15 +91,14 @@ function subVerticalTopAdv(data, noOfRows, noOfCols, startIndex, endIndex,
         res -= currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[saveIndex][index]))) {
-      data[saveIndex][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[endIndex + 1][index]))) {
+      data[endIndex + 1][index] = res.toString();
     }
   }
   return data;
 }
 
-function subVerticalBottomAdv(data, noOfRows, noOfCols, startIndex, endIndex, 
-	saveIndex) {
+function subVerticalBottomAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   const isIndexZeroNumber = checkIndexZeroVertical(data, startIndex);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
     let res = data[endIndex][index];
@@ -110,14 +108,14 @@ function subVerticalBottomAdv(data, noOfRows, noOfCols, startIndex, endIndex,
         res -= currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[saveIndex][index]))) {
-      data[saveIndex][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[endIndex + 1][index]))) {
+      data[endIndex + 1][index] = res.toString();
     }
   }
   return data;
 }
 
-function sumHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIndex) {
+function sumHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (const key in data) {
     let res = 0;
     for (let index = startIndex; index <= endIndex; index++) {
@@ -126,8 +124,8 @@ function sumHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIn
         res += currentData;
       }
     }
-    if ((res === 0 || res) && isTextInCell(data[key][saveIndex])) {
-      data[key][saveIndex] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][endIndex + 1])) {
+      data[key][endIndex + 1] = res.toString();
     }
   }
   return data;
@@ -144,8 +142,7 @@ function isTextInCell(value) {
   return false;
 }
 
-function subHorizontalLeftAdv(data, noOfRows, noOfCols, startIndex, endIndex, 
-	saveIndex) {
+function subHorizontalLeftAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (const key in data) {
     // const isIndexZeroNumber = Number(data[key][0]) ? true : false;
     const isIndexZeroNumber = getStartIndex(key, data, startIndex) === 0 ? 
@@ -162,15 +159,14 @@ function subHorizontalLeftAdv(data, noOfRows, noOfCols, startIndex, endIndex,
         res -= currentData;
       }
     }
-    if ((res === 0 || res) && isTextInCell(data[key][saveIndex])) {
-      data[key][saveIndex] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][endIndex + 1])) {
+      data[key][endIndex + 1] = res.toString();
     }
   }
   return data;
 }
 
-function subHorizontalRightAdv(data, noOfRows, noOfCols, startIndex, endIndex, 
-	saveIndex) {
+function subHorizontalRightAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (const key in data) {
     // const isIndexZeroNumber = Number(data[key][0]) ? true : false;
     // let res = isIndexZeroNumber ? Number(data[key][0]) : Number(data[key][1]);
@@ -182,8 +178,8 @@ function subHorizontalRightAdv(data, noOfRows, noOfCols, startIndex, endIndex,
         res -= currentData;
       }
     }
-    if ((res === 0 || res) && isTextInCell(data[key][saveIndex])) {
-      data[key][saveIndex] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][endIndex + 1])) {
+      data[key][endIndex + 1] = res.toString();
     }
   }
   return data;
@@ -199,7 +195,7 @@ function getStartIndex(key, data, index) {
      return startIndex; 
 }
 
-function avgHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIndex) {
+function avgHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (const key in data) {
     let res = 0;
     // let startIndexNative = getStartIndex(key, data, startIndex);
@@ -211,14 +207,14 @@ function avgHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIn
         count++;
       }
     }
-    if ((res === 0 || res) && isTextInCell(data[key][saveIndex])) {
-      data[key][saveIndex] = parseFloat((res / count).toString()).toFixed(2);
+    if ((res === 0 || res) && isTextInCell(data[key][endIndex + 1])) {
+      data[key][endIndex + 1] = parseFloat((res / count).toString()).toFixed(2);
     }
   }
   return data;
 }
 
-function mulHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIndex) {
+function mulHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
   for (const key in data) {
     let res = 1;
     if (!Number(data[key][startIndex]) && !Number(data[key][startIndex + 1])) {
@@ -232,8 +228,8 @@ function mulHorizontalAdv(data, noOfRows, noOfCols, startIndex, endIndex, saveIn
         res *= currentData;
       }
     }
-    if ((res === 0 || res) && isTextInCell(data[key][saveIndex])) {
-      data[key][saveIndex] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][endIndex + 1])) {
+      data[key][endIndex + 1] = res.toString();
     }
   }
   return data;
