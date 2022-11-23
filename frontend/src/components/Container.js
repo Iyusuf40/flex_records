@@ -890,7 +890,7 @@ or a range ex 3-7`)
         return false;
       }
     } else {
-      if (Number(endIndex) > Number(noOfCols) - 1 || Number(endIndex) < 1) {
+      if (Number(endIndex) > Number(noOfCols) || Number(endIndex) < 1) {
 	return false;
       }
     }
@@ -985,6 +985,9 @@ or a range ex 3-7`)
 'col' to apply rule accross this row or along this column respectively. will default 
 to column if response is not one of the two`);
     let cellPlacement;
+    if (!choice) {
+      return;
+    }
     if (choice && choice.toLowerCase() == "row") {
       cellPlacement = "bottom";
     } else {
