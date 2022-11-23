@@ -14,7 +14,7 @@ function sumVerticalAdv(data, noOfRows, noOfCols, startIndex, endIndex) {
     let res = 0;
     for (let key = startIndex; key <= endIndex; key++) {
       let currentData = Number(data[key][index]);
-      if (currentData && Number(key) !== endIndex) {
+      if (currentData) {
         res += currentData;
       }
     }
