@@ -18,7 +18,9 @@ function sumVertical(data, noOfRows, noOfCols) {
         res += currentData;
       }
     }
-    data[noOfRows][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+      data[noOfRows][index] = res.toString();
+    }
   }
   return data;
 }
@@ -39,7 +41,9 @@ function mulVertical(data, noOfRows, noOfCols) {
 	}
       }
     }
-    data[noOfRows][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+      data[noOfRows][index] = res.toString();
+    }
   }
   return data;
 }
@@ -58,7 +62,9 @@ function avgVertical(data, noOfRows, noOfCols) {
         }
       }
     }
-    data[noOfRows][index] = parseFloat((res / count).toString()).toFixed(2);
+    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+      data[noOfRows][index] = parseFloat((res / count).toString()).toFixed(2);
+    }
   }
   return data;
 }
@@ -72,8 +78,10 @@ function subVerticalTop(data, noOfRows, noOfCols) {
       if (currentData && Number(key) !== noOfRows) {
         res -= currentData;
       }
+    } 
+    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+      data[noOfRows][index] = res.toString();
     }
-    data[noOfRows][index] = res.toString();
   }
   return data;
 }
@@ -88,7 +96,9 @@ function subVerticalBottom(data, noOfRows, noOfCols) {
         res -= currentData;
       }
     }
-    data[noOfRows][index] = res.toString();
+    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+      data[noOfRows][index] = res.toString();
+    }
   }
   return data;
 }
@@ -102,9 +112,22 @@ function sumHorizontal(data, noOfRows, noOfCols) {
         res += currentData;
       }
     }
-    data[key][noOfCols - 1] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][noOfCols - 1])) {
+      data[key][noOfCols - 1] = res.toString();
+    }
   }
   return data;
+}
+
+/**
+ * isTextInCell: checks if there is a text in the cell
+ * so as to aid decision if to overwrite it or not
+ */
+function isTextInCell(value) {
+  if ((!value) || (Number(value) === 0) || (Number(value))) {
+    return true;
+  }
+  return false;
 }
 
 function subHorizontalLeft(data, noOfRows, noOfCols) {
@@ -119,7 +142,9 @@ function subHorizontalLeft(data, noOfRows, noOfCols) {
         res -= currentData;
       }
     }
-    data[key][noOfCols - 1] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][noOfCols - 1])) {
+      data[key][noOfCols - 1] = res.toString();
+    }
   }
   return data;
 }
@@ -136,7 +161,9 @@ function subHorizontalRight(data, noOfRows, noOfCols) {
         res -= currentData;
       }
     }
-    data[key][noOfCols - 1] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][noOfCols - 1])) {
+      data[key][noOfCols - 1] = res.toString();
+    }
   }
   return data;
 }
@@ -162,7 +189,9 @@ function avgHorizontal(data, noOfRows, noOfCols) {
         count++;
       }
     }
-    data[key][noOfCols - 1] = parseFloat((res / count).toString()).toFixed(2);
+    if ((res === 0 || res) && isTextInCell(data[key][noOfCols - 1])) {
+      data[key][noOfCols - 1] = parseFloat((res / count).toString()).toFixed(2);
+    }
   }
   return data;
 }
@@ -180,7 +209,9 @@ function mulHorizontal(data, noOfRows, noOfCols) {
         res *= currentData;
       }
     }
-    data[key][noOfCols - 1] = res.toString();
+    if ((res === 0 || res) && isTextInCell(data[key][noOfCols - 1])) {
+      data[key][noOfCols - 1] = res.toString();
+    }
   }
   return data;
 }

@@ -732,7 +732,7 @@ function delRow(tableName) {
     if (colIndex === noOfCols - 1 && key === noOfRows){
       cellPlacement = checkRowAndCols(key, colIndex, noOfRows, noOfCols);
     } else if (colIndex === noOfCols - 1) {
-      cellPlacement = checkLastCol(colIndex) ? "right" : "column";
+      cellPlacement = checkLastCol(colIndex) ? "right" : "col";
     } else if (key === noOfRows) {
       cellPlacement = checkLastRow(key) ? "bottom" : "row";
     } else {
@@ -747,13 +747,16 @@ function delRow(tableName) {
    * conditions are met
    */
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
-    const cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
+    let cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
     if (cellPlacement !== "right" && cellPlacement !== "bottom") {
       const option = prompt(`${cellPlacement} not empty. Do you want to add 
 ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
-      if ((option && option.toLowerCase() === "yes") || !option) {
+      if (!option || (option && option.toLowerCase() === "no") ||
+          ((option.toLowerCase() !== "yes") && 
+	  (option.toLowerCase() !== "overwrite"))) {
         return null;
-      } else if (option && option.toLowerCase() !== "overwrite") {
+      } else if ((option && option.toLowerCase() !== "overwrite") && 
+	        (option.toLowerCase() !== "yes")) {
         setState(prevState => ({
           ...prevState,
 	  tables: {
@@ -766,6 +769,14 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
 	  }
 	}));
       } else {
+        if (cellPlacement === "row") {
+          cellPlacement = "bottom";
+	} else if (cellPlacement === "col") {
+          cellPlacement = "right";
+	} else {
+          alert("rule will be applied on the last row");
+          cellPlacement = "bottom";
+	}
         implementRule(ruleName, currentTable, cellPlacement);
       }
     } else {
