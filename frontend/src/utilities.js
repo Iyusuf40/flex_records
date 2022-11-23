@@ -69,16 +69,26 @@ function avgVertical(data, noOfRows, noOfCols) {
   return data;
 }
 
+function checkColIndexZeroVertical(data, idx) {
+     let bool = (
+	              Number(data[1][idx])
+	              && data[1][idx].length
+                      ) 
+		      ? true : false;
+     return bool; 
+}
+
 function subVerticalTop(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = checkIndexZeroVertical(data);
   for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
-    let res = data[1][index];
-    for (let key = 2; key <= noOfRows; key++) {
+    let checkCol = checkColIndexZeroVertical(data, index);
+    let res = checkCol ? data[1][index] :  data[2][index];
+    for (let key = checkCol? 2: 3; key <= noOfRows; key++) {
       let currentData = Number(data[key][index]);
       if (currentData && Number(key) !== noOfRows) {
         res -= currentData;
       }
-    } 
+    }
     if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
       data[noOfRows][index] = res.toString();
     }
