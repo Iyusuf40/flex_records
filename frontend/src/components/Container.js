@@ -633,6 +633,10 @@ function delRow(tableName) {
     return ruleNameMapRight[ruleName];
   }
 
+  /**
+   * applyAdvancedRulesOnModification - runs everytime a cell is changed
+   * to reapply advanced rule
+   */
   function applyAdvancedRulesOnModification(currentState) {
     if (!currentState.tables[currentState.currentTable].prevRuleAdv) {
       return;
@@ -641,8 +645,12 @@ function delRow(tableName) {
     let lastKey = prevRuleAdv.rowsRules ? 
 		  Object.keys(prevRuleAdv.rowsRules).length
 	          : 0
-    let isLastKey = true;
-    for (const key in prevRuleAdv.rowsRules) {
+    let isLastKey = true; /* flag to set prevRuleAdv object during applicaton
+	                   application of rule. it is counterintuitive because
+		          if true set prevRuleAdv to null otherwise create the
+		          object. This helps to prevent unending loop. see the first
+		          condition / if statement of this function*/
+    for (const key in prevRuleAdv.rowsRules) { // apply rows rules
       const {
 	      startIndex,
 	      endIndex, 
@@ -654,7 +662,7 @@ function delRow(tableName) {
 	      saveIndex
       } = prevRuleAdv.rowsRules[key];
       if (Number(key) === lastKey) {
-        isLastKey = false;
+        isLastKey = false; // allows setting prevRuleAdv
       }
 
       applyRuleAdvRow(
@@ -674,7 +682,7 @@ function delRow(tableName) {
     lastKey = prevRuleAdv.colsRules ?
 	      Object.keys(prevRuleAdv.colsRules).length
 	      : 0
-    for (const key in prevRuleAdv.colsRules) {
+    for (const key in prevRuleAdv.colsRules) { // apply cols rules
       const {
 	      startIndex,
 	      endIndex, 
@@ -1075,6 +1083,7 @@ or a range ex 3-7`)
 	   ruleModeAdv: false,
 	   altered: true,
            currentRule: "",
+           // isLastKey is of importance during applying adv rule after cell update
 	   prevRuleAdv: !isLastKey ? createAdvRuleReprRow(prevRuleAdv, args): null,
 	 }
        }
@@ -1115,13 +1124,13 @@ or a range ex 3-7`)
 	   ruleModeAdv: false,
 	   altered: true,
 	   currentRule: "",
+	   // isLastKey is of importance during applying adv rule after cell update
 	   prevRuleAdv: !isLastKey ? createAdvRuleReprCol(prevRuleAdv, args): null,
 	 }
        }
      })
    })
   }
-  console.log(recordState)
 
   function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     const choice = prompt(`Where do you want to apply rule? please type 'row' or
