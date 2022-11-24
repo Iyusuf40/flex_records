@@ -642,7 +642,6 @@ function delRow(tableName) {
 		  Object.keys(prevRuleAdv.rowsRules).length
 	          : 0
     let isLastKey = true;
-    let index = 0;
     for (const key in prevRuleAdv.rowsRules) {
       const {
 	      startIndex,
@@ -667,16 +666,14 @@ function delRow(tableName) {
 	      noOfCols, 
 	      cellPlacement, 
 	      saveIndex,
-	      isLastKey=isLastKey
+	      isLastKey
       )
-      index++;
     }
     	  
     isLastKey = true;
     lastKey = prevRuleAdv.colsRules ?
 	      Object.keys(prevRuleAdv.colsRules).length
 	      : 0
-    index = 0;
     for (const key in prevRuleAdv.colsRules) {
       const {
 	      startIndex,
@@ -689,10 +686,8 @@ function delRow(tableName) {
 	      saveIndex
       } = prevRuleAdv.colsRules[key];
 
-      console.log("unmet", key, lastKey)
       if (Number(key) === lastKey) {
         isLastKey = false;
-	console.log("met", key, lastKey)
       }
       applyRuleAdvCol(
 	      startIndex,
@@ -703,9 +698,8 @@ function delRow(tableName) {
 	      noOfCols, 
 	      cellPlacement, 
 	      saveIndex,
-	      isLastKey=isLastKey
+	      isLastKey
       )
-      index++;
     }
   }
 
@@ -1154,7 +1148,6 @@ to column if response is not one of the two`);
     if (parsedRange.length > 1) {
       let startIndex = parsedRange[0];
       let endIndex = parsedRange[1];
-      console.log(startIndex, endIndex)
       if (startIndex >= endIndex) {
         return;
       }
