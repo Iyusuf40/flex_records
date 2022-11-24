@@ -924,14 +924,56 @@ or a range ex 3-7`)
     }
   }
 
+  function createAdvRuleReprCol(prev, args) {
+    let newRule;
+    if (!prev) {
+      newRule = {
+        colsRules: {
+	  1: args,
+	}
+      }
+    } else {
+      newRule = {
+	...prev,
+        colsRules: {
+          ...prev.colsRules,
+	  [Object.keys(prev.colsRules).length + 1]: args,
+	}
+      }
+    }
+    return newRule;
+  }
+
+  function createAdvRuleReprRow(prev, args) {
+    let newRule;
+    if (!prev) {
+      newRule = {
+        rowsRules: {
+	  1: args,
+	}
+      }
+    } else {
+      newRule = {
+	...prev,
+        rowsRules: {
+          ...prev.rowsRules,
+	  [Object.keys(prev.rowsRules).length + 1]: args
+	},
+      }
+    }
+    return newRule;
+  }
+
   function applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
 	  noOfRows, noOfCols, cellPlacement, saveIndex) {
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
+   const args = {...arguments};
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
      const noOfCols = prevState.tables[currentTable].noOfCols;
      const dataClone = {...data};
+     const prevRuleAdv = prevState.tables[currentTable].prevRuleAdv;
      // call appropiate function on data
      // set data back
      return ({
@@ -940,26 +982,29 @@ or a range ex 3-7`)
          ...prevState.tables,
 	 [currentTable]: {
            ...prevState.tables[currentTable],
-	   // utilities returns an object of functions to apply rules
+	   // advancedutils returns an object of functions to apply rules
            data: advancedutils()[functionName](dataClone, noOfRows, 
 		                noOfCols, startIndex, endIndex, saveIndex),
 	   ruleModeAdv: false,
 	   altered: true,
            currentRule: "",
+	   prevRuleAdv: createAdvRuleReprRow(prevRuleAdv, args),
 	 }
        }
      })
    })
   }
-
+  console.log(recordState);
   function applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
 	  noOfRows, noOfCols, cellPlacement, saveIndex) {
+   const args = {...arguments};
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
      const noOfCols = prevState.tables[currentTable].noOfCols;
      const dataClone = {...data};
+     const prevRuleAdv = prevState.tables[currentTable].prevRuleAdv;
      // call appropiate function on data
      // set data back
      return ({
@@ -968,12 +1013,13 @@ or a range ex 3-7`)
          ...prevState.tables,
 	 [currentTable]: {
            ...prevState.tables[currentTable],
-	   // utilities returns an object of functions to apply rules
+	   // advutils returns an object of functions to apply rules
            data: advancedutils()[functionName](dataClone, noOfRows, 
 		              noOfCols, startIndex, endIndex, saveIndex),
 	   ruleModeAdv: false,
 	   altered: true,
 	   currentRule: "",
+	   prevRuleAdv: createAdvRuleReprCol(prevRuleAdv, args),
 	 }
        }
      })
