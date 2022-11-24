@@ -545,6 +545,7 @@ function delRow(tableName) {
 		  prevRule: "",
 		  cellPlacement: "",
 		  currentRule: "",
+		  prevRuleAdv: null,
 		}
 	      }
       })
