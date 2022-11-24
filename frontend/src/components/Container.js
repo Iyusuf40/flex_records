@@ -637,7 +637,12 @@ function delRow(tableName) {
     if (!currentState.tables[currentState.currentTable].prevRuleAdv) {
       return;
     }
-    const prevRuleAdv = currentState.tables[currentState.currentTable].prevRuleAdv
+    const prevRuleAdv = currentState.tables[currentState.currentTable].prevRuleAdv;
+    let lastKey = prevRuleAdv.rowsRules ? 
+		  Object.keys(prevRuleAdv.rowsRules).length
+	          : 0
+    let isLastKey = true;
+    let index = 0;
     for (const key in prevRuleAdv.rowsRules) {
       const {
 	      startIndex,
@@ -649,6 +654,9 @@ function delRow(tableName) {
 	      cellPlacement, 
 	      saveIndex
       } = prevRuleAdv.rowsRules[key];
+      if (Number(key) === lastKey) {
+        isLastKey = false;
+      }
 
       applyRuleAdvRow(
 	      startIndex,
@@ -658,12 +666,18 @@ function delRow(tableName) {
 	      noOfRows, 
 	      noOfCols, 
 	      cellPlacement, 
-	      saveIndex
+	      saveIndex,
+	      isLastKey=isLastKey
       )
+      index++;
     }
-	  
+    	  
+    isLastKey = true;
+    lastKey = prevRuleAdv.colsRules ?
+	      Object.keys(prevRuleAdv.colsRules).length
+	      : 0
+    index = 0;
     for (const key in prevRuleAdv.colsRules) {
-      console.log(prevRuleAdv.colsRules[key])
       const {
 	      startIndex,
 	      endIndex, 
@@ -674,18 +688,12 @@ function delRow(tableName) {
 	      cellPlacement, 
 	      saveIndex
       } = prevRuleAdv.colsRules[key];
-      console.log(
-	      startIndex,
-	      endIndex, 
-	      ruleName, 
-	      currentTable,
-	      noOfRows, 
-	      noOfCols, 
-	      cellPlacement, 
-	      saveIndex
-      
-      )
 
+      console.log("unmet", key, lastKey)
+      if (Number(key) === lastKey) {
+        isLastKey = false;
+	console.log("met", key, lastKey)
+      }
       applyRuleAdvCol(
 	      startIndex,
 	      endIndex, 
@@ -694,8 +702,10 @@ function delRow(tableName) {
 	      noOfRows, 
 	      noOfCols, 
 	      cellPlacement, 
-	      saveIndex
+	      saveIndex,
+	      isLastKey=isLastKey
       )
+      index++;
     }
   }
 
@@ -1039,7 +1049,7 @@ or a range ex 3-7`)
   }
 
   function applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement, saveIndex) {
+	  noOfRows, noOfCols, cellPlacement, saveIndex, isLastKey=false) {
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    const args = {
            "startIndex": startIndex,
@@ -1071,7 +1081,7 @@ or a range ex 3-7`)
 	   ruleModeAdv: false,
 	   altered: true,
            currentRule: "",
-	   prevRuleAdv: createAdvRuleReprRow(prevRuleAdv, args),
+	   prevRuleAdv: !isLastKey ? createAdvRuleReprRow(prevRuleAdv, args): null,
 	 }
        }
      })
@@ -1079,7 +1089,7 @@ or a range ex 3-7`)
   }
 
   function applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement, saveIndex) {
+	  noOfRows, noOfCols, cellPlacement, saveIndex, isLastKey=false) {
    const args = {
            "startIndex": startIndex,
 	   "endIndex": endIndex,
@@ -1111,12 +1121,13 @@ or a range ex 3-7`)
 	   ruleModeAdv: false,
 	   altered: true,
 	   currentRule: "",
-	   prevRuleAdv: createAdvRuleReprCol(prevRuleAdv, args),
+	   prevRuleAdv: !isLastKey ? createAdvRuleReprCol(prevRuleAdv, args): null,
 	 }
        }
      })
    })
   }
+  console.log(recordState)
 
   function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     const choice = prompt(`Where do you want to apply rule? please type 'row' or
