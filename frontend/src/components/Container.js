@@ -633,6 +633,72 @@ function delRow(tableName) {
     return ruleNameMapRight[ruleName];
   }
 
+  function applyAdvancedRulesOnModification(currentState) {
+    if (!currentState.tables[currentState.currentTable].prevRuleAdv) {
+      return;
+    }
+    const prevRuleAdv = currentState.tables[currentState.currentTable].prevRuleAdv
+    for (const key in prevRuleAdv.rowsRules) {
+      const {
+	      startIndex,
+	      endIndex, 
+	      ruleName, 
+	      currentTable,
+	      noOfRows, 
+	      noOfCols, 
+	      cellPlacement, 
+	      saveIndex
+      } = prevRuleAdv.rowsRules[key];
+
+      applyRuleAdvRow(
+	      startIndex,
+	      endIndex, 
+	      ruleName, 
+	      currentTable,
+	      noOfRows, 
+	      noOfCols, 
+	      cellPlacement, 
+	      saveIndex
+      )
+    }
+	  
+    for (const key in prevRuleAdv.colsRules) {
+      console.log(prevRuleAdv.colsRules[key])
+      const {
+	      startIndex,
+	      endIndex, 
+	      ruleName, 
+	      currentTable,
+	      noOfRows, 
+	      noOfCols, 
+	      cellPlacement, 
+	      saveIndex
+      } = prevRuleAdv.colsRules[key];
+      console.log(
+	      startIndex,
+	      endIndex, 
+	      ruleName, 
+	      currentTable,
+	      noOfRows, 
+	      noOfCols, 
+	      cellPlacement, 
+	      saveIndex
+      
+      )
+
+      applyRuleAdvCol(
+	      startIndex,
+	      endIndex, 
+	      ruleName, 
+	      currentTable,
+	      noOfRows, 
+	      noOfCols, 
+	      cellPlacement, 
+	      saveIndex
+      )
+    }
+  }
+
   /**
    * applyRuleOnModification - reapplies the previously set rule on
    * new columns or rows created
@@ -641,6 +707,9 @@ function delRow(tableName) {
    */
   function applyRuleOnModification (currentState) {
     /* apply advanced here */
+    if (currentState.tables[currentState.currentTable].prevRuleAdv) {
+      applyAdvancedRulesOnModification(currentState)
+    }
     if (currentState.tables[currentState.currentTable].prevRule) {
       const currentTable = currentState.currentTable;
       const ruleName = currentState.tables[currentTable].prevRule;
@@ -972,7 +1041,16 @@ or a range ex 3-7`)
   function applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
 	  noOfRows, noOfCols, cellPlacement, saveIndex) {
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
-   const args = {...arguments};
+   const args = {
+           "startIndex": startIndex,
+	   "endIndex": endIndex,
+	   "ruleName": ruleName,
+	   "currentTable": currentTable,
+	   "noOfRows": noOfRows,
+	   "noOfCols": noOfCols,
+	   "cellPlacement": cellPlacement,
+	   "saveIndex": saveIndex
+   };
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
      const noOfRows = prevState.tables[currentTable].noOfRows;
@@ -999,10 +1077,19 @@ or a range ex 3-7`)
      })
    })
   }
-  console.log(recordState);
+
   function applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
 	  noOfRows, noOfCols, cellPlacement, saveIndex) {
-   const args = {...arguments};
+   const args = {
+           "startIndex": startIndex,
+	   "endIndex": endIndex,
+	   "ruleName": ruleName,
+	   "currentTable": currentTable,
+	   "noOfRows": noOfRows,
+	   "noOfCols": noOfCols,
+	   "cellPlacement": cellPlacement,
+	   "saveIndex": saveIndex
+   };
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    setState(prevState => {
      const data = prevState.tables[currentTable].data;
