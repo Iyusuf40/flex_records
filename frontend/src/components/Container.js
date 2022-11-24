@@ -937,7 +937,9 @@ or a range ex 3-7`)
 	...prev,
         colsRules: {
           ...prev.colsRules,
-	  [Object.keys(prev.colsRules).length + 1]: args,
+	  [prev.colsRules ?
+	     Object.keys(prev.colsRules).length + 1
+	     : 1]: args,
 	}
       }
     }
@@ -957,7 +959,9 @@ or a range ex 3-7`)
 	...prev,
         rowsRules: {
           ...prev.rowsRules,
-	  [Object.keys(prev.rowsRules).length + 1]: args
+	  [prev.rowsRules ? 
+	     Object.keys(prev.rowsRules).length + 1
+	     : 1]: args
 	},
       }
     }
