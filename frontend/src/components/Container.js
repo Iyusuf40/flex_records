@@ -546,6 +546,7 @@ function delRow(tableName) {
 		  cellPlacement: "",
 		  currentRule: "",
 		  prevRuleAdv: null,
+	          advAppMode: false,
 		}
 	      }
       })
@@ -642,10 +643,7 @@ function delRow(tableName) {
       return;
     }
     const prevRuleAdv = currentState.tables[currentState.currentTable].prevRuleAdv;
-    let lastKey = prevRuleAdv.rowsRules ? 
-		  Object.keys(prevRuleAdv.rowsRules).length
-	          : 0
-    let isLastKey = true; /* flag to set prevRuleAdv object during applicaton
+    let advAppMode = true; /* flag to set prevRuleAdv object during applicaton
 	                   application of rule. it is counterintuitive because
 		          if true set prevRuleAdv to null otherwise create the
 		          object. This helps to prevent unending loop. see the first
@@ -661,9 +659,6 @@ function delRow(tableName) {
 	      cellPlacement, 
 	      saveIndex
       } = prevRuleAdv.rowsRules[key];
-      if (Number(key) === lastKey) {
-        isLastKey = false; // allows setting prevRuleAdv
-      }
 
       applyRuleAdvRow(
 	      startIndex,
@@ -674,14 +669,10 @@ function delRow(tableName) {
 	      noOfCols, 
 	      cellPlacement, 
 	      saveIndex,
-	      isLastKey
+	      advAppMode
       )
     }
-    	  
-    isLastKey = true;
-    lastKey = prevRuleAdv.colsRules ?
-	      Object.keys(prevRuleAdv.colsRules).length
-	      : 0
+
     for (const key in prevRuleAdv.colsRules) { // apply cols rules
       const {
 	      startIndex,
@@ -694,9 +685,6 @@ function delRow(tableName) {
 	      saveIndex
       } = prevRuleAdv.colsRules[key];
 
-      if (Number(key) === lastKey) {
-        isLastKey = false;
-      }
       applyRuleAdvCol(
 	      startIndex,
 	      endIndex, 
@@ -706,7 +694,7 @@ function delRow(tableName) {
 	      noOfCols, 
 	      cellPlacement, 
 	      saveIndex,
-	      isLastKey
+	      advAppMode
       )
     }
   }
@@ -1006,8 +994,11 @@ or a range ex 3-7`)
     }
   }
 
-  function createAdvRuleReprCol(prev, args) {
+  function createAdvRuleReprCol(prev, args, advAppMode) {
     let newRule;
+    if(advAppMode) {
+      return prev;
+    }
     if (!prev) {
       newRule = {
         colsRules: {
@@ -1028,8 +1019,11 @@ or a range ex 3-7`)
     return newRule;
   }
 
-  function createAdvRuleReprRow(prev, args) {
+  function createAdvRuleReprRow(prev, args, advAppMode) {
     let newRule;
+    if (advAppMode) {
+      return prev;
+    }
     if (!prev) {
       newRule = {
         rowsRules: {
@@ -1051,7 +1045,7 @@ or a range ex 3-7`)
   }
 
   function applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement, saveIndex, isLastKey=false) {
+	  noOfRows, noOfCols, cellPlacement, saveIndex, advAppMode=false) {
    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
    const args = {
            "startIndex": startIndex,
@@ -1084,7 +1078,7 @@ or a range ex 3-7`)
 	   altered: true,
            currentRule: "",
            // isLastKey is of importance during applying adv rule after cell update
-	   prevRuleAdv: !isLastKey ? createAdvRuleReprRow(prevRuleAdv, args): null,
+	   prevRuleAdv: createAdvRuleReprRow(prevRuleAdv, args, advAppMode),
 	 }
        }
      })
@@ -1092,7 +1086,7 @@ or a range ex 3-7`)
   }
 
   function applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement, saveIndex, isLastKey=false) {
+	  noOfRows, noOfCols, cellPlacement, saveIndex, advAppMode=false) {
    const args = {
            "startIndex": startIndex,
 	   "endIndex": endIndex,
@@ -1125,7 +1119,7 @@ or a range ex 3-7`)
 	   altered: true,
 	   currentRule: "",
 	   // isLastKey is of importance during applying adv rule after cell update
-	   prevRuleAdv: !isLastKey ? createAdvRuleReprCol(prevRuleAdv, args): null,
+	   prevRuleAdv: createAdvRuleReprCol(prevRuleAdv, args, advAppMode),
 	 }
        }
      })
