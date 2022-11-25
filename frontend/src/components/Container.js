@@ -925,9 +925,9 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
 
   function askForRange(cellPlacement, index) {
     let choiceName = cellPlacement === "right" ? "column": "row";
-    let opp = cellPlacement === "right" ? "row": "column";
+    // let opp = cellPlacement === "right" ? "row": "column";
     const range = prompt(`you chose ${choiceName} number ${index},
-please specify from what ${opp} to apply rule. you can specify a single value
+please specify from what ${choiceName} to apply rule. you can specify a single value
 or a range ex 3-7`)
     return range;
   }
@@ -1126,10 +1126,22 @@ or a range ex 3-7`)
    })
   }
 
-  function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
+  function getChoiceForPickCellsAdv() {
     const choice = prompt(`Where do you want to apply rule? please type 'row' or
-'col' to apply rule accross this row or along this column respectively. will default 
-to column if response is not one of the two`);
+'col' to apply rule accross the clicked row or along the clicked column respectively.
+`);
+    if (!choice) {
+      alert("aborting, no choice made");
+      return null;
+    }
+    if (choice.toLowerCase() !== "col" && choice.toLowerCase() !== "row") {
+      return getChoiceForPickCellsAdv();
+    }
+    return choice.toLowerCase();
+  }
+
+  function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
+    const choice = getChoiceForPickCellsAdv();
     let cellPlacement;
     if (!choice) {
       return;
