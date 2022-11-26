@@ -124,7 +124,9 @@ export default function Tutorial() {
 	</p>
 	<h3>Demo</h3>
 	<div className="youtube">
-
+		<iframe width="1000" height="600" title="basic-rules demo"
+		src="https://www.youtube.com/embed/77iz8caEq_A">
+		</iframe>
 	</div>
       </div>
       <div className="advanced--rules">
@@ -214,7 +216,9 @@ export default function Tutorial() {
 	</p>
 	<h3>Demo</h3>
 	<div className="youtube">
-
+		<iframe width="1000" height="600" title="advanced demo"
+		src="https://www.youtube.com/embed/hOOzbQ7ocL4">
+		</iframe>
 	</div>
 	<div className="features">
 		<h2>Other Functionalities:</h2>
