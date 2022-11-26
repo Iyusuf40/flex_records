@@ -95,6 +95,7 @@ button {
   padding: 10px;
   width: 600px;
 }
+
 .welcome--container > h1 {
   text-align: center;
   color: blue;
@@ -120,3 +121,16 @@ p {
   padding: 2px 13px;
   font-size: 20px;
 }
+
+.tutorial--container {
+  min-height: 85vh;
+  min-width: 1000px;
+  align-items: center;
+  padding: 20px;
+}
+
+.tutorial--container > h1 {
+  text-align: center;
+  color: blue;
+}
+
