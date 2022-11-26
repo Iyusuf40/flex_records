@@ -13,7 +13,7 @@ export default function Header() {
 	    <Link to="/">Welcome</Link>
 	  </li>
 	  <li>
-	    <Link to="records">Tables</Link>
+	    <Link to="records">Records</Link>
 	  </li>
 	  <li>
 	    <Link to="tutorial">Tutorial</Link>

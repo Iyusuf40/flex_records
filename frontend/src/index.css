@@ -41,6 +41,13 @@ footer {
   align-items: center;
 }
 
+.welcome--container {
+  min-height: 85vh;
+  min-width: 1000px;
+  align-items: center;
+  padding: 20px;
+}
+
 .side--pane {
   width: 20%;
   max-width: 25%;
@@ -66,4 +73,50 @@ button {
 
 .current--table {
   color: #AA4A44;
+}
+
+.intro--container,
+.compute--container,
+.access--anywhere--container {
+  /*border-bottom: 1px solid rgba(0, 0, 0, 0.3);*/
+}
+
+.intro--container,
+.compute--container,
+.access--anywhere--container,
+.about--container {
+  display: flex;
+  padding: 3px 10px;
+  /*justify-content: center;*/
+}
+
+.intro--container > div,
+.compute--container > div {
+  padding: 10px;
+  width: 600px;
+}
+.welcome--container > h1 {
+  text-align: center;
+  color: blue;
+}
+
+.about--container,
+.access--anywhere--container,
+.about--container > div, 
+.access--anywhere--container > div {
+  /*width: 190vw;*/
+}
+
+h2 {
+  /*text-align: center;*/
+}
+
+.text {
+  background-color: rgba(0, 0, 255, 0.2);
+  padding: 2px 7px;
+}
+
+p {
+  padding: 2px 13px;
+  font-size: 20px;
 }
