@@ -1128,7 +1128,7 @@ or a range ex 3-7`)
 
   function getChoiceForPickCellsAdv() {
     const choice = prompt(`Where do you want to apply rule? please type 'row' or
-'col' to apply rule accross the clicked row or along the clicked column respectively.
+'col' to apply rule accross the clicked row or across the clicked column respectively.
 `);
     if (!choice) {
       alert("aborting, no choice made");
