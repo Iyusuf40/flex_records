@@ -42,9 +42,9 @@ export default function Container() {
   */
 
   let flexId = localStorage.getItem("flexId");
-  const postUrl = "https://cloza.tech:5010/records";
-  const putUrl = "https://cloza.tech:5010/records";
-  let getUrl = "https://cloza.tech:5010/records/";
+  const postUrl = "https://cloza.tech/records";
+  const putUrl = "https://cloza.tech/records";
+  let getUrl = "https://cloza.tech/records/";
 
   if (!flexId) {
     flexId = uuid();
