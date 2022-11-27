@@ -16,7 +16,8 @@ export default function Docs() {
 	  <p>All 3 machines are Linux based on Ubuntu 20.04.5</p>
         <h3> Front-end:</h3>
 	  <p>
-	    The front-end was built with react. React router was also incorporated.
+	    The front-end was built with react. react-router and 
+	    react-uuid were also incorporated.
 	    The choice to use react was down to the need to maintain, 
             update and listen for state changes. The bulk of the app logic is 
 	    embedded in the frontend since it is wasteful and slow to perform
