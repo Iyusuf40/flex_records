@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve flex_records api
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+Restart=on-failure
+WorkingDirectory=/home/ubuntu/flex_records/frontend
+ExecStart=/usr/local/bin/serve -s build
+
+[Install]
+WantedBy=multi-user.target
+
