@@ -15,4 +15,4 @@ sudo systemctl enable flex_records_fe
 sudo pkill node
 sudo service flex_records_api restart 
 sudo service flex_records_fe restart
-sudo service mysql start
+# sudo service mysql start
