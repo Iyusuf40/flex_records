@@ -1,5 +1,5 @@
 import React from "react";
-import architecture from "../images/flex_records_infrastructure.png";
+import architecture from "../images/infrastructure.drawio.png";
 
 export default function Docs() {
   return (
@@ -35,7 +35,7 @@ export default function Docs() {
 
 	  <b>API Endpoints:</b>
 	  <br />
- 	  <p>GET /records/:id
+ 	  <p>GET /records_api/:id
 	  <br />
 	  <ul>
 	    <li>Fetches the records associated with the id</li>
@@ -44,7 +44,7 @@ export default function Docs() {
 	  </ul>
 	  </p>
 
- 	  <p>POST /records/
+ 	  <p>POST /records_api/
 	  <br />
 	  <ul>
 	    <li>Accepts a payload and validates it before persisting in the database</li>
@@ -52,7 +52,7 @@ export default function Docs() {
 	  </ul>
 	  </p>
 
- 	  <p>PUT /records/
+ 	  <p>PUT /records_api/
 	  <br />
 	  <ul>
 	    <li>Accepts a payload and validates it before persisting in the database,
