@@ -14,7 +14,7 @@ CORS(app)
 server = os.getenv("server")
 
 
-@app.route("/records/<record_id>", strict_slashes=False)
+@app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):
     """ retrieves records from db """
     key = "records-" + record_id
@@ -26,7 +26,7 @@ def get_records(record_id):
     return json_util.dumps(res)
 
 
-@app.route("/records", methods=["POST"], strict_slashes=False)
+@app.route("/records_api", methods=["POST"], strict_slashes=False)
 def create_records():
     """ creates new record """
     res = {}
@@ -47,7 +47,7 @@ def create_records():
         return json_util.dumps(res), 200
 
 
-@app.route("/records", methods=["PUT"], strict_slashes=False)
+@app.route("/records_api", methods=["PUT"], strict_slashes=False)
 def update_records():
     """ creates new record """
     res = {}
