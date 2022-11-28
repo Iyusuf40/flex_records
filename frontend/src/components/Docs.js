@@ -1,5 +1,5 @@
 import React from "react";
-import architecture from "../images/flex_records_infrastructure.png";
+import architecture from "../images/infrastructure.drawio.png";
 
 export default function Docs() {
   return (
