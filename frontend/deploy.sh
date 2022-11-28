@@ -6,6 +6,7 @@ git clone --branch deployment https://github.com/Iyusuf40/flex_records
 cd flex_records/frontend
 sudo service mysql stop
 sudo pkill gunicorn
+sudo npm install -g serve
 npm install
 npm run build
 sudo systemctl daemon-reload
