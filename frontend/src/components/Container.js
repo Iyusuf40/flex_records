@@ -7,9 +7,13 @@ import advancedutils from "../advancedutils"
 
 export default function Container() {
 
-  // todo
-	// load table from database
-  /*let records = {
+  /**
+   * General record schema
+   */
+
+  /*
+   *
+   * records = {
     id: 1, // get from localStorage, or user provide or gen new uuid 
     tables: { 
       "table 1": {
@@ -32,6 +36,7 @@ export default function Container() {
 	      noOfCols: 0,
 	      ruleMode: false,
 	      currentRule: "",
+	      ruleModeAdv,
       }
     },
     currentTable: "table 1",
@@ -643,11 +648,15 @@ function delRow(tableName) {
       return;
     }
     const prevRuleAdv = currentState.tables[currentState.currentTable].prevRuleAdv;
-    let advAppMode = true; /* flag to set prevRuleAdv object during applicaton
-	                   application of rule. it is counterintuitive because
-		          if true set prevRuleAdv to null otherwise create the
-		          object. This helps to prevent unending loop. see the first
-		          condition / if statement of this function*/
+    let advAppMode = true; /**
+    			    * flag to check if in advanced rule application phase
+			    * during table change.. So as not to create new 
+			    * prevRuleAdv objects else will result in so many objects
+			    * created, which will slow and crash program since 
+			    * new nonesense advRule objects will be attached to table
+			    * and program will try to apply them
+			    */
+
     for (const key in prevRuleAdv.rowsRules) { // apply rows rules
       const {
 	      startIndex,
