@@ -35,41 +35,41 @@ export default function Docs() {
 
 	  <b>API Endpoints:</b>
 	  <br />
- 	  <p>GET /records_api/:id
+ 	  <div>GET /records_api/:id
 	  <br />
 	  <ul>
 	    <li>Fetches the records associated with the id</li>
 	    <li>Returns a JSON having all the records and data associated with that 
 	       ID with 200 status code if successful</li>
 	  </ul>
-	  </p>
+	  </div>
 
- 	  <p>POST /records_api/
+ 	  <div>POST /records_api/
 	  <br />
 	  <ul>
 	    <li>Accepts a payload and validates it before persisting in the database</li>
 	    <li>Returns a JSON of the payload and a 201 status code if successfull</li>
 	  </ul>
-	  </p>
+	  </div>
 
- 	  <p>PUT /records_api/
+ 	  <div>PUT /records_api/
 	  <br />
 	  <ul>
 	    <li>Accepts a payload and validates it before persisting in the database,
 	      ID is retrived from the payload and checked if record exists</li>
 	    <li>Returns a JSON of the payload and a 200 status code if successfull</li>
 	  </ul>
-	  </p>
+	  </div>
 
 	<h2>Setting Up Locally:</h2>
 	<p>This section will give details on how to run the app locally on a Linux 
 	  machine</p>
         <h3>Front-end</h3>
-	  <p>
+	<p>
 	  Install Node.js from this <a href="https://nodejs.org/en/download/"
 	  target="blank">link</a>
 	  <span> </span>if you don't have it installed.
-	  </p>
+	</p>
 	<h3>Back-end</h3>
 	  <p>
 	  Install python from this &nbsp;
@@ -83,7 +83,7 @@ export default function Docs() {
 	  <a href="https://www.mongodb.com/docs/manual/administration/install-on-linux/"
 		target="blank">
 	  link</a>. Ensure it is running.
-	  Install pymongo Flask, Flask-CORS and pymongo by runing
+	  Install Flask, Flask-CORS and pymongo by runing
 	  'pip3 install Flask; pip3 install -U flask-cors; pip3 install pymongo'
 	  </p>
 	 <h3>Starting the app</h3>
