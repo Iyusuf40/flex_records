@@ -1,0 +1,15 @@
+[Unit]
+Description=Gunicorn instance to serve flex_records api
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+Restart=on-failure
+WorkingDirectory=/home/ubuntu/flex_records/backend
+Environment=server=primary
+ExecStart=/usr/local/bin/gunicorn --workers 3 --bind 0.0.0.0:5010 --error-logfile /tmp/flex_records_api-error.log --access-logfile /tmp/flex_records-access.log api.v1.app:app
+
+[Install]
+WantedBy=multi-user.target
+
