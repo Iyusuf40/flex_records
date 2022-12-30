@@ -171,9 +171,45 @@ p {
     display: none;
   }
 
-  .docs--container,
+  .docs--container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .docs--container * {
+    box-sizing: border-box;
+  }
+
+  /* .docs--container h1,
+  .tutorial--container h1 {
+    text-align: left;
+    padding: 0;
+  } */
+
   .tutorial--container {
-    max-width: 100%;
+    width: 100%;
+    min-width: 20px;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  .tutorial--container * {
+    margin: 0;
+    /* padding: 0; */
+    box-sizing: border-box;
+  }
+
+  iframe {
+    width: 95vw;
+    height: 58vw;
+  }
+
+  .docs--architecture > img {
+    width: 100%;
+    border-radius: 10px;
+    padding: 0;
   }
 
   .welcome--container > h1 {

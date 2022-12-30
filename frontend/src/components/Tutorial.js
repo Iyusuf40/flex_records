@@ -16,6 +16,7 @@ export default function Tutorial() {
 		advanced rules gives you more freedom on where and how to apply
 		rules. There are also demo videos for each section.
 	  </p>
+	  <div>
         <ul>
 			<li>sum</li>
 			<li>subtract</li>
@@ -23,6 +24,7 @@ export default function Tutorial() {
 			<li>multiply</li>
 			<li>average</li>
         </ul>
+	  </div>
 	  <p>
 		Generally, how it works is, you enter your data into a table; then you
 		click on the <em>add rule</em> or <em>advanced</em> button
