@@ -87,6 +87,10 @@ button {
   color: blue;
 }
 
+button:hover {
+  background-color: rgba(23, 23, 21, 0.4);
+}
+
 .current--table {
   color: #AA4A44;
 }
