@@ -164,6 +164,8 @@ p {
   padding: .5rem 0;
   align-items: center;
   border: 1px solid rgba(83, 67, 163, 0.426);
+  margin-bottom: 2rem;
+  border-radius: 10px;
   /* background-color: ; */
 }
 
@@ -182,6 +184,23 @@ p {
 .form--block input {
   margin-right: 20px;
   width: 50%;
+}
+
+.create--form--btns button {
+  margin: .5rem;
+}
+
+.cancel--btn {
+  background-color: rgba(225, 10, 10, 0.518);
+  color: rgba(255, 255, 255, 0.837);
+}
+
+.cancel--btn:hover {
+  background-color:  rgba(255, 0, 0, 0.3);
+}
+
+.hide {
+  display: none;
 }
 
 @media screen and (max-width: 600px) {

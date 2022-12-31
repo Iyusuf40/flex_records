@@ -21,7 +21,7 @@ export default function SidePane(props) {
   }
   return (
     <div className="side--pane">
-      <button onClick={props.createTable}>
+      <button onClick={props.createTableBtnClicked}>
 	  create table +
       </button> <br />
       <br />

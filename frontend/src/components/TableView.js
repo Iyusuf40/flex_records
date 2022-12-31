@@ -30,18 +30,56 @@ export default function TableView(props) {
     return map[table.cellSize];
   }
 
+  const clearFormObj= {
+	createTableMode: null,
+	fields: {
+		name: "",
+		noOfRows: "",
+		noOfCols: ""
+	}
+  }
+
   let formObj
   let setFormObj
-  [formObj, setFormObj] = React.useState({
-	createTableMode: null,
-	fileds: {
-		noOfRows: null,
-		noOfCols: null
-	}
-  })
+  [formObj, setFormObj] = React.useState(clearFormObj)
 
-  function parseCreateTableForm(formObj) {
+  let classCreateTableMode = ""
 
+  if (props.records.createTableBtnClicked){
+	// setFormObj({
+	// 	...clearFormObj,
+	// 	createTableMode: true
+	// })
+	classCreateTableMode = ""
+  } else {
+	classCreateTableMode = "hide"
+  }
+
+  function parseCreateTableForm(formObj, e) {
+	e.preventDefault()
+	const noOfRows = formObj.fields.noOfRows
+	const noOfCols = formObj.fields.noOfCols
+	const name = formObj.fields.name
+	props.createTable(name, noOfRows, noOfCols)
+	// props.unsetCreateTableBtnClicked()
+	setFormObj(clearFormObj)
+  }
+
+
+  function cancelCreateTableForm(formObj, e) {
+	e.preventDefault()
+	setFormObj(clearFormObj)
+	props.unsetCreateTableBtnClicked()
+  }
+
+  function handleCreateFormChange(name, value) {
+	setFormObj((prev) => ({
+		...prev,
+		fields: {
+			...prev.fields,
+			[name]: value
+		}
+	}))
   }
 
   const tableView = [];
@@ -106,23 +144,49 @@ export default function TableView(props) {
    
   return (
     <div className="table--view">
-	  <div className="create--form--container">
+	  <div className={`create--form--container ${classCreateTableMode}`}>
 		<form className="create--form">
 			<div className="form--block">
-				<label for="table--name">Table name</label>
-				<input type="text" id="table--name" name="fname" placeholder="e.g my table"/>
+				<label htmlFor="table--name">Table name</label>
+				<input 
+				type="text" 
+				id="table--name" 
+				name="table--name" 
+				placeholder="e.g my table"
+				value={formObj.fields.name}
+				onChange={(e) => handleCreateFormChange("name", e.target.value)}
+				/>
 			</div>
 			<div className="form--block">
-				<label for="no--of--rows">rows</label>
-				<input type="text" id="no--of--rows" name="fname" placeholder="enter no of rows here"/>
+				<label htmlFor="no--of--rows">rows</label>
+				<input 
+					type="text" 
+					id="no--of--rows" 
+					name="no--of--rows" 
+					placeholder="enter no of rows here"
+					value={formObj.fields.noOfRows}
+					onChange={(e) => handleCreateFormChange("noOfRows", e.target.value)}
+				/>
 			</div>
 			<div className="form--block">
-				<label for="no--of--cols">columns</label>
-				<input type="text" id="no--of--cols" name="fname" placeholder="enter no of cols here"/>
+				<label htmlFor="no--of--cols">columns</label>
+				<input 
+					type="text" 
+					id="no--of--cols" 
+					name="no--of--cols" 
+					placeholder="enter no of cols here"
+					value={formObj.fields.noOfCols}
+					onChange={(e) => handleCreateFormChange("noOfCols", e.target.value)}
+				/>
 			</div>
-			<button onClick={(e) => parseCreateTableForm(formObj)}>
-				create
-			</button>
+			<div className="create--form--btns">
+				<button onClick={(e) => parseCreateTableForm(formObj, e)}>
+					create
+				</button>
+				<button className="cancel--btn" onClick={(e) => cancelCreateTableForm(formObj, e)}>
+					cancel
+				</button>
+			</div>
 		</form>
 	  </div>
       <div className="rules--buttons">

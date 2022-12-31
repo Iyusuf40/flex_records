@@ -294,6 +294,20 @@ system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
     return true;
   }
 
+  function createTableBtnClicked() {
+    setState(prev => ({
+      ...prev,
+      createTableBtnClicked: true
+    }))
+  }
+
+  function unsetCreateTableBtnClicked() {
+    setState(prev => ({
+      ...prev,
+      createTableBtnClicked: false
+    }))
+  }
+
   function createTable(name, noOfRows, noOfCols) {
     // get name from prompt and a noOfRows and noOfCols
     // const name = prompt("enter the name of new table: ");
@@ -325,6 +339,7 @@ will be overwritten`)
 	     {
 		     ...prevState,
 		     altered: true,
+         createTableBtnClicked: false,
 		     tables: {
 			     ...(prevState.tables),
 			     [name]: newTable(name, noOfRows, noOfCols)
@@ -1249,13 +1264,15 @@ or any other word(s) to rename it as such`);
 	  <SidePane
 	    records={recordState}
 	    handleTableClick={handleTableClick}
-	    createTable={createTable}
+      createTableBtnClicked={createTableBtnClicked}
 	    modifyTable={modifyTable}
 	    switchUser={switchUser}
 	  />
 	  <TableView
 	    records={recordState}
       createTable={createTable}
+      createTableBtnClicked={createTableBtnClicked}
+      unsetCreateTableBtnClicked={unsetCreateTableBtnClicked}
 	    addColumn={addColumn}
 	    delColumn={delColumn}
 	    addRow={addRow}
