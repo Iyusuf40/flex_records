@@ -30,6 +30,58 @@ export default function TableView(props) {
     return map[table.cellSize];
   }
 
+  const clearFormObj= {
+	createTableMode: null,
+	fields: {
+		name: "",
+		noOfRows: "",
+		noOfCols: ""
+	}
+  }
+
+  let formObj
+  let setFormObj
+  [formObj, setFormObj] = React.useState(clearFormObj)
+
+  let classCreateTableMode = ""
+
+  if (props.records.createTableBtnClicked){
+	// setFormObj({
+	// 	...clearFormObj,
+	// 	createTableMode: true
+	// })
+	classCreateTableMode = ""
+  } else {
+	classCreateTableMode = "hide"
+  }
+
+  function parseCreateTableForm(formObj, e) {
+	e.preventDefault()
+	const noOfRows = formObj.fields.noOfRows
+	const noOfCols = formObj.fields.noOfCols
+	const name = formObj.fields.name
+	props.createTable(name, noOfRows, noOfCols)
+	// props.unsetCreateTableBtnClicked()
+	setFormObj(clearFormObj)
+  }
+
+
+  function cancelCreateTableForm(formObj, e) {
+	e.preventDefault()
+	setFormObj(clearFormObj)
+	props.unsetCreateTableBtnClicked()
+  }
+
+  function handleCreateFormChange(name, value) {
+	setFormObj((prev) => ({
+		...prev,
+		fields: {
+			...prev.fields,
+			[name]: value
+		}
+	}))
+  }
+
   const tableView = [];
   let rowIndex = 0;
   if (tableData) {
@@ -51,8 +103,8 @@ export default function TableView(props) {
 	   onChange={(e) => props.updateTableView(currentTable,
 		                                saveRowIndex, 
 		                                colIndex,
-	                                        e.target.value,
-	                                        saveRowIndex + 1)}
+										e.target.value,
+										saveRowIndex + 1)}
            
 	   onClick={(e) => ( table.ruleMode && table.currentRule ? props.pickCells(
 		              table.currentRule,
@@ -63,7 +115,7 @@ export default function TableView(props) {
 		              noOfCols
 	                   )
 			   : (table.ruleModeAdv && table.currentRule ? props.pickCellsAdv(
-                              table.currentRule,
+                  table.currentRule,
 			      currentTable,
 			      row,
 			      colIndex,
@@ -92,6 +144,51 @@ export default function TableView(props) {
    
   return (
     <div className="table--view">
+	  <div className={`create--form--container ${classCreateTableMode}`}>
+		<form className="create--form">
+			<div className="form--block">
+				<label htmlFor="table--name">Table name</label>
+				<input 
+				type="text" 
+				id="table--name" 
+				name="table--name" 
+				placeholder="e.g my table"
+				value={formObj.fields.name}
+				onChange={(e) => handleCreateFormChange("name", e.target.value)}
+				/>
+			</div>
+			<div className="form--block">
+				<label htmlFor="no--of--rows">rows</label>
+				<input 
+					type="text" 
+					id="no--of--rows" 
+					name="no--of--rows" 
+					placeholder="enter no of rows here"
+					value={formObj.fields.noOfRows}
+					onChange={(e) => handleCreateFormChange("noOfRows", e.target.value)}
+				/>
+			</div>
+			<div className="form--block">
+				<label htmlFor="no--of--cols">columns</label>
+				<input 
+					type="text" 
+					id="no--of--cols" 
+					name="no--of--cols" 
+					placeholder="enter no of cols here"
+					value={formObj.fields.noOfCols}
+					onChange={(e) => handleCreateFormChange("noOfCols", e.target.value)}
+				/>
+			</div>
+			<div className="create--form--btns">
+				<button onClick={(e) => parseCreateTableForm(formObj, e)}>
+					create
+				</button>
+				<button className="cancel--btn" onClick={(e) => cancelCreateTableForm(formObj, e)}>
+					cancel
+				</button>
+			</div>
+		</form>
+	  </div>
       <div className="rules--buttons">
 	  <button 
 	    onClick={(e) => props.addColumn(currentTable)}

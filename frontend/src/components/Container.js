@@ -294,9 +294,23 @@ system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
     return true;
   }
 
-  function createTable() {
+  function createTableBtnClicked() {
+    setState(prev => ({
+      ...prev,
+      createTableBtnClicked: true
+    }))
+  }
+
+  function unsetCreateTableBtnClicked() {
+    setState(prev => ({
+      ...prev,
+      createTableBtnClicked: false
+    }))
+  }
+
+  function createTable(name, noOfRows, noOfCols) {
     // get name from prompt and a noOfRows and noOfCols
-    const name = prompt("enter the name of new table: ");
+    // const name = prompt("enter the name of new table: ");
     if (!name) {
       return;
     }
@@ -308,8 +322,8 @@ will be overwritten`)
        return;
       }
     }
-    const size = prompt("size of table: format rows x columns, eg, 5x5");
-    let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
+    // const size = prompt("size of table: format rows x columns, eg, 5x5");
+    // let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
     // check for invalid responses
     noOfRows = Number(noOfRows);
     noOfCols = Number(noOfCols);
@@ -325,6 +339,7 @@ will be overwritten`)
 	     {
 		     ...prevState,
 		     altered: true,
+         createTableBtnClicked: false,
 		     tables: {
 			     ...(prevState.tables),
 			     [name]: newTable(name, noOfRows, noOfCols)
@@ -573,13 +588,13 @@ function delRow(tableName) {
       return (
         {
           ...prevState,
-	  tables: {
+	        tables: {
             ...prevState["tables"],
-	    [tableName]: {
+	        [tableName]: {
               ...prevState["tables"][tableName],
-	      data: {
+	            data: {
                 ...prevState["tables"][tableName].data,
-		[SN]: replaceAtIndex([...prevState["tables"][tableName].data[SN]],
+		            [SN]: replaceAtIndex([...prevState["tables"][tableName].data[SN]],
 			             colIndex, value)
 	      }
 	    }
@@ -1249,12 +1264,15 @@ or any other word(s) to rename it as such`);
 	  <SidePane
 	    records={recordState}
 	    handleTableClick={handleTableClick}
-	    createTable={createTable}
+      createTableBtnClicked={createTableBtnClicked}
 	    modifyTable={modifyTable}
 	    switchUser={switchUser}
 	  />
 	  <TableView
 	    records={recordState}
+      createTable={createTable}
+      createTableBtnClicked={createTableBtnClicked}
+      unsetCreateTableBtnClicked={unsetCreateTableBtnClicked}
 	    addColumn={addColumn}
 	    delColumn={delColumn}
 	    addRow={addRow}
