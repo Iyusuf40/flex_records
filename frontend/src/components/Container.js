@@ -294,9 +294,9 @@ system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
     return true;
   }
 
-  function createTable() {
+  function createTable(name, noOfRows, noOfCols) {
     // get name from prompt and a noOfRows and noOfCols
-    const name = prompt("enter the name of new table: ");
+    // const name = prompt("enter the name of new table: ");
     if (!name) {
       return;
     }
@@ -308,8 +308,8 @@ will be overwritten`)
        return;
       }
     }
-    const size = prompt("size of table: format rows x columns, eg, 5x5");
-    let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
+    // const size = prompt("size of table: format rows x columns, eg, 5x5");
+    // let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
     // check for invalid responses
     noOfRows = Number(noOfRows);
     noOfCols = Number(noOfCols);
@@ -573,13 +573,13 @@ function delRow(tableName) {
       return (
         {
           ...prevState,
-	  tables: {
+	        tables: {
             ...prevState["tables"],
-	    [tableName]: {
+	        [tableName]: {
               ...prevState["tables"][tableName],
-	      data: {
+	            data: {
                 ...prevState["tables"][tableName].data,
-		[SN]: replaceAtIndex([...prevState["tables"][tableName].data[SN]],
+		            [SN]: replaceAtIndex([...prevState["tables"][tableName].data[SN]],
 			             colIndex, value)
 	      }
 	    }
@@ -1255,6 +1255,7 @@ or any other word(s) to rename it as such`);
 	  />
 	  <TableView
 	    records={recordState}
+      createTable={createTable}
 	    addColumn={addColumn}
 	    delColumn={delColumn}
 	    addRow={addRow}

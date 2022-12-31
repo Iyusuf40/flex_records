@@ -156,6 +156,34 @@ p {
   padding: 20px;
 }
 
+.create--form {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  width: 50%;
+  padding: .5rem 0;
+  align-items: center;
+  border: 1px solid rgba(83, 67, 163, 0.426);
+  /* background-color: ; */
+}
+
+.form--block {
+  display: flex;
+  justify-content: space-between;
+  width: 80%;
+}
+
+.form--block label,
+.form--block input {
+  display: block;
+  padding-bottom: 4px;
+}
+
+.form--block input {
+  margin-right: 20px;
+  width: 50%;
+}
+
 @media screen and (max-width: 600px) {
   body {
     max-width: 100%;

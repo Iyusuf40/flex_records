@@ -30,6 +30,20 @@ export default function TableView(props) {
     return map[table.cellSize];
   }
 
+  let formObj
+  let setFormObj
+  [formObj, setFormObj] = React.useState({
+	createTableMode: null,
+	fileds: {
+		noOfRows: null,
+		noOfCols: null
+	}
+  })
+
+  function parseCreateTableForm(formObj) {
+
+  }
+
   const tableView = [];
   let rowIndex = 0;
   if (tableData) {
@@ -51,8 +65,8 @@ export default function TableView(props) {
 	   onChange={(e) => props.updateTableView(currentTable,
 		                                saveRowIndex, 
 		                                colIndex,
-	                                        e.target.value,
-	                                        saveRowIndex + 1)}
+										e.target.value,
+										saveRowIndex + 1)}
            
 	   onClick={(e) => ( table.ruleMode && table.currentRule ? props.pickCells(
 		              table.currentRule,
@@ -63,7 +77,7 @@ export default function TableView(props) {
 		              noOfCols
 	                   )
 			   : (table.ruleModeAdv && table.currentRule ? props.pickCellsAdv(
-                              table.currentRule,
+                  table.currentRule,
 			      currentTable,
 			      row,
 			      colIndex,
@@ -92,6 +106,25 @@ export default function TableView(props) {
    
   return (
     <div className="table--view">
+	  <div className="create--form--container">
+		<form className="create--form">
+			<div className="form--block">
+				<label for="table--name">Table name</label>
+				<input type="text" id="table--name" name="fname" placeholder="e.g my table"/>
+			</div>
+			<div className="form--block">
+				<label for="no--of--rows">rows</label>
+				<input type="text" id="no--of--rows" name="fname" placeholder="enter no of rows here"/>
+			</div>
+			<div className="form--block">
+				<label for="no--of--cols">columns</label>
+				<input type="text" id="no--of--cols" name="fname" placeholder="enter no of cols here"/>
+			</div>
+			<button onClick={(e) => parseCreateTableForm(formObj)}>
+				create
+			</button>
+		</form>
+	  </div>
       <div className="rules--buttons">
 	  <button 
 	    onClick={(e) => props.addColumn(currentTable)}
