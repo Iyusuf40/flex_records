@@ -1,0 +1,9 @@
+- Launch with necessary configs
+- install all software
+
+- install certbot using nginx tutorial by running certbot extension for nginx ie using --nginx
+flag during starting of certbot and setting server_name in sites-avail/defaults to the
+dns attached to the certbot to enable auomatic configuration
+
+- set prevent instance shotdown setiing on ec2 machine
+- used CNAME dns record to point flexrecords.cloza.tech to public ec2 dns name
