@@ -2,14 +2,19 @@
 
 # dependencies
 node_modules
+**/node_modules
 .env*
 npm*
 yarn*
 .DS*
+build
+*__pycache__*
 
 frontend/node_modules
 frontend/.pnp
 frontend/.pnp.js
+frontend/build
+*build*
 *node_modules*
 
 # testing
