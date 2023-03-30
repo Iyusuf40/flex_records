@@ -1,12 +1,11 @@
-import React from "react"
+import React from 'react';
 import uuid from 'react-uuid';
-import SidePane from "./SidePane"
-import TableView from "./TableView"
-import utilities from "../utilities"
-import advancedutils from "../advancedutils"
+import SidePane from './SidePane';
+import TableView from './TableView';
+import utilities from '../utilities';
+import advancedutils from '../advancedutils';
 
 export default function Container() {
-
   /**
    * General record schema
    */
@@ -14,8 +13,8 @@ export default function Container() {
   /*
    *
    * records = {
-    id: 1, // get from localStorage, or user provide or gen new uuid 
-    tables: { 
+    id: 1, // get from localStorage, or user provide or gen new uuid
+    tables: {
       "table 1": {
 	      data: {
 	        1: [1, 2, 3, 4],
@@ -25,7 +24,7 @@ export default function Container() {
 	      noOfCols: 0,
 	      ruleMode: false,
 	      currentRule: "", // rule for table eg sum-horizontal for left to right
-	                       // or sum-vertical for top to bottom  
+	                       // or sum-vertical for top to bottom
       },
       "table 2": {
 	      data: {
@@ -46,10 +45,10 @@ export default function Container() {
 
   */
 
-  let flexId = localStorage.getItem("flexId");
-  const postUrl = "http://localhost:3001/records";
-  const putUrl = "http://localhost:3001/records";
-  let getUrl = "http://localhost:3001/records/";
+  let flexId = localStorage.getItem('flexId');
+  const postUrl = 'http://localhost:3001/records';
+  const putUrl = 'http://localhost:3001/records';
+  const getUrl = 'http://localhost:3001/records/';
 
   if (!flexId) {
     flexId = uuid();
@@ -58,85 +57,83 @@ your ID if you have one or skip. We will generate a new ID for you`);
     if (id) {
       getAltUser(getUrl, id);
     } else {
-      localStorage.setItem("flexId", flexId);
+      localStorage.setItem('flexId', flexId);
       alert(`here is your ID '${flexId}'. you may store it somewhere in case 
-you want to access  your records from a different device`)
+you want to access  your records from a different device`);
     }
   }
 
   if (flexId) {
-    localStorage.setItem("flexId", flexId);
+    localStorage.setItem('flexId', flexId);
   }
 
   let init = null;
   let setInit;
 
   // setup initial load and use as condition to fetch data from store
-  [init, setInit] = React.useState({loaded: false, saved: false}, setInit);
+  [init, setInit] = React.useState({ loaded: false, saved: false }, setInit);
 
-  let recordKey = `record-${flexId}`;
-  let records = getRecords(recordKey, init);
+  const recordKey = `record-${flexId}`;
+  const records = getRecords(recordKey, init);
 
   function getRecords(recordKey, init) {
-    if (init.loaded){
+    if (init.loaded) {
       return;
     }
     // setInit(true); // set init the first time of load
     getFromBackend(getUrl, flexId);
     return ({
-	    id: flexId, 
+	    id: flexId,
 	    tables: {
 	    },
 	    altered: false,
-	    currentTable: "",
+	    currentTable: '',
 	    rowsAndColsNoSet: false,
-	    archiveTablesNames: [], 
+	    archiveTablesNames: [],
     });
   }
 
   async function getAltUser(url, id) {
     let resp = null;
-    await fetch(url + id).then(data => data.json()).then((data) => {
-      resp = data
+    await fetch(url + id).then((data) => data.json()).then((data) => {
+      resp = data;
     });
     if (resp && Object.keys(resp).length) {
       setState(resp);
-      localStorage.setItem("flexId", id);
-      return;
+      localStorage.setItem('flexId', id);
     } else {
-      let id = prompt(`User not found, enter correct ID or skip, we will generate one for you`);
+      let id = prompt('User not found, enter correct ID or skip, we will generate one for you');
       if (id) {
         return await getAltUser(url, id);
       }
       id = uuid();
-      localStorage.setItem("flexId", id);
+      localStorage.setItem('flexId', id);
       alert(`here is your ID '${id}'. you may store it somewhere in case 
-you want to access  your records from a different device`)
-      return;
+you want to access  your records from a different device`);
     }
   }
 
- async function getFromBackend(url, id) {
+  async function getFromBackend(url, id) {
     let resp = null;
-    await fetch(url + id).then(data => data.json()).then((data) => {
-      resp = data
+    await fetch(url + id).then((data) => data.json()).then((data) => {
+      resp = data;
     });
     if (Object.keys(resp).length) {
       setState(resp);
     }
-    setInit({loaded: true, saved: false}); // set init the first time of load
+    setInit({ loaded: true, saved: false }); // set init the first time of load
   }
 
   async function setAltUser(url, id) {
     let resp = null;
-    await fetch(url + id).then(data => data.json()).then((data) => {
-      resp = data
+    await fetch(url + id).then((data) => data.json()).then((data) => {
+      resp = data;
     });
     if (Object.keys(resp).length) {
       setState(resp);
-      localStorage.setItem("flexId", id);;
+      localStorage.setItem('flexId', id);
     } else {
-      alert("User not found");
+      alert('User not found');
     }
   }
 
@@ -162,12 +159,12 @@ you want to access  your records from a different device`)
     const json = JSON.stringify(record);
     // localStorage.setItem(recordKey, json);
     await fetch(putUrl, {
-      method: "PUT",
+      method: 'PUT',
       body: json,
       headers: {
-        "Content-Type": "application/json"
-      }
-    })
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
   /**
@@ -176,22 +173,22 @@ you want to access  your records from a different device`)
   function persist(record) {
     const json = JSON.stringify(record);
     fetch(postUrl, {
-      method: "POST",
+      method: 'POST',
       body: json,
       headers: {
-        "Content-Type": "application/json"
-      }
-    })
+        'Content-Type': 'application/json',
+      },
+    });
   }
 
-  /*async function shouldSave(recordState, init) {
-    if (!init.saved) { 
+  /* async function shouldSave(recordState, init) {
+    if (!init.saved) {
       await setTimeout(save, 3000, recordState, recordKey, init);
       setInit({loaded: true, saved: true});
     } else {
       //
     }
-  }*/
+  } */
 
   // shouldSave(recordState, init);
   setTimeout(save, 1000, recordState, recordKey, init);
@@ -199,17 +196,17 @@ you want to access  your records from a different device`)
   function createArray(size) {
     const myArray = [];
     for (let index = 0; index < size; index++) {
-      myArray.push("");
+      myArray.push('');
     }
     return myArray;
   }
 
   function newData(noOfRows, noOfCols) {
-    let rows = noOfRows;
-    let cols = noOfCols;
+    const rows = noOfRows;
+    const cols = noOfCols;
     const data = {};
     for (let row = 1; row <= rows; row++) {
-      data[row] = createArray(cols); //new Array(cols);
+      data[row] = createArray(cols); // new Array(cols);
     }
     return data;
   }
@@ -220,60 +217,57 @@ you want to access  your records from a different device`)
     // let rows = Number(noOfRows) ? noOfRows : 1;
     // let cols = Number(noOfCols) ? noOfCols : 1;
     const obj = {
-        data: newData(noOfRows, noOfCols),
-	noOfRows: noOfRows,
-	noOfCols: noOfCols,
-	ruleMode: false,
-	currentRule: "",
-	altered: true,
-    }
+      data: newData(noOfRows, noOfCols),
+      noOfRows,
+      noOfCols,
+      ruleMode: false,
+      currentRule: '',
+      altered: true,
+    };
     return obj;
   }
 
   // set the number of columns and number of rows
-	// this block of code is irrelevant now. Useful prior to
-	// createTable implementation
+  // this block of code is irrelevant now. Useful prior to
+  // createTable implementation
   if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables)) {
     // console.log("ran")
-    let copy = JSON.parse(JSON.stringify(recordState))
+    const copy = JSON.parse(JSON.stringify(recordState));
     for (const table in copy.tables) {
-      if (Object.keys(copy.tables[table]["data"]).length) {
+      if (Object.keys(copy.tables[table].data).length) {
         copy.tables[table] = {
           ...copy.tables[table],
-	  noOfCols: copy.tables[table]["data"][Object
-		  .keys(copy.tables[table]["data"])[0]].length,
-	  noOfRows: Object.keys(copy.tables[table]["data"]).length
-	}
+	  noOfCols: copy.tables[table].data[Object
+		  .keys(copy.tables[table].data)[0]].length,
+	  noOfRows: Object.keys(copy.tables[table].data).length,
+        };
       }
     }
-    copy.rowsAndColsNoSet = true
-    setState(copy)
-  } 
-  //to-do
-  //is there a better way to get the noOfRows and noOfCols set?
-  
- 
-  function handleTableClick (tableName) {
-    setState((prevState) => {
-      return (
-        {
-          ...prevState,
-	  currentTable: tableName
-	}
-      )
-    })
+    copy.rowsAndColsNoSet = true;
+    setState(copy);
+  }
+  // to-do
+  // is there a better way to get the noOfRows and noOfCols set?
+
+  function handleTableClick(tableName) {
+    setState((prevState) => (
+      {
+        ...prevState,
+	  currentTable: tableName,
+      }
+    ));
   }
 
   function checkInvalidParams(name, noOfRows, noOfCols) {
     let error = false;
-    if (!noOfRows || noOfRows < 1 ) {
-      alert("error creating table: invalid number of rows");
+    if (!noOfRows || noOfRows < 1) {
+      alert('error creating table: invalid number of rows');
       error = true;
     } else if (!noOfCols || noOfCols < 1) {
-      alert("error creating table: invalid number of columns");
+      alert('error creating table: invalid number of columns');
       error = true;
     } else if (!name) {
-      alert("error creating table: no name given for table");
+      alert('error creating table: no name given for table');
       error = true;
     }
     return error;
@@ -286,7 +280,7 @@ you want to access  your records from a different device`)
 we advice you break the table into smaller tables else the app will be slow or 
 worst case you might make your 
 system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
-      if (resp && resp.toLowerCase() === "yes") {
+      if (resp && resp.toLowerCase() === 'yes') {
         return true;
       }
       return false;
@@ -295,17 +289,17 @@ system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
   }
 
   function createTableBtnClicked() {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      createTableBtnClicked: true
-    }))
+      createTableBtnClicked: true,
+    }));
   }
 
   function unsetCreateTableBtnClicked() {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
-      createTableBtnClicked: false
-    }))
+      createTableBtnClicked: false,
+    }));
   }
 
   function createTable(name, noOfRows, noOfCols) {
@@ -317,9 +311,9 @@ system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
 
     if (recordState.tables[name]) {
       const option = prompt(`Table ${name} already exist, if you type 'yes' it
-will be overwritten`)
-      if (option && option.toLowerCase() !== "yes"){
-       return;
+will be overwritten`);
+      if (option && option.toLowerCase() !== 'yes') {
+        return;
       }
     }
     // const size = prompt("size of table: format rows x columns, eg, 5x5");
@@ -334,56 +328,54 @@ will be overwritten`)
     if (!isWithinLimits) {
       return;
     }
-    setState(prevState => {
-	  let copy = (
+    setState((prevState) => {
+	  const copy = (
 	     {
 		     ...prevState,
 		     altered: true,
-         createTableBtnClicked: false,
+          createTableBtnClicked: false,
 		     tables: {
 			     ...(prevState.tables),
-			     [name]: newTable(name, noOfRows, noOfCols)
+			     [name]: newTable(name, noOfRows, noOfCols),
 		     },
 		     currentTable: name,
 		     rowsAndColsNoSet: true,
 	     }
-    )
-    persist(copy);
-    return copy;
-    }
-    )
+      );
+      persist(copy);
+      return copy;
+    });
   }
 
   function addColumn(tableName) {
-    if (recordState.currentTable === "") {
-      alert("No table selected");
+    if (recordState.currentTable === '') {
+      alert('No table selected');
       return null;
     }
 
     if (!recordState.tables[tableName].noOfRows) {
       return null;
     }
-    setState(prevState => (
+    setState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
-                  noOfCols: prevState.tables[tableName].noOfCols + 1
-		}
-	      }
-      })
-    )
+            noOfCols: prevState.tables[tableName].noOfCols + 1,
+          },
+	      },
+      }));
     applyRuleOnModification(recordState);
   }
 
   function removeCol(data, noOfCols) {
-    const copy = {...data};
+    const copy = { ...data };
     for (const key in copy) {
       const arr = [];
-      for (let index = 0; index < noOfCols - 1; index++){
+      for (let index = 0; index < noOfCols - 1; index++) {
         arr[index] = copy[key][index];
       }
       copy[key] = arr;
@@ -392,71 +384,70 @@ will be overwritten`)
   }
 
   function delColumn(tableName) {
-    if (recordState.currentTable === "") {
-      alert("No table selected");
+    if (recordState.currentTable === '') {
+      alert('No table selected');
       return null;
     }
-    setState(prevState => (
+    setState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
-	          data: removeCol(prevState.tables[tableName].data,
-			  prevState.tables[tableName].noOfCols),
-                  noOfCols: prevState.tables[tableName].noOfCols ? 
-			Number(prevState.tables[tableName]["noOfCols"]) - 1 : 
-			0,
-		}
-	      }
-      })
-    )
+	          data: removeCol(
+              prevState.tables[tableName].data,
+			  prevState.tables[tableName].noOfCols,
+            ),
+            noOfCols: prevState.tables[tableName].noOfCols
+              ? Number(prevState.tables[tableName].noOfCols) - 1
+              : 0,
+          },
+	      },
+      }));
   }
 
   function addRow(tableName) {
-   if (recordState.currentTable === "") {
-      alert("No table selected");
+    if (recordState.currentTable === '') {
+      alert('No table selected');
       return null;
-   }
-   setState(prevState => (
+    }
+    setState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
-                  noOfRows: prevState.tables[tableName].noOfRows + 1,
+            noOfRows: prevState.tables[tableName].noOfRows + 1,
 		  data: {
-                    ...prevState.tables[tableName].data,
-		    [prevState.tables[tableName].noOfRows + 1] :
+              ...prevState.tables[tableName].data,
+		    [prevState.tables[tableName].noOfRows + 1]:
 			  createArray(prevState.tables[tableName].noOfCols),
-		  }
-		}
-	      }
-      })
-    )
+		  },
+          },
+	      },
+      }));
     applyRuleOnModification(recordState);
   }
 
-function delRow(tableName) {
-   if (recordState.currentTable === "") {
-      alert("No table selected");
+  function delRow(tableName) {
+    if (recordState.currentTable === '') {
+      alert('No table selected');
       return null;
-   }
-   setState(prevState => {
-     const newObj = JSON.parse(JSON.stringify(prevState)); //{...prevState};
-     const noOfRows = Number(newObj.tables[tableName].noOfRows);
-     delete newObj.tables[tableName].data[noOfRows];
-     newObj.tables[tableName].noOfRows = noOfRows - 1;
-     if (newObj.tables[tableName].noOfRows < 0) {
-       newObj.tables[tableName].noOfRows = 0;
-     }
-     return newObj;
-   }
-   )
+    }
+    setState((prevState) => {
+      const newObj = JSON.parse(JSON.stringify(prevState)); // {...prevState};
+      const noOfRows = Number(newObj.tables[tableName].noOfRows);
+      delete newObj.tables[tableName].data[noOfRows];
+      newObj.tables[tableName].noOfRows = noOfRows - 1;
+      if (newObj.tables[tableName].noOfRows < 0) {
+        newObj.tables[tableName].noOfRows = 0;
+      }
+      return newObj;
+    });
   }
 
   function addRule(tableName) {
@@ -465,15 +456,14 @@ function delRow(tableName) {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
 		  ruleMode: true,
 		  ruleModeAdv: false,
-		}
-	      }
-      })
-    )
+          },
+	      },
+      }));
   }
 
   function addRuleAdv(tableName) {
@@ -482,17 +472,15 @@ function delRow(tableName) {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
 		  ruleModeAdv: true,
 		  ruleMode: false,
-		}
-	      }
-      })
-    )
+          },
+	      },
+      }));
   }
-
 
   function increaseCellSize(tableName) {
     setState((prevState) => {
@@ -500,26 +488,25 @@ function delRow(tableName) {
       let size = 0;
       if (currentSize) {
         size = currentSize + 1;
-	size = size > 3 ? 3 : size;
+        size = size > 3 ? 3 : size;
       } else {
         size = 1;
       }
-      
+
       return (
 	   {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+            ...prevState.tables,
+            [tableName]: {
 		  ...prevState.tables[tableName],
 		  cellSize: size,
-		}
-	      }
-          }
-       )
-      }
-    )
+            },
+	      },
+        }
+      );
+    });
   }
 
   function decreaseCellSize(tableName) {
@@ -528,24 +515,23 @@ function delRow(tableName) {
       let size = 0;
       if (currentSize) {
         size = currentSize - 1;
-	size = size < 0 ? 0 : size;
+        size = size < 0 ? 0 : size;
       } else {
         size = 0;
       }
-      
+
       return ({
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
 		  cellSize: size,
-		}
-	      }
-      })
-    }
-   )
+          },
+	      },
+      });
+    });
   }
 
   /**
@@ -557,25 +543,24 @@ function delRow(tableName) {
 	      ...prevState,
 	      altered: true,
 	      tables: {
-                ...prevState.tables,
-		[tableName]: {
+          ...prevState.tables,
+          [tableName]: {
 		  ...prevState.tables[tableName],
 		  ruleMode: false,
 	          ruleModeAdv: false,
-		  prevRule: "",
-		  cellPlacement: "",
-		  currentRule: "",
+		  prevRule: '',
+		  cellPlacement: '',
+		  currentRule: '',
 		  prevRuleAdv: null,
 	          advAppMode: false,
-		}
-	      }
-      })
-    )
+          },
+	      },
+      }));
   }
 
   function replaceAtIndex(array, index, value) {
     array[index] = value;
-    return array
+    return array;
   }
 
   /**
@@ -584,47 +569,48 @@ function delRow(tableName) {
   function updateTableView(tableName, rowIndex, colIndex, value, SN) {
     // SN is serial number, used as key in storing rows in
 	  // records.tables.tableName.data
-    setState(prevState => {
-      return (
-        {
-          ...prevState,
+    setState((prevState) => (
+      {
+        ...prevState,
 	        tables: {
-            ...prevState["tables"],
+          ...prevState.tables,
 	        [tableName]: {
-              ...prevState["tables"][tableName],
+            ...prevState.tables[tableName],
 	            data: {
-                ...prevState["tables"][tableName].data,
-		            [SN]: replaceAtIndex([...prevState["tables"][tableName].data[SN]],
-			             colIndex, value)
-	      }
-	    }
-	  }
-	}
-      )
-    })
+              ...prevState.tables[tableName].data,
+		            [SN]: replaceAtIndex(
+                [...prevState.tables[tableName].data[SN]],
+			             colIndex,
+                value,
+              ),
+	      },
+	    },
+	  },
+      }
+    ));
     applyRuleOnModification(recordState);
-    //setInit({loaded: true, saved: false});
+    // setInit({loaded: true, saved: false});
   }
 
   // cellPlacement determines where to apply rule
   function getRuleFunctionName(ruleName, cellPlacement) {
     const ruleNameMapRight = {
-      "sum": "sumHorizontal",
-      "subtractReverse": "subHorizontalRight",
-      "subtract": "subHorizontalLeft",
-      "multiply": "mulHorizontal",
-      "average": "avgHorizontal"
-    }
+      sum: 'sumHorizontal',
+      subtractReverse: 'subHorizontalRight',
+      subtract: 'subHorizontalLeft',
+      multiply: 'mulHorizontal',
+      average: 'avgHorizontal',
+    };
 
     const ruleNameMapBottom = {
-      "sum": "sumVertical",
-      "subtract": "subVerticalTop",
-      "subtractReverse": "subVerticalBottom",
-      "multiply": "mulVertical",
-      "average": "avgVertical"
-    }
+      sum: 'sumVertical',
+      subtract: 'subVerticalTop',
+      subtractReverse: 'subVerticalBottom',
+      multiply: 'mulVertical',
+      average: 'avgVertical',
+    };
 
-    if (cellPlacement === "bottom") {
+    if (cellPlacement === 'bottom') {
       return ruleNameMapBottom[ruleName];
     }
     return ruleNameMapRight[ruleName];
@@ -633,22 +619,22 @@ function delRow(tableName) {
   // cellPlacement determines where to apply rule
   function getRuleFunctionNameAdv(ruleName, cellPlacement) {
     const ruleNameMapRight = {
-      "sum": "sumHorizontalAdv",
-      "subtractReverse": "subHorizontalRightAdv",
-      "subtract": "subHorizontalLeftAdv",
-      "multiply": "mulHorizontalAdv",
-      "average": "avgHorizontalAdv"
-    }
+      sum: 'sumHorizontalAdv',
+      subtractReverse: 'subHorizontalRightAdv',
+      subtract: 'subHorizontalLeftAdv',
+      multiply: 'mulHorizontalAdv',
+      average: 'avgHorizontalAdv',
+    };
 
     const ruleNameMapBottom = {
-      "sum": "sumVerticalAdv",
-      "subtract": "subVerticalTopAdv",
-      "subtractReverse": "subVerticalBottomAdv",
-      "multiply": "mulVerticalAdv",
-      "average": "avgVerticalAdv"
-    }
+      sum: 'sumVerticalAdv',
+      subtract: 'subVerticalTopAdv',
+      subtractReverse: 'subVerticalBottomAdv',
+      multiply: 'mulVerticalAdv',
+      average: 'avgVerticalAdv',
+    };
 
-    if (cellPlacement === "bottom") {
+    if (cellPlacement === 'bottom') {
       return ruleNameMapBottom[ruleName];
     }
     return ruleNameMapRight[ruleName];
@@ -662,12 +648,12 @@ function delRow(tableName) {
     if (!currentState.tables[currentState.currentTable].prevRuleAdv) {
       return;
     }
-    const prevRuleAdv = currentState.tables[currentState.currentTable].prevRuleAdv;
-    let advAppMode = true; /**
+    const { prevRuleAdv } = currentState.tables[currentState.currentTable];
+    const advAppMode = true; /**
     			    * flag to check if in advanced rule application phase
-			    * during table change.. So as not to create new 
+			    * during table change.. So as not to create new
 			    * prevRuleAdv objects else will result in so many objects
-			    * created, which will slow and crash program since 
+			    * created, which will slow and crash program since
 			    * new nonesense advRule objects will be attached to table
 			    * and program will try to apply them
 			    */
@@ -675,51 +661,51 @@ function delRow(tableName) {
     for (const key in prevRuleAdv.rowsRules) { // apply rows rules
       const {
 	      startIndex,
-	      endIndex, 
-	      ruleName, 
+	      endIndex,
+	      ruleName,
 	      currentTable,
-	      noOfRows, 
-	      noOfCols, 
-	      cellPlacement, 
-	      saveIndex
+	      noOfRows,
+	      noOfCols,
+	      cellPlacement,
+	      saveIndex,
       } = prevRuleAdv.rowsRules[key];
 
       applyRuleAdvRow(
 	      startIndex,
-	      endIndex, 
-	      ruleName, 
+	      endIndex,
+	      ruleName,
 	      currentTable,
-	      noOfRows, 
-	      noOfCols, 
-	      cellPlacement, 
+	      noOfRows,
+	      noOfCols,
+	      cellPlacement,
 	      saveIndex,
-	      advAppMode
-      )
+	      advAppMode,
+      );
     }
 
     for (const key in prevRuleAdv.colsRules) { // apply cols rules
       const {
 	      startIndex,
-	      endIndex, 
-	      ruleName, 
+	      endIndex,
+	      ruleName,
 	      currentTable,
-	      noOfRows, 
-	      noOfCols, 
-	      cellPlacement, 
-	      saveIndex
+	      noOfRows,
+	      noOfCols,
+	      cellPlacement,
+	      saveIndex,
       } = prevRuleAdv.colsRules[key];
 
       applyRuleAdvCol(
 	      startIndex,
-	      endIndex, 
-	      ruleName, 
+	      endIndex,
+	      ruleName,
 	      currentTable,
-	      noOfRows, 
-	      noOfCols, 
-	      cellPlacement, 
+	      noOfRows,
+	      noOfCols,
+	      cellPlacement,
 	      saveIndex,
-	      advAppMode
-      )
+	      advAppMode,
+      );
     }
   }
 
@@ -729,15 +715,15 @@ function delRow(tableName) {
    *
    * currentState -> currentState of records object
    */
-  function applyRuleOnModification (currentState) {
+  function applyRuleOnModification(currentState) {
     /* apply advanced here */
     if (currentState.tables[currentState.currentTable].prevRuleAdv) {
-      applyAdvancedRulesOnModification(currentState)
+      applyAdvancedRulesOnModification(currentState);
     }
     if (currentState.tables[currentState.currentTable].prevRule) {
-      const currentTable = currentState.currentTable;
+      const { currentTable } = currentState;
       const ruleName = currentState.tables[currentTable].prevRule;
-      const cellPlacement = currentState.tables[currentTable].cellPlacement;
+      const { cellPlacement } = currentState.tables[currentTable];
       implementRule(ruleName, currentTable, cellPlacement);
     }
   }
@@ -757,37 +743,37 @@ function delRow(tableName) {
     // check if cell is empty
 	  // check if cell is bottom
 	  // decide if operate vertical or hor
-    //get data
-	  //clone it
-	  //fix it
-	  //set it back
+    // get data
+	  // clone it
+	  // fix it
+	  // set it back
 
-   /* gets the function name to apply as rule */
-   const functionName = getRuleFunctionName(ruleName, cellPlacement);
-   setState(prevState => {
-     const data = prevState.tables[currentTable].data;
-     const noOfRows = prevState.tables[currentTable].noOfRows;
-     const noOfCols = prevState.tables[currentTable].noOfCols;
-     const dataClone = {...data};
-     // call appropiate function on data
-     // set data back
-     return ({
-       ...prevState,
-       tables: {
-         ...prevState.tables,
+    /* gets the function name to apply as rule */
+    const functionName = getRuleFunctionName(ruleName, cellPlacement);
+    setState((prevState) => {
+      const { data } = prevState.tables[currentTable];
+      const { noOfRows } = prevState.tables[currentTable];
+      const { noOfCols } = prevState.tables[currentTable];
+      const dataClone = { ...data };
+      // call appropiate function on data
+      // set data back
+      return ({
+        ...prevState,
+        tables: {
+          ...prevState.tables,
 	 [currentTable]: {
-           ...prevState.tables[currentTable],
+            ...prevState.tables[currentTable],
 	   // utilities returns an object of functions to apply rules
-           data: utilities()[functionName](dataClone, noOfRows, noOfCols),
+            data: utilities()[functionName](dataClone, noOfRows, noOfCols),
 	   ruleMode: false,
 	   altered: true,
 	   prevRule: ruleName,
-	   cellPlacement: cellPlacement,
-           currentRule: "",
-	 }
-       }
-     })
-   })
+	   cellPlacement,
+            currentRule: '',
+	 },
+        },
+      });
+    });
   }
 
   /**
@@ -796,21 +782,19 @@ function delRow(tableName) {
    * application
    */
   function afterRulePick(ruleName, currentTable) {
-    alert(`click on the row or column you want to apply rule`);
-    setState(prevState => {
-      return ({
+    alert('click on the row or column you want to apply rule');
+    setState((prevState) => ({
 	 ...prevState,
-         tables: {
-            ...prevState.tables,
+      tables: {
+        ...prevState.tables,
 	    [currentTable]: {
-              ...prevState.tables[currentTable],
-              ruleMode: true,
-              currentRule: ruleName,
+          ...prevState.tables[currentTable],
+          ruleMode: true,
+          currentRule: ruleName,
 	    },
-         },
-       });
-    });
-   }
+      },
+    }));
+  }
 
   /**
    * afterRulePickAdv - handles event after user chooses an advanced rule to apply.
@@ -818,26 +802,24 @@ function delRow(tableName) {
    * application
    */
   function afterRulePickAdv(ruleName, currentTable) {
-    alert(`click on the row or column you want to apply rule`);
-    setState(prevState => {
-      return ({
+    alert('click on the row or column you want to apply rule');
+    setState((prevState) => ({
 	 ...prevState,
-         tables: {
-            ...prevState.tables,
+      tables: {
+        ...prevState.tables,
 	    [currentTable]: {
-              ...prevState.tables[currentTable],
-              ruleModeAdv: true,
-              currentRule: ruleName,
+          ...prevState.tables[currentTable],
+          ruleModeAdv: true,
+          currentRule: ruleName,
 	    },
-         },
-       });
-    });
-   }
+      },
+    }));
+  }
 
   function getCurrentTable() {
-    const currentTable = recordState.currentTable;
+    const { currentTable } = recordState;
     const table = recordState.tables[currentTable];
-    return table
+    return table;
   }
 
   /**
@@ -846,11 +828,11 @@ function delRow(tableName) {
    */
   function checkLastCol(colIndex) {
     const table = getCurrentTable();
-    const data = table.data;
-    let empty = true;
+    const { data } = table;
+    const empty = true;
     for (const key in data) {
       if (data[key][colIndex]) {
-        return false
+        return false;
       }
     }
     return empty;
@@ -862,28 +844,28 @@ function delRow(tableName) {
    */
   function checkLastRow(key) {
     const table = getCurrentTable();
-    const data = table.data;
+    const { data } = table;
     const row = data[key];
-    let empty = true;
+    const empty = true;
     for (let index = 0; index < row.length; index++) {
       if (row[index]) {
-        return false
+        return false;
       }
     }
     return empty;
   }
 
   /**
-   * checkRowAndCols - returns where to save applied rule 
+   * checkRowAndCols - returns where to save applied rule
    * computation results
    */
   function checkRowAndCols(key, colIndex, noOfRows, noOfCols) {
     const rowIsEmpty = checkLastRow(key);
     const colIsEmpty = checkLastCol(colIndex);
-    if (!rowIsEmpty && !colIsEmpty){
+    if (!rowIsEmpty && !colIsEmpty) {
       return false;
     }
-    return colIsEmpty ? "right" : "bottom";
+    return colIsEmpty ? 'right' : 'bottom';
   }
 
   /**
@@ -892,56 +874,58 @@ function delRow(tableName) {
    */
   function getCellPlacement(key, colIndex, noOfRows, noOfCols) {
     let cellPlacement;
-    if (colIndex === noOfCols - 1 && key === noOfRows){
+    if (colIndex === noOfCols - 1 && key === noOfRows) {
       cellPlacement = checkRowAndCols(key, colIndex, noOfRows, noOfCols);
     } else if (colIndex === noOfCols - 1) {
-      cellPlacement = checkLastCol(colIndex) ? "right" : "column";
+      cellPlacement = checkLastCol(colIndex) ? 'right' : 'column';
     } else if (key === noOfRows) {
-      cellPlacement = checkLastRow(key) ? "bottom" : "row";
+      cellPlacement = checkLastRow(key) ? 'bottom' : 'row';
     } else {
       cellPlacement = false;
     }
-    return cellPlacement
-  }	
+    return cellPlacement;
+  }
 
   /**
    * pickCells - after rule has been chosen, pickCells listens for cell click
-   * and determines if to go ahead with computations after the necassary 
+   * and determines if to go ahead with computations after the necassary
    * conditions are met
    */
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     let cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
-    if (cellPlacement !== "right" && cellPlacement !== "bottom") {
-      if (!cellPlacement) return alert('basic rule can only be applied on last row or column. '
+    if (cellPlacement !== 'right' && cellPlacement !== 'bottom') {
+      if (!cellPlacement) {
+        return alert('basic rule can only be applied on last row or column. '
       + 'and it must not be the last cell of the table as it is ambiguous where you want to'
-      + 'apply rule')
+      + 'apply rule');
+      }
       const option = prompt(`${cellPlacement} not empty. Do you want to overwrite values in  
 ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
-      if (!option || (option && option.toLowerCase() === "no") ||
-          ((option.toLowerCase() !== "yes") && 
-	  (option.toLowerCase() !== "overwrite"))) {
+      if (!option || (option && option.toLowerCase() === 'no')
+          || ((option.toLowerCase() !== 'yes')
+	  && (option.toLowerCase() !== 'overwrite'))) {
         return null;
-      } else if ((option && option.toLowerCase() !== "overwrite") && 
-	        (option.toLowerCase() !== "yes")) {
-        setState(prevState => ({
+      } if ((option && option.toLowerCase() !== 'overwrite')
+	        && (option.toLowerCase() !== 'yes')) {
+        setState((prevState) => ({
           ...prevState,
           tables: {
-                  ...prevState.tables,
+            ...prevState.tables,
             [currentTable]: {
-                    ...prevState.tables[currentTable],
+              ...prevState.tables[currentTable],
               ruleMode: false,
-              currentRule: "",
-            }
-          }
+              currentRule: '',
+            },
+          },
         }));
       } else {
-        if (cellPlacement === "row") {
-          cellPlacement = "bottom";
-        } else if (cellPlacement === "column") {
-          cellPlacement = "right";
+        if (cellPlacement === 'row') {
+          cellPlacement = 'bottom';
+        } else if (cellPlacement === 'column') {
+          cellPlacement = 'right';
         } else {
-                alert("rule will be applied on the last row");
-                cellPlacement = "bottom";
+          alert('rule will be applied on the last row');
+          cellPlacement = 'bottom';
         }
         implementRule(ruleName, currentTable, cellPlacement);
       }
@@ -951,14 +935,13 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
   }
 
   function askForRange(cellPlacement, index) {
-    let choiceName = cellPlacement === "right" ? "column": "row";
+    const choiceName = cellPlacement === 'right' ? 'column' : 'row';
     // let opp = cellPlacement === "right" ? "row": "column";
     const range = prompt(`you chose ${choiceName} number ${index},
 please specify from what ${choiceName} to apply rule. you can specify a single value
-or a range ex 3-7`)
+or a range ex 3-7`);
     return range;
   }
-
 
   function isNumber(val) {
     if (Number(val) === 0 || Number(val)) {
@@ -967,35 +950,30 @@ or a range ex 3-7`)
     return false;
   }
 
-
   function checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols) {
-    if (cellPlacement === "bottom") {
+    if (cellPlacement === 'bottom') {
       if (Number(startIndex) >= Number(noOfRows) || Number(startIndex) < 1) {
         return false;
       }
-    } else {
-      if (Number(startIndex) >= Number(noOfCols) || Number(startIndex) < 1) {
-        return false;
-      }
+    } else if (Number(startIndex) >= Number(noOfCols) || Number(startIndex) < 1) {
+      return false;
     }
     return true;
   }
 
   function checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols) {
-    if (cellPlacement === "bottom") {
-      if (Number(endIndex) > Number(noOfRows) || Number(endIndex) < 1 ) {
+    if (cellPlacement === 'bottom') {
+      if (Number(endIndex) > Number(noOfRows) || Number(endIndex) < 1) {
         return false;
       }
-    } else {
-      if (Number(endIndex) > Number(noOfCols) || Number(endIndex) < 1) {
-	return false;
-      }
+    } else if (Number(endIndex) > Number(noOfCols) || Number(endIndex) < 1) {
+      return false;
     }
     return true;
   }
 
   function parseRange(range, index, cellPlacement, noOfRows, noOfCols) {
-    let list = range.split("-");
+    const list = range.split('-');
     let startIndex;
     let endIndex;
     if (list.length > 1) {
@@ -1004,44 +982,43 @@ or a range ex 3-7`)
       if (!isNumber(startIndex) || !isNumber(endIndex)) {
         return false;
       }
-      if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols) ||
-          !checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols)){
+      if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols)
+          || !checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols)) {
         return false;
       }
       return ([Number(startIndex), Number(endIndex)]);
-    } else {
-      startIndex = list[0];
-      if (!isNumber(startIndex)) {
-        return false;
-      }
-      if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols)) {
-        return false;
-      }
-      return ([Number(startIndex)]);
     }
+    startIndex = list[0];
+    if (!isNumber(startIndex)) {
+      return false;
+    }
+    if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols)) {
+      return false;
+    }
+    return ([Number(startIndex)]);
   }
 
   function createAdvRuleReprCol(prev, args, advAppMode) {
     let newRule;
-    if(advAppMode) {
+    if (advAppMode) {
       return prev;
     }
     if (!prev) {
       newRule = {
         colsRules: {
 	  1: args,
-	}
-      }
+        },
+      };
     } else {
       newRule = {
-	...prev,
+        ...prev,
         colsRules: {
           ...prev.colsRules,
-	  [prev.colsRules ?
-	     Object.keys(prev.colsRules).length + 1
+	  [prev.colsRules
+	     ? Object.keys(prev.colsRules).length + 1
 	     : 1]: args,
-	}
-      }
+        },
+      };
     }
     return newRule;
   }
@@ -1055,102 +1032,132 @@ or a range ex 3-7`)
       newRule = {
         rowsRules: {
 	  1: args,
-	}
-      }
+        },
+      };
     } else {
       newRule = {
-	...prev,
+        ...prev,
         rowsRules: {
           ...prev.rowsRules,
-	  [prev.rowsRules ? 
-	     Object.keys(prev.rowsRules).length + 1
-	     : 1]: args
-	},
-      }
+	  [prev.rowsRules
+	     ? Object.keys(prev.rowsRules).length + 1
+	     : 1]: args,
+        },
+      };
     }
     return newRule;
   }
 
-  function applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement, saveIndex, advAppMode=false) {
-   const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
-   const args = {
-           "startIndex": startIndex,
-	   "endIndex": endIndex,
-	   "ruleName": ruleName,
-	   "currentTable": currentTable,
-	   "noOfRows": noOfRows,
-	   "noOfCols": noOfCols,
-	   "cellPlacement": cellPlacement,
-	   "saveIndex": saveIndex
-   };
-   setState(prevState => {
-     const data = prevState.tables[currentTable].data;
-     const noOfRows = prevState.tables[currentTable].noOfRows;
-     const noOfCols = prevState.tables[currentTable].noOfCols;
-     const dataClone = {...data};
-     const prevRuleAdv = prevState.tables[currentTable].prevRuleAdv;
-     // call appropiate function on data
-     // set data back
-     return ({
-       ...prevState,
-       tables: {
-         ...prevState.tables,
+  function applyRuleAdvRow(
+    startIndex,
+    endIndex,
+    ruleName,
+    currentTable,
+	  noOfRows,
+    noOfCols,
+    cellPlacement,
+    saveIndex,
+    advAppMode = false,
+  ) {
+    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
+    const args = {
+      startIndex,
+	   endIndex,
+	   ruleName,
+	   currentTable,
+	   noOfRows,
+	   noOfCols,
+	   cellPlacement,
+	   saveIndex,
+    };
+    setState((prevState) => {
+      const { data } = prevState.tables[currentTable];
+      const { noOfRows } = prevState.tables[currentTable];
+      const { noOfCols } = prevState.tables[currentTable];
+      const dataClone = { ...data };
+      const { prevRuleAdv } = prevState.tables[currentTable];
+      // call appropiate function on data
+      // set data back
+      return ({
+        ...prevState,
+        tables: {
+          ...prevState.tables,
 	 [currentTable]: {
-           ...prevState.tables[currentTable],
+            ...prevState.tables[currentTable],
 	   // advancedutils returns an object of functions to apply rules
-           data: advancedutils()[functionName](dataClone, noOfRows, 
-		                noOfCols, startIndex, endIndex, saveIndex),
+            data: advancedutils()[functionName](
+              dataClone,
+              noOfRows,
+		                noOfCols,
+              startIndex,
+              endIndex,
+              saveIndex,
+            ),
 	   ruleModeAdv: false,
 	   altered: true,
-           currentRule: "",
-           // isLastKey is of importance during applying adv rule after cell update
+            currentRule: '',
+            // isLastKey is of importance during applying adv rule after cell update
 	   prevRuleAdv: createAdvRuleReprRow(prevRuleAdv, args, advAppMode),
-	 }
-       }
-     })
-   })
+	 },
+        },
+      });
+    });
   }
 
-  function applyRuleAdvCol(startIndex, endIndex, ruleName, currentTable, 
-	  noOfRows, noOfCols, cellPlacement, saveIndex, advAppMode=false) {
-   const args = {
-           "startIndex": startIndex,
-	   "endIndex": endIndex,
-	   "ruleName": ruleName,
-	   "currentTable": currentTable,
-	   "noOfRows": noOfRows,
-	   "noOfCols": noOfCols,
-	   "cellPlacement": cellPlacement,
-	   "saveIndex": saveIndex
-   };
-   const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
-   setState(prevState => {
-     const data = prevState.tables[currentTable].data;
-     const noOfRows = prevState.tables[currentTable].noOfRows;
-     const noOfCols = prevState.tables[currentTable].noOfCols;
-     const dataClone = {...data};
-     const prevRuleAdv = prevState.tables[currentTable].prevRuleAdv;
-     // call appropiate function on data
-     // set data back
-     return ({
-       ...prevState,
-       tables: {
-         ...prevState.tables,
+  function applyRuleAdvCol(
+    startIndex,
+    endIndex,
+    ruleName,
+    currentTable,
+	  noOfRows,
+    noOfCols,
+    cellPlacement,
+    saveIndex,
+    advAppMode = false,
+  ) {
+    const args = {
+      startIndex,
+	   endIndex,
+	   ruleName,
+	   currentTable,
+	   noOfRows,
+	   noOfCols,
+	   cellPlacement,
+	   saveIndex,
+    };
+    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
+    setState((prevState) => {
+      const { data } = prevState.tables[currentTable];
+      const { noOfRows } = prevState.tables[currentTable];
+      const { noOfCols } = prevState.tables[currentTable];
+      const dataClone = { ...data };
+      const { prevRuleAdv } = prevState.tables[currentTable];
+      // call appropiate function on data
+      // set data back
+      return ({
+        ...prevState,
+        tables: {
+          ...prevState.tables,
 	 [currentTable]: {
-           ...prevState.tables[currentTable],
+            ...prevState.tables[currentTable],
 	   // advutils returns an object of functions to apply rules
-           data: advancedutils()[functionName](dataClone, noOfRows, 
-		              noOfCols, startIndex, endIndex, saveIndex),
+            data: advancedutils()[functionName](
+              dataClone,
+              noOfRows,
+		              noOfCols,
+              startIndex,
+              endIndex,
+              saveIndex,
+            ),
 	   ruleModeAdv: false,
 	   altered: true,
-	   currentRule: "",
+	   currentRule: '',
 	   // isLastKey is of importance during applying adv rule after cell update
 	   prevRuleAdv: createAdvRuleReprCol(prevRuleAdv, args, advAppMode),
-	 }
-       }
-     })
-   })
+	 },
+        },
+      });
+    });
   }
 
   function getChoiceForPickCellsAdv() {
@@ -1158,10 +1165,10 @@ or a range ex 3-7`)
 'col' to apply rule accross the clicked row or across the clicked column respectively.
 `);
     if (!choice) {
-      alert("aborting, no choice made");
+      alert('aborting, no choice made');
       return null;
     }
-    if (choice.toLowerCase() !== "col" && choice.toLowerCase() !== "row") {
+    if (choice.toLowerCase() !== 'col' && choice.toLowerCase() !== 'row') {
       return getChoiceForPickCellsAdv();
     }
     return choice.toLowerCase();
@@ -1173,75 +1180,106 @@ or a range ex 3-7`)
     if (!choice) {
       return;
     }
-    if (choice && choice.toLowerCase() === "row") {
-      cellPlacement = "bottom";
+    if (choice && choice.toLowerCase() === 'row') {
+      cellPlacement = 'bottom';
     } else {
-      cellPlacement = "right";
+      cellPlacement = 'right';
     }
-    let index = cellPlacement === "bottom" ? key : (colIndex + 1);
+    const index = cellPlacement === 'bottom' ? key : (colIndex + 1);
     const range = askForRange(cellPlacement, index);
     if (!range) {
       return;
     }
-    const parsedRange = parseRange(range, index, cellPlacement, noOfRows, noOfCols); 
+    const parsedRange = parseRange(range, index, cellPlacement, noOfRows, noOfCols);
     if (!parsedRange) {
       return;
     }
     if (parsedRange.length > 1) {
-      let startIndex = parsedRange[0];
-      let endIndex = parsedRange[1];
+      const startIndex = parsedRange[0];
+      const endIndex = parsedRange[1];
       if (startIndex >= endIndex) {
         return;
       }
-      if (cellPlacement === "bottom" ) {
-        applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-		        Number(noOfRows), Number(noOfCols), cellPlacement, key);
+      if (cellPlacement === 'bottom') {
+        applyRuleAdvRow(
+          startIndex,
+          endIndex,
+          ruleName,
+          currentTable,
+		        Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          key,
+        );
       } else {
-        applyRuleAdvCol(startIndex - 1, endIndex - 1, ruleName, currentTable, 
-		        Number(noOfRows), Number(noOfCols), cellPlacement, colIndex);
+        applyRuleAdvCol(
+          startIndex - 1,
+          endIndex - 1,
+          ruleName,
+          currentTable,
+		        Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          colIndex,
+        );
       }
     } else {
-      let startIndex = parsedRange[0];
-      if (cellPlacement === "bottom" ) {
-	 let endIndex = Number(key) - 1;
-	 applyRuleAdvRow(startIndex, endIndex, ruleName, currentTable, 
-		         Number(noOfRows), Number(noOfCols), cellPlacement, key);
+      const startIndex = parsedRange[0];
+      if (cellPlacement === 'bottom') {
+	 const endIndex = Number(key) - 1;
+	 applyRuleAdvRow(
+          startIndex,
+          endIndex,
+          ruleName,
+          currentTable,
+		         Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          key,
+        );
       } else {
-         let endIndex = Number(colIndex) - 1;
-	 applyRuleAdvCol(startIndex - 1, endIndex, ruleName, currentTable, 
-		         Number(noOfRows), Number(noOfCols), cellPlacement, colIndex);
+        const endIndex = Number(colIndex) - 1;
+	 applyRuleAdvCol(
+          startIndex - 1,
+          endIndex,
+          ruleName,
+          currentTable,
+		         Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          colIndex,
+        );
       }
     }
   }
 
   function deleteTable(tableName) {
-    setState(prevState => {
-      const copy = {...prevState};
+    setState((prevState) => {
+      const copy = { ...prevState };
       delete copy.tables[tableName];
-      copy.currentTable = "";
-      return copy
-    })
+      copy.currentTable = '';
+      return copy;
+    });
   }
 
   function changeTableName(tableName, option) {
-     setState(prevState => {
+    setState((prevState) => {
       const copy = JSON.parse(JSON.stringify(prevState));
       const tableCopy = JSON.parse(JSON.stringify(copy.tables[tableName]));
       delete copy.tables[tableName];
-      copy.tables[option] = {...tableCopy};
+      copy.tables[option] = { ...tableCopy };
       copy.currentTable = option;
       return copy;
-    })
-   
+    });
   }
 
   function modifyTable(tableName) {
     const option = prompt(`Type 'delete' if you wish to delete the current table
 or any other word(s) to rename it as such`);
-    if (!option){
+    if (!option) {
       return;
     }
-    if (option.toLowerCase() === "delete") {
+    if (option.toLowerCase() === 'delete') {
       deleteTable(tableName);
     } else {
       changeTableName(tableName, option);
@@ -1249,13 +1287,13 @@ or any other word(s) to rename it as such`);
   }
 
   async function switchUser() {
-    const id = prompt("enter user ID:")
+    const id = prompt('enter user ID:');
     if (!id) {
       return;
     }
 
-    if (typeof(id) !== "string" || id.length !== 36) {
-      alert("No such ID in our records");
+    if (typeof (id) !== 'string' || id.length !== 36) {
+      alert('No such ID in our records');
       return;
     }
 
@@ -1264,34 +1302,34 @@ or any other word(s) to rename it as such`);
 
   return (
     <div className="container">
-	  <SidePane
-	    records={recordState}
-	    handleTableClick={handleTableClick}
-      createTableBtnClicked={createTableBtnClicked}
-	    modifyTable={modifyTable}
-	    switchUser={switchUser}
-	  />
-	  <TableView
-	    records={recordState}
-      createTable={createTable}
-      createTableBtnClicked={createTableBtnClicked}
-      unsetCreateTableBtnClicked={unsetCreateTableBtnClicked}
-	    addColumn={addColumn}
-	    delColumn={delColumn}
-	    addRow={addRow}
-	    delRow={delRow}
-	    addRule={addRule}
-	    addRuleAdv={addRuleAdv}
-	    updateTableView={updateTableView}
-	    implementRule={implementRule}
-	    afterRulePick={afterRulePick}
-	    afterRulePickAdv={afterRulePickAdv}
-	    pickCells={pickCells}
-	    pickCellsAdv={pickCellsAdv}
-	    clearRule={clearRule}
-	    increaseCellSize={increaseCellSize}
-	    decreaseCellSize={decreaseCellSize}
-	  />
+      <SidePane
+        records={recordState}
+        handleTableClick={handleTableClick}
+        createTableBtnClicked={createTableBtnClicked}
+        modifyTable={modifyTable}
+        switchUser={switchUser}
+      />
+      <TableView
+        records={recordState}
+        createTable={createTable}
+        createTableBtnClicked={createTableBtnClicked}
+        unsetCreateTableBtnClicked={unsetCreateTableBtnClicked}
+        addColumn={addColumn}
+        delColumn={delColumn}
+        addRow={addRow}
+        delRow={delRow}
+        addRule={addRule}
+        addRuleAdv={addRuleAdv}
+        updateTableView={updateTableView}
+        implementRule={implementRule}
+        afterRulePick={afterRulePick}
+        afterRulePickAdv={afterRulePickAdv}
+        pickCells={pickCells}
+        pickCellsAdv={pickCellsAdv}
+        clearRule={clearRule}
+        increaseCellSize={increaseCellSize}
+        decreaseCellSize={decreaseCellSize}
+      />
     </div>
-  )
+  );
 }

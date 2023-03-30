@@ -1,44 +1,51 @@
-import React from "react";
+import React from 'react';
 
 export default function SidePane(props) {
   // console.log(props.records.tables)
-  const tables = props.records.tables;
+  const { tables } = props.records;
   const tableList = [];
-  const currentTable = props.records.currentTable;
+  const { currentTable } = props.records;
   // const table = props.records.tables[currentTable];
 
   // create array of JSX
   for (const key in tables) {
     tableList.push(
       <h3
-	onClick={(event) => props.handleTableClick(key)}
-	key={key}
-	className={key === currentTable ? "current--table": ""}
-        data-name={key}>
+        onClick={(event) => props.handleTableClick(key)}
+        key={key}
+        className={key === currentTable ? 'current--table' : ''}
+        data-name={key}
+      >
         {key}
-      </h3>
-    )
+      </h3>,
+    );
   }
   return (
     <div className="side--pane">
       <button onClick={props.createTableBtnClicked}>
-	  create table +
-      </button> <br />
+        create table +
+      </button>
+      {' '}
+      <br />
       <br />
       <button onClick={props.switchUser}>
-	  switch user
-      </button> <br />
+        switch user
+      </button>
+      {' '}
+      <br />
 
       <div className="table--list">
-	{currentTable ? 
-		<button
-		 onClick={(event) => props.modifyTable(currentTable)}
-		>
-		 modify table
-		</button>: 
-		""}
-	{tableList}
+        {currentTable
+          ? (
+            <button
+              onClick={(event) => props.modifyTable(currentTable)}
+            >
+              modify table
+            </button>
+          )
+	  : ''}
+        {tableList}
       </div>
     </div>
-  )
-};
+  );
+}
