@@ -895,13 +895,13 @@ function delRow(tableName) {
     if (colIndex === noOfCols - 1 && key === noOfRows){
       cellPlacement = checkRowAndCols(key, colIndex, noOfRows, noOfCols);
     } else if (colIndex === noOfCols - 1) {
-      cellPlacement = checkLastCol(colIndex) ? "right" : "col";
+      cellPlacement = checkLastCol(colIndex) ? "right" : "column";
     } else if (key === noOfRows) {
       cellPlacement = checkLastRow(key) ? "bottom" : "row";
     } else {
       cellPlacement = false;
     }
-    return cellPlacement;
+    return cellPlacement
   }	
 
   /**
@@ -912,7 +912,10 @@ function delRow(tableName) {
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     let cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
     if (cellPlacement !== "right" && cellPlacement !== "bottom") {
-      const option = prompt(`${cellPlacement} not empty. Do you want to add 
+      if (!cellPlacement) return alert('basic rule can only be applied on last row or column. '
+      + 'and it must not be the last cell of the table as it is ambiguous where you want to'
+      + 'apply rule')
+      const option = prompt(`${cellPlacement} not empty. Do you want to overwrite values in  
 ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
       if (!option || (option && option.toLowerCase() === "no") ||
           ((option.toLowerCase() !== "yes") && 
@@ -922,24 +925,24 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
 	        (option.toLowerCase() !== "yes")) {
         setState(prevState => ({
           ...prevState,
-	  tables: {
-            ...prevState.tables,
-	    [currentTable]: {
-              ...prevState.tables[currentTable],
-	      ruleMode: false,
-	      currentRule: "",
-	    }
-	  }
-	}));
+          tables: {
+                  ...prevState.tables,
+            [currentTable]: {
+                    ...prevState.tables[currentTable],
+              ruleMode: false,
+              currentRule: "",
+            }
+          }
+        }));
       } else {
         if (cellPlacement === "row") {
           cellPlacement = "bottom";
-	} else if (cellPlacement === "col") {
+        } else if (cellPlacement === "column") {
           cellPlacement = "right";
-	} else {
-          alert("rule will be applied on the last row");
-          cellPlacement = "bottom";
-	}
+        } else {
+                alert("rule will be applied on the last row");
+                cellPlacement = "bottom";
+        }
         implementRule(ruleName, currentTable, cellPlacement);
       }
     } else {
