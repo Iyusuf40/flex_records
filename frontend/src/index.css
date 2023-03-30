@@ -1,7 +1,7 @@
 body {
   box-sizing: border-box;
   margin: 0;
-  background-color: #000000;
+  background-color: rgba(0, 0, 0, 0.9);
   color: #e9e2c1f9;
   font-family: 'Montserrat', sans-serif;
   line-height: 1.5;
@@ -102,8 +102,9 @@ button:hover {
 .about--container {
   display: flex;
   flex-direction: column;
-  padding: 3px 10px;
-  width: 100%;
+  padding: 5px 10px;
+  width: 70%;
+  margin: 0 auto;
 }
 
 
@@ -212,6 +213,13 @@ p {
     width: fit-content;
   }
 
+.intro--container,
+.compute--container,
+.access--anywhere--container,
+.about--container {
+  width: 100%;
+}
+
   .outer--container {
     max-width: 100%;
     margin: auto;
@@ -232,11 +240,6 @@ p {
     box-sizing: border-box;
   }
 
-  /* .docs--container h1,
-  .tutorial--container h1 {
-    text-align: left;
-    padding: 0;
-  } */
 
   .tutorial--container {
     width: 100%;
