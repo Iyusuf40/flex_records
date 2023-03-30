@@ -901,7 +901,7 @@ function delRow(tableName) {
     } else {
       cellPlacement = false;
     }
-    return cellPlacement;
+    return cellPlacement
   }	
 
   /**
@@ -912,8 +912,8 @@ function delRow(tableName) {
   function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     let cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols);
     if (cellPlacement !== "right" && cellPlacement !== "bottom") {
-      const option = prompt(`${cellPlacement} not empty. Do you want to add 
-${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
+      const option = prompt(`clicked row or column not empty. Do you want to apply 
+rule? type 'yes' or 'overwrite' to overwrite row or column or type 'no' to cancel`);
       if (!option || (option && option.toLowerCase() === "no") ||
           ((option.toLowerCase() !== "yes") && 
 	  (option.toLowerCase() !== "overwrite"))) {
