@@ -450,6 +450,37 @@ will be overwritten`);
     });
   }
 
+  function setInsertMode(tableName) {
+    alert('click on the cell you want to insert row or column around')
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+          ...prevState.tables,
+          [tableName]: {
+            ...prevState.tables[tableName],
+            insertMode: true,
+          },
+	      },
+      }));
+  }
+
+  function unSetInsertMode(tableName) {
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+          ...prevState.tables,
+          [tableName]: {
+            ...prevState.tables[tableName],
+            insertMode: false,
+          },
+	      },
+      }));
+  }
+
   function addRule(tableName) {
     setState((prevState) => (
       {
@@ -458,9 +489,9 @@ will be overwritten`);
 	      tables: {
           ...prevState.tables,
           [tableName]: {
-		  ...prevState.tables[tableName],
-		  ruleMode: true,
-		  ruleModeAdv: false,
+            ...prevState.tables[tableName],
+            ruleMode: true,
+            ruleModeAdv: false,
           },
 	      },
       }));
@@ -563,6 +594,22 @@ will be overwritten`);
     return array;
   }
 
+  function setDataField(data, tableName) {
+    setState((prevState) => (
+      {
+        ...prevState,
+	        tables: {
+          ...prevState.tables,
+	        [tableName]: {
+            ...prevState.tables[tableName],
+	          data: data,
+            noOfRows: Object.keys(data).length,
+            noOfCols: data[1] ? data[1].length : 0
+	        },
+	      },
+      }
+    )); 
+  }
   /**
    * updateTableView - handles text changes in cells
    */
@@ -1174,6 +1221,136 @@ or a range ex 3-7`);
     return choice.toLowerCase();
   }
 
+  function handleInsert(tableName, noOfRows, noOfCols, row, colIndex) {
+    const validRowOrCol = ['row', 'col']
+    const validSides = ['t', 'b', 'r', 'l']
+    const funcMap = {
+      t: insertRowAbove,
+      b: insertRowBelow,
+      r: insertColRight,
+      l: insertColLeft
+    }
+    let side
+    let rowOrCOl = prompt(`type 'row' or 'col' to insert a new row or column`)
+    if (!rowOrCOl) return unSetInsertMode(tableName)
+    rowOrCOl = rowOrCOl ? rowOrCOl.toLowerCase() : ""
+    if (!validRowOrCol.includes(rowOrCOl)) {
+      alert('ivalid option')
+      return handleInsert(tableName, noOfRows, noOfCols, row, colIndex)
+    }
+    if (rowOrCOl === 'row') {
+      side = prompt(`type 't' (top) to insert above current row or 'b' (below) to insert below`)
+      side = side ? side.toLowerCase()[0] : ""
+    } else {
+      side = prompt(`type 'r' (right) to insert to the right side of current column 
+or 'l' (left) to insert to the right`)
+      side = side ? side.toLowerCase()[0] : ""
+    }
+    if (!side) return unSetInsertMode(tableName)
+    if (!validSides.includes(side)) {
+      alert('invalid side entered')
+      return handleInsert(tableName, noOfRows, noOfCols, row, colIndex)
+    }
+    const data = funcMap[side](tableName, noOfRows, noOfCols, row, colIndex)
+    if (!data) return unSetInsertMode(tableName)
+    let shouldRetainRules
+    if (checkIfRulesSet(tableName)) {
+      shouldRetainRules = prompt(`it is advised to clear existing rules to prevent
+quirky behavior, to keep rules type 'yes'`)
+    }
+    if (!shouldRetainRules || shouldRetainRules.toLowerCase() !== 'yes') {
+      clearRule(tableName)
+    }
+    setDataField(data, tableName)
+    unSetInsertMode(tableName)
+  }
+
+  function checkIfRulesSet(tableName) {
+    const table = recordState.tables[tableName]
+    if (!table) return false
+    if (table.prevRule) return true
+    if (table.prevRuleAdv) {
+      if (table.prevRuleAdv.rowsRules && Object.keys(table.prevRuleAdv.rowsRules).length) return true
+      if (table.prevRuleAdv.colsRules && Object.keys(table.prevRuleAdv.colsRules).length) return true
+    }
+    return false
+  }
+
+  function getData(tableName) {
+    const table = recordState.tables[tableName]
+    const data = table.data
+    return data
+  }
+
+  function insertRowAbove(tableName, noOfRows, noOfCols, row, colIndex) {
+    const data = getData(tableName)
+    return insertRowAboveImpl(row, data)
+  }
+
+  function insertRowBelow(tableName, noOfRows, noOfCols, row, colIndex) {
+    const data = getData(tableName)
+    return insertRowBelowImpl(row, data)
+  }
+
+  function insertColRight(tableName, noOfRows, noOfCols, row, colIndex) {
+    const data = getData(tableName)
+    return insertColRightImpl(colIndex, data)
+  }
+
+  function insertColLeft(tableName, noOfRows, noOfCols, row, colIndex) {
+    const data = getData(tableName)
+    return insertColLeftImpl(colIndex, data)
+  }
+
+  function insertColRightImpl(partition, data) {
+    if (partition < 0) return
+    for (const row in data) {
+      const currRow = data[row]
+      const len = currRow.length
+      for(let i = len; i > partition; i--) {
+        currRow[i] = currRow[i - 1]
+        if (i === partition + 1) currRow[i] = ''
+      }
+    }
+    return data
+  }
+  
+  function insertColLeftImpl(partition, data) {
+    if (partition < 0) return
+    for (const row in data) {
+      const currRow = data[row]
+      const len = currRow.length
+      for(let i = len; i > partition - 1; i--) {
+        currRow[i] = currRow[i - 1]
+        if (i === partition) currRow[i] = ''
+      }
+    }
+    return data
+  }
+  
+  function insertRowBelowImpl(partition, data) {
+    if (partition < 1) return
+    const keys = Object.keys(data).slice(partition - 1)
+    const max = Number(keys[keys.length - 1])
+    for(let i = max + 1; i > partition; i--) {
+      data[i] = data[i - 1]
+      if (i === partition + 1) data[i] = new Array(data[1].length)
+    }
+    return data
+  }
+  
+  function insertRowAboveImpl(partition, data) {
+    if (partition < 1) return
+    const keys = Object.keys(data).slice(partition - 1)
+    const max = Number(keys[keys.length - 1])
+    const len = data[1].length
+    for(let i = max + 1; i >= partition; i--) {
+      data[i] = data[i - 1]
+      if (i === partition) data[i] = new Array(len)
+    }
+    return data
+  }
+
   function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols) {
     const choice = getChoiceForPickCellsAdv();
     let cellPlacement;
@@ -1329,6 +1506,9 @@ or any other word(s) to rename it as such`);
         clearRule={clearRule}
         increaseCellSize={increaseCellSize}
         decreaseCellSize={decreaseCellSize}
+        setInsertMode={setInsertMode}
+        unSetInsertMode={unSetInsertMode}
+        handleInsert={handleInsert}
       />
     </div>
   );

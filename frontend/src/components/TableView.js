@@ -106,24 +106,30 @@ export default function TableView(props) {
 	     saveRowIndex + 1,
             )}
 
-            onClick={(e) => (table.ruleMode && table.currentRule ? props.pickCells(
-		              table.currentRule,
-		              currentTable,
-		              row,
-		              colIndex,
-		              noOfRows,
-		              noOfCols,
-	                   )
-			   : (table.ruleModeAdv && table.currentRule ? props.pickCellsAdv(
-	       table.currentRule,
-			      currentTable,
-			      row,
-			      colIndex,
-			      noOfRows,
-			      noOfCols,
-			   )
-		           : '')
-	   )}
+            onClick={(e) => {
+              if (table.ruleMode && table.currentRule) { 
+                props.pickCells(
+                  table.currentRule,
+                  currentTable,
+                  row,
+                  colIndex,
+                  noOfRows,
+                  noOfCols,
+                )
+              } else if ( table.ruleModeAdv && table.currentRule) {
+                props.pickCellsAdv(
+                  table.currentRule,
+                  currentTable,
+                  row,
+                  colIndex,
+                  noOfRows,
+                  noOfCols,
+                )
+              }
+              if (table.insertMode) props.handleInsert(
+                currentTable, noOfRows, noOfCols, row, colIndex)
+            } 
+    }
           />
         );
         rowContainer.push(cell);
@@ -215,6 +221,11 @@ export default function TableView(props) {
           onClick={(e) => props.delRow(currentTable)}
         >
           del row -
+        </button>
+        <button
+          onClick={(e) => props.setInsertMode(currentTable)}
+        >
+          insert
         </button>
         <button
           onClick={(e) => props.addRule(currentTable)}
