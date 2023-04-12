@@ -450,6 +450,22 @@ will be overwritten`);
     });
   }
 
+  function setDeleteMode(tableName) {
+    alert('click on the cell you want to delete its row or column')
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+          ...prevState.tables,
+          [tableName]: {
+            ...prevState.tables[tableName],
+            deleteMode: true,
+          },
+	      },
+      }));
+  }
+
   function setInsertMode(tableName) {
     alert('click on the cell you want to insert row or column around')
     setState((prevState) => (
@@ -476,6 +492,21 @@ will be overwritten`);
           [tableName]: {
             ...prevState.tables[tableName],
             insertMode: false,
+          },
+	      },
+      }));
+  }
+
+  function unSetDeleteMode(tableName) {
+    setState((prevState) => (
+      {
+	      ...prevState,
+	      altered: true,
+	      tables: {
+          ...prevState.tables,
+          [tableName]: {
+            ...prevState.tables[tableName],
+            deleteMode: false,
           },
 	      },
       }));
@@ -763,15 +794,19 @@ will be overwritten`);
    * currentState -> currentState of records object
    */
   function applyRuleOnModification(currentState) {
-    /* apply advanced here */
-    if (currentState.tables[currentState.currentTable].prevRuleAdv) {
-      applyAdvancedRulesOnModification(currentState);
-    }
-    if (currentState.tables[currentState.currentTable].prevRule) {
-      const { currentTable } = currentState;
-      const ruleName = currentState.tables[currentTable].prevRule;
-      const { cellPlacement } = currentState.tables[currentTable];
-      implementRule(ruleName, currentTable, cellPlacement);
+    try {
+      /* apply advanced here */
+      if (currentState.tables[currentState.currentTable].prevRuleAdv) {
+        applyAdvancedRulesOnModification(currentState);
+      }
+      if (currentState.tables[currentState.currentTable].prevRule) {
+        const { currentTable } = currentState;
+        const ruleName = currentState.tables[currentTable].prevRule;
+        const { cellPlacement } = currentState.tables[currentTable];
+        implementRule(ruleName, currentTable, cellPlacement);
+      }
+    } catch (e) {
+      alert(`could not apply rule. please clear rule and reapply it`)
     }
   }
 
@@ -1221,6 +1256,62 @@ or a range ex 3-7`);
     return choice.toLowerCase();
   }
 
+  function handleDelete(tableName, noOfRows, noOfCols, row, colIndex) {
+    const validRowOrCol = ['row', 'col']
+    let shouldRetainRules
+    let rowOrCOl = prompt(`type 'row' or 'col' to delete an entire row or column`)
+    if (!rowOrCOl) return unSetDeleteMode(tableName)
+    rowOrCOl = rowOrCOl ? rowOrCOl.toLowerCase() : ""
+    if (!validRowOrCol.includes(rowOrCOl)) {
+      alert('ivalid option')
+      return handleDelete(tableName, noOfRows, noOfCols, row, colIndex)
+    }
+    if (checkIfRulesSet(tableName)) {
+      shouldRetainRules = prompt(`it is advised to clear existing rules to prevent
+quirky behavior, to keep rules type 'yes'`)
+    }
+    if (!shouldRetainRules || shouldRetainRules.toLowerCase() !== 'yes') {
+      clearRule(tableName)
+    }
+    if (rowOrCOl === 'row') {
+      deleteEntireRow(tableName, row)
+    } else {
+      deleteEntireCol(tableName, colIndex)
+    }
+    unSetDeleteMode(tableName)
+  }
+
+  function deleteEntireCol(tableName, colIndex) {
+    const data = getData(tableName)
+    if (colIndex < 0) return
+    for (let row in data) {
+      const currRow = data[row]
+      const len = currRow.length
+      for(let i = colIndex; i < len; i++) {
+        if (i < len - 1) currRow[i] = currRow[i + 1]
+        if (i === len - 1) currRow.length = len - 1
+      }
+    }
+    setDataField(data, tableName)
+  }
+
+  function deleteEntireRow(tableName, row) {
+    if (row < 1) return
+    const data = getData(tableName)
+    const keys = Object.keys(data)
+    const index = keys.indexOf(`${row}`)
+    const len = keys.length
+    let saveNext = null
+    if (row > len || index === -1) return
+    for (let i = index; i < len - 1; i++) {
+      saveNext = data[keys[i + 1]]
+      data[keys[i + 1]] = data[keys[i]]
+      data[keys[i]] = saveNext
+    }
+    delete(data[keys[len - 1]])
+    setDataField(data, tableName)
+  }
+
   function handleInsert(tableName, noOfRows, noOfCols, row, colIndex) {
     const validRowOrCol = ['row', 'col']
     const validSides = ['t', 'b', 'r', 'l']
@@ -1509,6 +1600,9 @@ or any other word(s) to rename it as such`);
         setInsertMode={setInsertMode}
         unSetInsertMode={unSetInsertMode}
         handleInsert={handleInsert}
+        setDeleteMode={setDeleteMode}
+        unSetDeleteMode={unSetDeleteMode}
+        handleDelete={handleDelete}
       />
     </div>
   );

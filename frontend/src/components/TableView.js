@@ -128,6 +128,9 @@ export default function TableView(props) {
               }
               if (table.insertMode) props.handleInsert(
                 currentTable, noOfRows, noOfCols, row, colIndex)
+              if (table.deleteMode) props.handleDelete(
+                currentTable, noOfRows, noOfCols, row, colIndex)
+                
             } 
     }
           />
@@ -227,6 +230,13 @@ export default function TableView(props) {
         >
           insert
         </button>
+        <button
+          onClick={(e) => props.setDeleteMode(currentTable)}
+        >
+          delete
+        </button>
+      </div>
+      <div className="rules--buttons">
         <button
           onClick={(e) => props.addRule(currentTable)}
         >
