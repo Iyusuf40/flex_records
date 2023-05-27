@@ -2,17 +2,39 @@ import React from 'react';
 
 function setCurrentTableToFirstPos(tablesList, currentTable) {
   if (!tablesList.length) return
-  let indexOfCurrTable = null
+  let indexOfCurrTable = findIndex(tablesList, currentTable)
+  if (!indexOfCurrTable) return
+  // putCurrTableFirsrAndShiftTablesList(tablesList, indexOfCurrTable)
+  // putCurrTableFirsrAndShiftTablesList not working as expected because
+  // key is always sorted after rendering
+  // possible solution is to store order
+  swapCurrTableToFront(tablesList, indexOfCurrTable)
+}
+
+function findIndex(tablesList, currentTable) {
   for (let i = 0; i < tablesList.length; i++) {
     if (tablesList[i].key === currentTable) {
-      indexOfCurrTable = i
-      break
+      return i
     }
   }
-  if (!indexOfCurrTable) return
+  return null
+}
+
+// function putCurrTableFirsrAndShiftTablesList(tablesList, index) {
+//   if (index >= tablesList.length || index < 0) return
+//   let save = tablesList[index]
+//   let curr = null
+//   for (let i = 0; i <= index; i++) {
+//     curr = tablesList[i]
+//     tablesList[i] = save
+//     save = curr
+//   }
+// }
+
+function swapCurrTableToFront(tablesList, index) {
   let save = tablesList[0]
-  tablesList[0] = tablesList[indexOfCurrTable]
-  tablesList[indexOfCurrTable] = save
+  tablesList[0] = tablesList[index]
+  tablesList[index] = save
 }
 
 export default function SidePane(props) {
