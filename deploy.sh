@@ -1,6 +1,9 @@
 #!/bin/bash
 # deploys flex_records
 
+# stop mongod first -> low memory server
+sudo service mongod stop
+
 # deploy frontend
 cd flex_records/frontend
 git checkout deployment
@@ -9,6 +12,9 @@ rm -rf build
 npm install
 npm run build
 sudo service flex_records_fe restart
+
+# start mongod
+sudo service mongod start
 
 cd
 
