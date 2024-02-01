@@ -54,6 +54,15 @@ input {
   padding-bottom: 20px;
 }
 
+.table--view::-webkit-scrollbar {
+  display: none;
+}
+
+.table--view {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 @media screen and (max-width: 400px) {
   .table--view  {
     min-width: fit-content;
