@@ -17,6 +17,10 @@ frontend/.pnp.js
 frontend/build
 *build*
 *node_modules*
+frontend/package-lock.json
+
+__pycache__
+*__pycache__*
 
 # testing
 frontend/coverage
