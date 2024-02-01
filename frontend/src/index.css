@@ -83,6 +83,10 @@ footer {
   padding-top: 20px;
 }
 
+.table--list > h3 {
+  text-align: left;
+}
+
 .table--list > h3:hover {
   color: rgba(0, 0, 255);
   font-size: 1.2em;
@@ -90,13 +94,16 @@ footer {
 
 button {
   width: 100px;
-  background-color: #171715;
+  background-color: #522081;
   border-radius: 5px;
-  color: blue;
+  color: rgb(206, 206, 240);
+  border-width: 0;
+  padding: 5px;
 }
 
 button:hover {
-  background-color: rgba(23, 23, 21, 0.4);
+  background-color: rgb(180, 53, 53);
+  cursor: pointer;
 }
 
 .current--table {
@@ -140,9 +147,9 @@ p {
 
 .tutorial--container {
   min-height: 85vh;
-  min-width: 1000px;
   align-items: center;
-  padding: 20px;
+  width: 70%;
+  margin: auto;
 }
 
 .tutorial--container > h1 {
@@ -153,7 +160,8 @@ p {
 .docs--container {
   min-height: 85vh;
   align-items: center;
-  padding: 20px;
+  width: 70%;
+  margin: auto;
 }
 
 .docs--container > h1 {
@@ -263,7 +271,6 @@ p {
 
   .tutorial--container * {
     margin: 0;
-    /* padding: 0; */
     box-sizing: border-box;
   }
 

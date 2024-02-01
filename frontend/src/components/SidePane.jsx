@@ -4,10 +4,6 @@ function setCurrentTableToFirstPos(tablesList, currentTable) {
   if (!tablesList.length) return
   let indexOfCurrTable = findIndex(tablesList, currentTable)
   if (!indexOfCurrTable) return
-  // putCurrTableFirsrAndShiftTablesList(tablesList, indexOfCurrTable)
-  // putCurrTableFirsrAndShiftTablesList not working as expected because
-  // key is always sorted after rendering
-  // possible solution is to store order
   swapCurrTableToFront(tablesList, indexOfCurrTable)
 }
 
@@ -20,17 +16,6 @@ function findIndex(tablesList, currentTable) {
   return null
 }
 
-// function putCurrTableFirsrAndShiftTablesList(tablesList, index) {
-//   if (index >= tablesList.length || index < 0) return
-//   let save = tablesList[index]
-//   let curr = null
-//   for (let i = 0; i <= index; i++) {
-//     curr = tablesList[i]
-//     tablesList[i] = save
-//     save = curr
-//   }
-// }
-
 function swapCurrTableToFront(tablesList, index) {
   let save = tablesList[0]
   tablesList[0] = tablesList[index]
@@ -38,22 +23,20 @@ function swapCurrTableToFront(tablesList, index) {
 }
 
 export default function SidePane(props) {
-  // console.log(props.records.tables)
+
   const { tables } = props.records;
   const tableList = [];
   const { currentTable } = props.records;
-  // const table = props.records.tables[currentTable];
 
-  // create array of JSX
-  for (const key in tables) {
+  for (const tableName in tables) {
     tableList.push(
       <h3
-        onClick={(event) => props.handleTableClick(key)}
-        key={key}
-        className={key === currentTable ? 'current--table' : ''}
-        data-name={key}
+        onClick={(event) => props.handleTableClick(tableName)}
+        key={tableName}
+        className={tableName === currentTable ? 'current--table' : ''}
+        data-name={tableName}
       >
-        {key}
+        {tableName}
       </h3>,
     );
   }
@@ -75,15 +58,16 @@ export default function SidePane(props) {
       <br />
 
       <div className="table--list">
+        {/* currentTable is not undefined? */}
         {currentTable
           ? (
-            <button
-              onClick={(event) => props.modifyTable(currentTable)}
-            >
-              modify table
-            </button>
-          )
-	  : ''}
+              <button
+                onClick={(event) => props.modifyTable(currentTable)}
+              >
+                modify table
+              </button>
+            )
+	        : ''}
         {tableList}
       </div>
     </div>

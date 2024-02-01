@@ -3,7 +3,7 @@ import React from 'react';
 export default function Tutorial() {
   return (
     <div className="tutorial--container">
-      <h1>Hi, Welcome to flex_records tutuorial page</h1>
+      <h1>Hi, Welcome to flex_records tuturial page</h1>
       <p>
         The tutorial has 2 broad sections,
         Basic rules and Advanced, with each section having sub-sections.
@@ -11,10 +11,10 @@ export default function Tutorial() {
         flex_records handle computations we define.
       </p>
       <p>
-        Do not be frightened :) there are only 5 rules to learn. And they
+        Do not be frightened :) there are only a few rules to learn. And they
         apply to both basic and advanced with the only difference being that
         advanced rules gives you more freedom on where and how to apply
-        rules. There are also demo videos for each section.
+        rules.
       </p>
       <div>
         <ul>
@@ -177,15 +177,6 @@ export default function Tutorial() {
             from which row to start computations.
           </p>
         </div>
-        <h3>Demo</h3>
-        <div className="youtube">
-          <iframe
-            width="1000"
-            height="600"
-            title="basic-rules demo"
-            src="https://www.youtube.com/embed/77iz8caEq_A"
-          />
-        </div>
       </div>
       <div className="advanced--rules">
         <h2>Advanced Rules</h2>
@@ -302,15 +293,7 @@ export default function Tutorial() {
             <br />
           </p>
         </div>
-        <h3>Demo</h3>
-        <div className="youtube">
-          <iframe
-            width="1000"
-            height="600"
-            title="advanced demo"
-            src="https://www.youtube.com/embed/hOOzbQ7ocL4"
-          />
-        </div>
+
         <div className="features">
           <h2>Other Functionalities:</h2>
           <p>
