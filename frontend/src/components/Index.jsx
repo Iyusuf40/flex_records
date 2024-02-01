@@ -91,23 +91,6 @@ export default function Index() {
       </div>
       <div className="about--container">
         <div className="about--text text">
-          <h2>About</h2>
-          <h3>
-            Why I did this project:
-          </h3>
-          <p>
-            Sometime in September 2022, My dad travelled. I was left to run our
-            relatively small family business in his absence. Boy! there was so many
-            book records to enter and  so many times I was reaching to my
-            calculator. First, it was tedious and
-            more dangerously, it was prone to error. Dad is quite elderly now so I felt
-            spreadsheet like google's or excel will be quite challenging to learn.
-            Thankfully, at the time I was enrolled in a software engineering course
-            with Alx Africa, based on holberton's curriculum. I knew this was going
-            to be a project for me to do, a platform so easy to use anyone can
-            keep business records and perform calculations on data with lower risk
-            of errors. And that was how this project was born.
-          </p>
           <h3>
             Contact:
           </h3>

@@ -15,27 +15,27 @@ import {
 
 
 const router = createBrowserRouter([
-      {
-	path: "/",
-	element: <Root />,
-	children: [
-	  {
-	    index: true,
-	    element: <Index />,
-	  },
-	  {
-	    path: "records",
-	    element: <Container />,
-	  },
-	  {
-	    path: "docs",
-	    element: <Docs />,
-	  },
-	  {
-	    path: "tutorial",
-	    element: <Tutorial />,
-	  },
-	],
+    {
+		path: "/",
+		element: <Root />,
+		children: [
+			{
+				index: true,
+				element: <Index />,
+			},
+			{
+				path: "records",
+				element: <Container />,
+			},
+			{
+				path: "docs",
+				element: <Docs />,
+			},
+			{
+				path: "tutorial",
+				element: <Tutorial />,
+			},
+		],
    }
 ]);
 
