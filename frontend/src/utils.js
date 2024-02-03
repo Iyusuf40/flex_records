@@ -1,4 +1,5 @@
 import uuid from 'react-uuid';
+import utilities from './utilities';
 
 export const postUrl = 'http://localhost:3001/records';
 export const putUrl = 'http://localhost:3001/records';
@@ -231,7 +232,7 @@ export function applyRuleOnModification(currentState) {
       const { currentTable } = currentState;
       const ruleName = currentState.tables[currentTable].prevRule;
       const { cellPlacement } = currentState.tables[currentTable];
-      implementRule(ruleName, currentTable, cellPlacement);
+      implementRule(ruleName, currentState, currentTable, cellPlacement);
    }
  } catch (e) {
    alert(`could not apply rule. please clear rule and reapply it`)
@@ -366,39 +367,25 @@ export function getRuleFunctionName(ruleName, cellPlacement) {
  * or right to left but if set to bottom computations will be done
  * vertically
  */
-export function implementRule(ruleName, currentTable, cellPlacement) {
-    // check if cell is empty
-        // check if cell is bottom
-        // decide if operate vertical or hor
-    // get data
-        // clone it
-        // fix it
-        // set it back
+export function implementRule(ruleName, recordState, currentTable, cellPlacement) {
+
+    const { data } = recordState.tables[currentTable];
+    const { noOfRows } = recordState.tables[currentTable]
+    const { noOfCols } = recordState.tables[currentTable]
+
+    recordState.tables[currentTable].ruleMode = false
+    recordState.tables[currentTable].altered = true
+    recordState.tables[currentTable].prevRule = ruleName
+    recordState.tables[currentTable].cellPlacement = cellPlacement
+    recordState.tables[currentTable].currentRule = ""
 
     /* gets the function name to apply as rule */
     const functionName = getRuleFunctionName(ruleName, cellPlacement);
-    setRecordsState((prevState) => {
-        const { data } = prevState.tables[currentTable];
-        const { noOfRows } = prevState.tables[currentTable];
-        const { noOfCols } = prevState.tables[currentTable];
-        const dataClone = { ...data };
-        // call appropiate function on data
-        // set data back
-        return ({
-        ...prevState,
-        tables: {
-            ...prevState.tables,
-        [currentTable]: {
-            ...prevState.tables[currentTable],
-        // utilities returns an object of functions to apply rules
-            data: utilities()[functionName](dataClone, noOfRows, noOfCols),
-        ruleMode: false,
-        altered: true,
-        prevRule: ruleName,
-        cellPlacement,
-            currentRule: '',
-        },
-        },
-        });
-    });
+
+    setRecordsStateWrapper(
+        recordState, 
+        `tables.${currentTable}.data`, 
+        utilities()[functionName](data, noOfRows, noOfCols)
+    )
+
 }

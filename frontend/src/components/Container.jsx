@@ -1,7 +1,6 @@
 import React from 'react';
 import SidePane from './SidePane';
 import TableView from './TableView';
-import utilities from '../utilities';
 import advancedutils from '../advancedutils';
 import * as utils from '../utils'
 
@@ -70,47 +69,7 @@ export default function Container() {
     setRecordsState({...prevState})
   }
 
-  // function addRow(tableName) {
-  //   if (recordState.currentTable === '') {
-  //     alert('No table selected');
-  //     return null;
-  //   }
-  //   setRecordsState((prevState) => (
-  //     {
-	//       ...prevState,
-	//       altered: true,
-	//       tables: {
-  //         ...prevState.tables,
-  //         [tableName]: {
-	// 	  ...prevState.tables[tableName],
-  //           noOfRows: prevState.tables[tableName].noOfRows + 1,
-	// 	  data: {
-  //             ...prevState.tables[tableName].data,
-	// 	    [prevState.tables[tableName].noOfRows + 1]:
-	// 		  createArray(prevState.tables[tableName].noOfCols),
-	// 	  },
-  //         },
-	//       },
-  //     }));
-  //   applyRuleOnModification(recordState);
-  // }
-
-  // function delRow(tableName) {
-  //   if (recordState.currentTable === '') {
-  //     alert('No table selected');
-  //     return null;
-  //   }
-  //   setRecordsState((prevState) => {
-  //     const newObj = JSON.parse(JSON.stringify(prevState)); // {...prevState};
-  //     const noOfRows = Number(newObj.tables[tableName].noOfRows);
-  //     delete newObj.tables[tableName].data[noOfRows];
-  //     newObj.tables[tableName].noOfRows = noOfRows - 1;
-  //     if (newObj.tables[tableName].noOfRows < 0) {
-  //       newObj.tables[tableName].noOfRows = 0;
-  //     }
-  //     return newObj;
-  //   });
-  // }
+  window.setRecordsStateWrapper = setRecordsStateWrapper
 
   function setDeleteMode(tableName) {
     alert('click on the cell you want to delete its row or column')
@@ -482,10 +441,10 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
           alert('rule will be applied on the last row');
           cellPlacement = 'bottom';
         }
-        implementRule(ruleName, currentTable, cellPlacement);
+        implementRule(ruleName, recordState, currentTable, cellPlacement);
       }
     } else {
-      implementRule(ruleName, currentTable, cellPlacement);
+      implementRule(ruleName, recordState, currentTable, cellPlacement);
     }
   }
 
