@@ -1,9 +1,11 @@
 import React from 'react';
-import uuid from 'react-uuid';
 import SidePane from './SidePane';
 import TableView from './TableView';
 import utilities from '../utilities';
 import advancedutils from '../advancedutils';
+import * as utils from '../utils'
+
+Object.assign(window, utils) // make all utils functions global
 
 export default function Container() {
   /**
@@ -45,414 +47,74 @@ export default function Container() {
 
   */
 
+  let [recordState, setRecordsState] = React.useState({});
+
+  // setup initial load and use as condition to fetch data from backend
+  let [init, setInit] = React.useState({ loaded: false, saved: false });
+
   let flexId = localStorage.getItem('flexId');
-  const postUrl = 'http://localhost:3001/records';
-  const putUrl = 'http://localhost:3001/records';
-  const getUrl = 'http://localhost:3001/records/';
 
   if (!flexId) {
-    flexId = uuid();
-    const id = prompt(`Could not get your ID from localStorage, please enter
-your ID if you have one or skip. We will generate a new ID for you`);
-    if (id) {
-      getAltUser(getUrl, id);
-    } else {
-      localStorage.setItem('flexId', flexId);
-      alert(`here is your ID '${flexId}'. you may store it somewhere in case 
-you want to access  your records from a different device`);
-    }
+    attemptToGetFlexId(setRecordsState)
   }
 
-  if (flexId) {
-    localStorage.setItem('flexId', flexId);
-  }
-
-  let init = null;
-  let setInit;
-
-  // setup initial load and use as condition to fetch data from store
-  [init, setInit] = React.useState({ loaded: false, saved: false }, setInit);
-
-  const recordKey = `record-${flexId}`;
-  const records = getRecords(recordKey, init);
-
-  function getRecords(recordKey, init) {
-    if (init.loaded) {
-      return;
-    }
-    // setInit(true); // set init the first time of load
-    getFromBackend(getUrl, flexId);
-    return ({
-	    id: flexId,
-	    tables: {
-	    },
-	    altered: false,
-	    currentTable: '',
-	    rowsAndColsNoSet: false,
-	    archiveTablesNames: [],
-    });
-  }
-
-  async function getAltUser(url, id) {
-    let resp = null;
-    await fetch(url + id).then((data) => data.json()).then((data) => {
-      resp = data;
-    });
-    if (resp && Object.keys(resp).length) {
-      setState(resp);
-      localStorage.setItem('flexId', id);
-    } else {
-      let id = prompt('User not found, enter correct ID or skip, we will generate one for you');
-      if (id) {
-        return await getAltUser(url, id);
-      }
-      id = uuid();
-      localStorage.setItem('flexId', id);
-      alert(`here is your ID '${id}'. you may store it somewhere in case 
-you want to access  your records from a different device`);
-    }
-  }
-
-  async function getFromBackend(url, id) {
-    let resp = null;
-    await fetch(url + id).then((data) => data.json()).then((data) => {
-      resp = data;
-    });
-    if (Object.keys(resp).length) {
-      setState(resp);
-    }
-    setInit({ loaded: true, saved: false }); // set init the first time of load
-  }
-
-  async function setAltUser(url, id) {
-    let resp = null;
-    await fetch(url + id).then((data) => data.json()).then((data) => {
-      resp = data;
-    });
-    if (Object.keys(resp).length) {
-      setState(resp);
-      localStorage.setItem('flexId', id);
-    } else {
-      alert('User not found');
-    }
-  }
-
-  /*
-   * function getFromStore(recordKey) {
-    let load = localStorage.getItem(recordKey);
-    if (load) {
-      return JSON.parse(load); // when using fetch setState instead
-    }
-    return null;
-  }
-  */
-
-  let recordState = null;
-  let setState;
-
-  [recordState, setState] = React.useState(records, setState);
-
-  async function save(record, recordKey, init) {
-    if (!init.loaded) {
-      return;
-    }
-    const json = JSON.stringify(record);
-    // localStorage.setItem(recordKey, json);
-    await fetch(putUrl, {
-      method: 'PUT',
-      body: json,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-  }
+  getRecords(init, flexId, {setRecordsState, setInit});
 
   /**
-   * persists newly created records
+   * TODO: set and unset recordState.changed so as to reduce backend calls
    */
-  function persist(record) {
-    const json = JSON.stringify(record);
-    fetch(postUrl, {
-      method: 'POST',
-      body: json,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  setTimeout(save, 1000, recordState, init);
+
+  function setRecordsStateWrapper(prevState, pathToPropToChange, value) {
+    changeValueInNestedObj(prevState, pathToPropToChange, value)
+    setRecordsState({...prevState})
   }
 
-  /* async function shouldSave(recordState, init) {
-    if (!init.saved) {
-      await setTimeout(save, 3000, recordState, recordKey, init);
-      setInit({loaded: true, saved: true});
-    } else {
-      //
-    }
-  } */
+  // function addRow(tableName) {
+  //   if (recordState.currentTable === '') {
+  //     alert('No table selected');
+  //     return null;
+  //   }
+  //   setRecordsState((prevState) => (
+  //     {
+	//       ...prevState,
+	//       altered: true,
+	//       tables: {
+  //         ...prevState.tables,
+  //         [tableName]: {
+	// 	  ...prevState.tables[tableName],
+  //           noOfRows: prevState.tables[tableName].noOfRows + 1,
+	// 	  data: {
+  //             ...prevState.tables[tableName].data,
+	// 	    [prevState.tables[tableName].noOfRows + 1]:
+	// 		  createArray(prevState.tables[tableName].noOfCols),
+	// 	  },
+  //         },
+	//       },
+  //     }));
+  //   applyRuleOnModification(recordState);
+  // }
 
-  // shouldSave(recordState, init);
-  setTimeout(save, 1000, recordState, recordKey, init);
-
-  function createArray(size) {
-    const myArray = [];
-    for (let index = 0; index < size; index++) {
-      myArray.push('');
-    }
-    return myArray;
-  }
-
-  function newData(noOfRows, noOfCols) {
-    const rows = noOfRows;
-    const cols = noOfCols;
-    const data = {};
-    for (let row = 1; row <= rows; row++) {
-      data[row] = createArray(cols); // new Array(cols);
-    }
-    return data;
-  }
-
-  function newTable(name, noOfRows, noOfCols) {
-    // tableExist()
-    // checkInvalidParams()
-    // let rows = Number(noOfRows) ? noOfRows : 1;
-    // let cols = Number(noOfCols) ? noOfCols : 1;
-    const obj = {
-      data: newData(noOfRows, noOfCols),
-      noOfRows,
-      noOfCols,
-      ruleMode: false,
-      currentRule: '',
-      altered: true,
-    };
-    return obj;
-  }
-
-  // set the number of columns and number of rows
-  // this block of code is irrelevant now. Useful prior to
-  // createTable implementation
-  if (!recordState.rowsAndColsNoSet && Object.keys(recordState.tables)) {
-    // console.log("ran")
-    const copy = JSON.parse(JSON.stringify(recordState));
-    for (const table in copy.tables) {
-      if (Object.keys(copy.tables[table].data).length) {
-        copy.tables[table] = {
-          ...copy.tables[table],
-	  noOfCols: copy.tables[table].data[Object
-		  .keys(copy.tables[table].data)[0]].length,
-	  noOfRows: Object.keys(copy.tables[table].data).length,
-        };
-      }
-    }
-    copy.rowsAndColsNoSet = true;
-    setState(copy);
-  }
-  // to-do
-  // is there a better way to get the noOfRows and noOfCols set?
-
-  function handleTableClick(tableName) {
-    setState((prevState) => (
-      {
-        ...prevState,
-	  currentTable: tableName,
-      }
-    ));
-  }
-
-  function checkInvalidParams(name, noOfRows, noOfCols) {
-    let error = false;
-    if (!noOfRows || noOfRows < 1) {
-      alert('error creating table: invalid number of rows');
-      error = true;
-    } else if (!noOfCols || noOfCols < 1) {
-      alert('error creating table: invalid number of columns');
-      error = true;
-    } else if (!name) {
-      alert('error creating table: no name given for table');
-      error = true;
-    }
-    return error;
-  }
-
-  function checkLimits(noOfRows, noOfCols) {
-    const totalCells = noOfRows * noOfCols;
-    if (totalCells > 10000) {
-      const resp = prompt(`You are trying to create ${totalCells} number of cells, 
-we advice you break the table into smaller tables else the app will be slow or 
-worst case you might make your 
-system unresponsive. Enter 'yes' to go ahead or 'no' to cancel`);
-      if (resp && resp.toLowerCase() === 'yes') {
-        return true;
-      }
-      return false;
-    }
-    return true;
-  }
-
-  function createTableBtnClicked() {
-    setState((prev) => ({
-      ...prev,
-      createTableBtnClicked: true,
-    }));
-  }
-
-  function unsetCreateTableBtnClicked() {
-    setState((prev) => ({
-      ...prev,
-      createTableBtnClicked: false,
-    }));
-  }
-
-  function createTable(name, noOfRows, noOfCols) {
-    // get name from prompt and a noOfRows and noOfCols
-    // const name = prompt("enter the name of new table: ");
-    if (!name) {
-      return;
-    }
-
-    if (recordState.tables[name]) {
-      const option = prompt(`Table ${name} already exist, if you type 'yes' it
-will be overwritten`);
-      if (option && option.toLowerCase() !== 'yes') {
-        return;
-      }
-    }
-    // const size = prompt("size of table: format rows x columns, eg, 5x5");
-    // let [noOfRows, noOfCols] = size ? size.toLowerCase().split("x") : ["", ""];
-    // check for invalid responses
-    noOfRows = Number(noOfRows);
-    noOfCols = Number(noOfCols);
-    if (checkInvalidParams(name, noOfRows, noOfCols)) {
-      return null;
-    }
-    const isWithinLimits = checkLimits(noOfRows, noOfCols);
-    if (!isWithinLimits) {
-      return;
-    }
-    setState((prevState) => {
-	  const copy = (
-	     {
-		     ...prevState,
-		     altered: true,
-          createTableBtnClicked: false,
-		     tables: {
-			     ...(prevState.tables),
-			     [name]: newTable(name, noOfRows, noOfCols),
-		     },
-		     currentTable: name,
-		     rowsAndColsNoSet: true,
-	     }
-      );
-      persist(copy);
-      return copy;
-    });
-  }
-
-  function addColumn(tableName) {
-    if (recordState.currentTable === '') {
-      alert('No table selected');
-      return null;
-    }
-
-    if (!recordState.tables[tableName].noOfRows) {
-      return null;
-    }
-    setState((prevState) => (
-      {
-	      ...prevState,
-	      altered: true,
-	      tables: {
-          ...prevState.tables,
-          [tableName]: {
-		  ...prevState.tables[tableName],
-            noOfCols: prevState.tables[tableName].noOfCols + 1,
-          },
-	      },
-      }));
-    applyRuleOnModification(recordState);
-  }
-
-  function removeCol(data, noOfCols) {
-    const copy = { ...data };
-    for (const key in copy) {
-      const arr = [];
-      for (let index = 0; index < noOfCols - 1; index++) {
-        arr[index] = copy[key][index];
-      }
-      copy[key] = arr;
-    }
-    return copy;
-  }
-
-  function delColumn(tableName) {
-    if (recordState.currentTable === '') {
-      alert('No table selected');
-      return null;
-    }
-    setState((prevState) => (
-      {
-	      ...prevState,
-	      altered: true,
-	      tables: {
-          ...prevState.tables,
-          [tableName]: {
-		  ...prevState.tables[tableName],
-	          data: removeCol(
-              prevState.tables[tableName].data,
-			  prevState.tables[tableName].noOfCols,
-            ),
-            noOfCols: prevState.tables[tableName].noOfCols
-              ? Number(prevState.tables[tableName].noOfCols) - 1
-              : 0,
-          },
-	      },
-      }));
-  }
-
-  function addRow(tableName) {
-    if (recordState.currentTable === '') {
-      alert('No table selected');
-      return null;
-    }
-    setState((prevState) => (
-      {
-	      ...prevState,
-	      altered: true,
-	      tables: {
-          ...prevState.tables,
-          [tableName]: {
-		  ...prevState.tables[tableName],
-            noOfRows: prevState.tables[tableName].noOfRows + 1,
-		  data: {
-              ...prevState.tables[tableName].data,
-		    [prevState.tables[tableName].noOfRows + 1]:
-			  createArray(prevState.tables[tableName].noOfCols),
-		  },
-          },
-	      },
-      }));
-    applyRuleOnModification(recordState);
-  }
-
-  function delRow(tableName) {
-    if (recordState.currentTable === '') {
-      alert('No table selected');
-      return null;
-    }
-    setState((prevState) => {
-      const newObj = JSON.parse(JSON.stringify(prevState)); // {...prevState};
-      const noOfRows = Number(newObj.tables[tableName].noOfRows);
-      delete newObj.tables[tableName].data[noOfRows];
-      newObj.tables[tableName].noOfRows = noOfRows - 1;
-      if (newObj.tables[tableName].noOfRows < 0) {
-        newObj.tables[tableName].noOfRows = 0;
-      }
-      return newObj;
-    });
-  }
+  // function delRow(tableName) {
+  //   if (recordState.currentTable === '') {
+  //     alert('No table selected');
+  //     return null;
+  //   }
+  //   setRecordsState((prevState) => {
+  //     const newObj = JSON.parse(JSON.stringify(prevState)); // {...prevState};
+  //     const noOfRows = Number(newObj.tables[tableName].noOfRows);
+  //     delete newObj.tables[tableName].data[noOfRows];
+  //     newObj.tables[tableName].noOfRows = noOfRows - 1;
+  //     if (newObj.tables[tableName].noOfRows < 0) {
+  //       newObj.tables[tableName].noOfRows = 0;
+  //     }
+  //     return newObj;
+  //   });
+  // }
 
   function setDeleteMode(tableName) {
     alert('click on the cell you want to delete its row or column')
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -468,7 +130,7 @@ will be overwritten`);
 
   function setInsertMode(tableName) {
     alert('click on the cell you want to insert row or column around')
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -483,7 +145,7 @@ will be overwritten`);
   }
 
   function unSetInsertMode(tableName) {
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -498,7 +160,7 @@ will be overwritten`);
   }
 
   function unSetDeleteMode(tableName) {
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -513,7 +175,7 @@ will be overwritten`);
   }
 
   function addRule(tableName) {
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -529,7 +191,7 @@ will be overwritten`);
   }
 
   function addRuleAdv(tableName) {
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -545,7 +207,7 @@ will be overwritten`);
   }
 
   function increaseCellSize(tableName) {
-    setState((prevState) => {
+    setRecordsState((prevState) => {
       const currentSize = prevState.tables[tableName].cellSize;
       let size = 0;
       if (currentSize) {
@@ -572,7 +234,7 @@ will be overwritten`);
   }
 
   function decreaseCellSize(tableName) {
-    setState((prevState) => {
+    setRecordsState((prevState) => {
       const currentSize = prevState.tables[tableName].cellSize;
       let size = 0;
       if (currentSize) {
@@ -600,7 +262,7 @@ will be overwritten`);
    * unsets rules for the current table
    */
   function clearRule(tableName) {
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
 	      ...prevState,
 	      altered: true,
@@ -626,7 +288,7 @@ will be overwritten`);
   }
 
   function setDataField(data, tableName) {
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
         ...prevState,
 	        tables: {
@@ -647,7 +309,7 @@ will be overwritten`);
   function updateTableView(tableName, rowIndex, colIndex, value, SN) {
     // SN is serial number, used as key in storing rows in
 	  // records.tables.tableName.data
-    setState((prevState) => (
+    setRecordsState((prevState) => (
       {
         ...prevState,
 	        tables: {
@@ -667,195 +329,6 @@ will be overwritten`);
       }
     ));
     applyRuleOnModification(recordState);
-    // setInit({loaded: true, saved: false});
-  }
-
-  // cellPlacement determines where to apply rule
-  function getRuleFunctionName(ruleName, cellPlacement) {
-    const ruleNameMapRight = {
-      sum: 'sumHorizontal',
-      subtractReverse: 'subHorizontalRight',
-      subtract: 'subHorizontalLeft',
-      multiply: 'mulHorizontal',
-      average: 'avgHorizontal',
-    };
-
-    const ruleNameMapBottom = {
-      sum: 'sumVertical',
-      subtract: 'subVerticalTop',
-      subtractReverse: 'subVerticalBottom',
-      multiply: 'mulVertical',
-      average: 'avgVertical',
-    };
-
-    if (cellPlacement === 'bottom') {
-      return ruleNameMapBottom[ruleName];
-    }
-    return ruleNameMapRight[ruleName];
-  }
-
-  // cellPlacement determines where to apply rule
-  function getRuleFunctionNameAdv(ruleName, cellPlacement) {
-    const ruleNameMapRight = {
-      sum: 'sumHorizontalAdv',
-      subtractReverse: 'subHorizontalRightAdv',
-      subtract: 'subHorizontalLeftAdv',
-      multiply: 'mulHorizontalAdv',
-      average: 'avgHorizontalAdv',
-    };
-
-    const ruleNameMapBottom = {
-      sum: 'sumVerticalAdv',
-      subtract: 'subVerticalTopAdv',
-      subtractReverse: 'subVerticalBottomAdv',
-      multiply: 'mulVerticalAdv',
-      average: 'avgVerticalAdv',
-    };
-
-    if (cellPlacement === 'bottom') {
-      return ruleNameMapBottom[ruleName];
-    }
-    return ruleNameMapRight[ruleName];
-  }
-
-  /**
-   * applyAdvancedRulesOnModification - runs everytime a cell is changed
-   * to reapply advanced rule
-   */
-  function applyAdvancedRulesOnModification(currentState) {
-    if (!currentState.tables[currentState.currentTable].prevRuleAdv) {
-      return;
-    }
-    const { prevRuleAdv } = currentState.tables[currentState.currentTable];
-    const advAppMode = true; /**
-    			    * flag to check if in advanced rule application phase
-			    * during table change.. So as not to create new
-			    * prevRuleAdv objects else will result in so many objects
-			    * created, which will slow and crash program since
-			    * new nonesense advRule objects will be attached to table
-			    * and program will try to apply them
-			    */
-
-    for (const key in prevRuleAdv.rowsRules) { // apply rows rules
-      const {
-	      startIndex,
-	      endIndex,
-	      ruleName,
-	      currentTable,
-	      noOfRows,
-	      noOfCols,
-	      cellPlacement,
-	      saveIndex,
-      } = prevRuleAdv.rowsRules[key];
-
-      applyRuleAdvRow(
-	      startIndex,
-	      endIndex,
-	      ruleName,
-	      currentTable,
-	      noOfRows,
-	      noOfCols,
-	      cellPlacement,
-	      saveIndex,
-	      advAppMode,
-      );
-    }
-
-    for (const key in prevRuleAdv.colsRules) { // apply cols rules
-      const {
-	      startIndex,
-	      endIndex,
-	      ruleName,
-	      currentTable,
-	      noOfRows,
-	      noOfCols,
-	      cellPlacement,
-	      saveIndex,
-      } = prevRuleAdv.colsRules[key];
-
-      applyRuleAdvCol(
-	      startIndex,
-	      endIndex,
-	      ruleName,
-	      currentTable,
-	      noOfRows,
-	      noOfCols,
-	      cellPlacement,
-	      saveIndex,
-	      advAppMode,
-      );
-    }
-  }
-
-  /**
-   * applyRuleOnModification - reapplies the previously set rule on
-   * new columns or rows created
-   *
-   * currentState -> currentState of records object
-   */
-  function applyRuleOnModification(currentState) {
-    try {
-      /* apply advanced here */
-      if (currentState.tables[currentState.currentTable].prevRuleAdv) {
-        applyAdvancedRulesOnModification(currentState);
-      }
-      if (currentState.tables[currentState.currentTable].prevRule) {
-        const { currentTable } = currentState;
-        const ruleName = currentState.tables[currentTable].prevRule;
-        const { cellPlacement } = currentState.tables[currentTable];
-        implementRule(ruleName, currentTable, cellPlacement);
-      }
-    } catch (e) {
-      alert(`could not apply rule. please clear rule and reapply it`)
-    }
-  }
-
-  /**
-   * implementRule - implements computations on each cell based on ruleName
-   * and cellPlacement on the currentTable in view
-   *
-   * ruleName - the name of rule to apply e.g sum
-   *
-   * cellPlacement - helps to decide the order of computation
-   * if set to right: comptations will be done from left to right
-   * or right to left but if set to bottom computations will be done
-   * vertically
-   */
-  function implementRule(ruleName, currentTable, cellPlacement) {
-    // check if cell is empty
-	  // check if cell is bottom
-	  // decide if operate vertical or hor
-    // get data
-	  // clone it
-	  // fix it
-	  // set it back
-
-    /* gets the function name to apply as rule */
-    const functionName = getRuleFunctionName(ruleName, cellPlacement);
-    setState((prevState) => {
-      const { data } = prevState.tables[currentTable];
-      const { noOfRows } = prevState.tables[currentTable];
-      const { noOfCols } = prevState.tables[currentTable];
-      const dataClone = { ...data };
-      // call appropiate function on data
-      // set data back
-      return ({
-        ...prevState,
-        tables: {
-          ...prevState.tables,
-	 [currentTable]: {
-            ...prevState.tables[currentTable],
-	   // utilities returns an object of functions to apply rules
-            data: utilities()[functionName](dataClone, noOfRows, noOfCols),
-	   ruleMode: false,
-	   altered: true,
-	   prevRule: ruleName,
-	   cellPlacement,
-            currentRule: '',
-	 },
-        },
-      });
-    });
   }
 
   /**
@@ -865,7 +338,7 @@ will be overwritten`);
    */
   function afterRulePick(ruleName, currentTable) {
     alert('click on the row or column you want to apply rule');
-    setState((prevState) => ({
+    setRecordsState((prevState) => ({
 	 ...prevState,
       tables: {
         ...prevState.tables,
@@ -885,7 +358,7 @@ will be overwritten`);
    */
   function afterRulePickAdv(ruleName, currentTable) {
     alert('click on the row or column you want to apply rule');
-    setState((prevState) => ({
+    setRecordsState((prevState) => ({
 	 ...prevState,
       tables: {
         ...prevState.tables,
@@ -989,7 +462,7 @@ ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
         return null;
       } if ((option && option.toLowerCase() !== 'overwrite')
 	        && (option.toLowerCase() !== 'yes')) {
-        setState((prevState) => ({
+        setRecordsState((prevState) => ({
           ...prevState,
           tables: {
             ...prevState.tables,
@@ -1152,7 +625,7 @@ or a range ex 3-7`);
 	   cellPlacement,
 	   saveIndex,
     };
-    setState((prevState) => {
+    setRecordsState((prevState) => {
       const { data } = prevState.tables[currentTable];
       const { noOfRows } = prevState.tables[currentTable];
       const { noOfCols } = prevState.tables[currentTable];
@@ -1208,7 +681,7 @@ or a range ex 3-7`);
 	   saveIndex,
     };
     const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
-    setState((prevState) => {
+    setRecordsState((prevState) => {
       const { data } = prevState.tables[currentTable];
       const { noOfRows } = prevState.tables[currentTable];
       const { noOfCols } = prevState.tables[currentTable];
@@ -1522,7 +995,7 @@ quirky behavior, to keep rules type 'yes'`)
   }
 
   function deleteTable(tableName) {
-    setState((prevState) => {
+    setRecordsState((prevState) => {
       const copy = { ...prevState };
       delete copy.tables[tableName];
       copy.currentTable = '';
@@ -1531,7 +1004,7 @@ quirky behavior, to keep rules type 'yes'`)
   }
 
   function changeTableName(tableName, option) {
-    setState((prevState) => {
+    setRecordsState((prevState) => {
       const copy = JSON.parse(JSON.stringify(prevState));
       const tableCopy = JSON.parse(JSON.stringify(copy.tables[tableName]));
       delete copy.tables[tableName];
@@ -1555,41 +1028,27 @@ or any other word(s) to rename it as such`);
   }
 
   async function switchUser() {
-    const id = prompt('enter user ID:');
-    if (!id) {
-      return;
-    }
-
-    if (typeof (id) !== 'string' || id.length !== 36) {
-      alert('No such ID in our records');
-      return;
-    }
-
-    await setAltUser(getUrl, id);
+    const id = promptForId()
+    if (!id) return
+    await setAltUser(getUrl, id, setRecordsState);
   }
 
   return (
     <div className="container">
       <SidePane
         records={recordState}
-        handleTableClick={handleTableClick}
-        createTableBtnClicked={createTableBtnClicked}
+        setRecordsStateWrapper={setRecordsStateWrapper}
+        changeValueInNestedObj={utils.changeValueInNestedObj}
         modifyTable={modifyTable}
         switchUser={switchUser}
       />
       <TableView
         records={recordState}
-        createTable={createTable}
-        createTableBtnClicked={createTableBtnClicked}
-        unsetCreateTableBtnClicked={unsetCreateTableBtnClicked}
-        addColumn={addColumn}
-        delColumn={delColumn}
-        addRow={addRow}
-        delRow={delRow}
+        setRecordsStateWrapper={setRecordsStateWrapper}
+        changeValueInNestedObj={utils.changeValueInNestedObj}
         addRule={addRule}
         addRuleAdv={addRuleAdv}
         updateTableView={updateTableView}
-        implementRule={implementRule}
         afterRulePick={afterRulePick}
         afterRulePickAdv={afterRulePickAdv}
         pickCells={pickCells}

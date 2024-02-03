@@ -22,6 +22,14 @@ function swapCurrTableToFront(tablesList, index) {
   tablesList[index] = save
 }
 
+function handleTableClick(tableName, recordState, setRecordsStateWrapper) {
+  setRecordsStateWrapper(recordState, "currentTable", tableName)
+}
+
+function createTableBtnClicked(setRecordsStateWrapper, recordState) {
+  setRecordsStateWrapper(recordState, "createTableBtnClicked", true)
+}
+
 export default function SidePane(props) {
 
   const { tables } = props.records;
@@ -31,7 +39,7 @@ export default function SidePane(props) {
   for (const tableName in tables) {
     tableList.push(
       <h3
-        onClick={(event) => props.handleTableClick(tableName)}
+        onClick={(event) => handleTableClick(tableName, props.records, props.setRecordsStateWrapper)}
         key={tableName}
         className={tableName === currentTable ? 'current--table' : ''}
         data-name={tableName}
@@ -45,7 +53,9 @@ export default function SidePane(props) {
 
   return (
     <div className="side--pane">
-      <button onClick={props.createTableBtnClicked}>
+      <button onClick={() => {
+          createTableBtnClicked(props.setRecordsStateWrapper, props.records)
+        }}>
         create table +
       </button>
       {' '}

@@ -1,4 +1,107 @@
 import React from 'react';
+import { changeValueInNestedObj, removeCol } from '../utils';
+
+function unsetCreateTableBtnClicked(setRecordsStateWrapper, recordState) {
+  setRecordsStateWrapper(recordState, "createTableBtnClicked", false)
+}
+
+function createTable(setRecordsStateWrapper, recordState, name, noOfRows, noOfCols) {
+  if (!name) {
+    return;
+  }
+
+  if (recordState.tables[name]) {
+    const option = prompt(`Table ${name} already exist, if you type 'yes' it
+will be overwritten`);
+    if (option && option.toLowerCase() !== 'yes') {
+      return;
+    }
+  }
+
+  noOfRows = Number(noOfRows);
+  noOfCols = Number(noOfCols);
+  if (validateParamsWhenCreatingTable(name, noOfRows, noOfCols)) {
+    return null;
+  }
+  const isWithinLimits = checkTableLimits(noOfRows, noOfCols);
+  if (!isWithinLimits) {
+    return;
+  }
+  
+  recordState.altered = true
+  recordState.createTableBtnClicked = false
+  recordState.rowsAndColsNoSet = true
+  recordState.currentTable = name
+  setRecordsStateWrapper(recordState, `tables.${name}`, newTable(noOfRows, noOfCols))
+  persist(recordState)
+  return recordState
+}
+
+function addColumn(setRecordsStateWrapper, tableName, recordState) {
+  if (recordState.currentTable === '') {
+    alert('No table selected');
+    return null;
+  }
+
+  if (!recordState.tables[tableName].noOfRows) {
+    return null;
+  }
+  recordState.altered = true
+  let newNoOfCols = recordState.tables[tableName].noOfCols + 1
+  setRecordsStateWrapper(recordState, `tables.${tableName}.noOfCols`, newNoOfCols)
+  applyRuleOnModification(recordState);
+}
+
+function delColumn(setRecordsStateWrapper, tableName, recordState) {
+  if (recordState.currentTable === '') {
+    alert('No table selected');
+    return null;
+  }
+
+  let prevNoOfCols = recordState.tables[tableName].noOfCols
+  let newNoOfCols = prevNoOfCols ? Number(prevNoOfCols) - 1 : 0
+
+  let prevTableData = recordState.tables[tableName].data
+  let newTableData = removeCol(prevTableData, Number(prevNoOfCols))
+
+  recordState.altered = true
+  changeValueInNestedObj(recordState, `tables.${tableName}.noOfCols`, newNoOfCols)
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, newTableData)
+}
+
+function addRow(setRecordsStateWrapper, tableName, recordState) {
+  if (recordState.currentTable === '') {
+    alert('No table selected');
+    return null;
+  }
+
+  const prevNoOfRows = recordState.tables[tableName].noOfRows
+  const newNoOfRows = prevNoOfRows + 1
+  let noOfCols = recordState.tables[tableName].noOfCols
+  let tableData = recordState.tables[tableName].data
+
+  recordState.tables[tableName].noOfRows = newNoOfRows
+  changeValueInNestedObj(tableData, `${newNoOfRows}`, createArray(noOfCols))
+
+  recordState.altered = true
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, tableData)
+  applyRuleOnModification(recordState);
+}
+
+function delRow(setRecordsStateWrapper, tableName, recordState) {
+  if (recordState.currentTable === '') {
+    alert('No table selected');
+    return null;
+  }
+
+  const noOfRows = Number(recordState.tables[tableName].noOfRows);
+  delete recordState.tables[tableName].data[noOfRows];
+  let newNoOfRows = noOfRows - 1
+  if (newNoOfRows < 0) newNoOfRows = 0
+
+  setRecordsStateWrapper(recordState, `tables.${tableName}.noOfRows`, newNoOfRows)
+}
+
 
 export default function TableView(props) {
   const { currentTable } = props.records;
@@ -45,29 +148,24 @@ export default function TableView(props) {
   let classCreateTableMode = '';
 
   if (props.records.createTableBtnClicked) {
-    // setFormObj({
-    // 	...clearFormObj,
-    // 	createTableMode: true
-    // })
     classCreateTableMode = '';
   } else {
     classCreateTableMode = 'hide';
   }
 
-  function parseCreateTableForm(formObj, e) {
+  function parseCreateTableForm(formObj, e, setRecordsStateWrapper, recordState) {
     e.preventDefault();
     const { noOfRows } = formObj.fields;
     const { noOfCols } = formObj.fields;
     const { name } = formObj.fields;
-    props.createTable(name, noOfRows, noOfCols);
-    // props.unsetCreateTableBtnClicked()
+    createTable(setRecordsStateWrapper, recordState, name, noOfRows, noOfCols);
     setFormObj(clearFormObj);
   }
 
   function cancelCreateTableForm(formObj, e) {
     e.preventDefault();
     setFormObj(clearFormObj);
-    props.unsetCreateTableBtnClicked();
+    unsetCreateTableBtnClicked(props.setRecordsStateWrapper, props.records);
   }
 
   function handleCreateFormChange(name, value) {
@@ -195,7 +293,9 @@ export default function TableView(props) {
             />
           </div>
           <div className="create--form--btns">
-            <button onClick={(e) => parseCreateTableForm(formObj, e)}>
+            <button onClick={(e) => {
+                parseCreateTableForm(formObj, e, props.setRecordsStateWrapper, props.records)
+              }}>
               create
             </button>
             <button className="cancel--btn" onClick={(e) => cancelCreateTableForm(formObj, e)}>
@@ -206,22 +306,22 @@ export default function TableView(props) {
       </div>
       <div className="rules--buttons">
         <button
-          onClick={(e) => props.addColumn(currentTable)}
+          onClick={(e) => addColumn(props.setRecordsStateWrapper, currentTable, props.records)}
         >
           add column +
         </button>
         <button
-          onClick={(e) => props.delColumn(currentTable)}
+          onClick={(e) => delColumn(props.setRecordsStateWrapper, currentTable, props.records)}
         >
           del column -
         </button>
         <button
-          onClick={(e) => props.addRow(currentTable)}
+          onClick={(e) => addRow(props.setRecordsStateWrapper, currentTable, props.records)}
         >
           add row +
         </button>
         <button
-          onClick={(e) => props.delRow(currentTable)}
+          onClick={(e) => delRow(props.setRecordsStateWrapper, currentTable, props.records)}
         >
           del row -
         </button>

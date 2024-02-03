@@ -32,7 +32,10 @@ def create_records():
     res = {}
     error = False
     req = request.get_json()
-    key = "records-" + req["id"]
+    id = req.get("id")
+    if not id:
+        return json_util.dumps({}), 409
+    key = "records-" + id
     con = Storage(server, key)
     to_save = {"_id": key, "data": req}
     try:
@@ -50,10 +53,12 @@ def create_records():
 @app.route("/records", methods=["PUT"], strict_slashes=False)
 def update_records():
     """ creates new record """
-    res = {}
     error = False
     req = request.get_json()
-    key = "records-" + req["id"]
+    id = req.get("id")
+    if not id:
+        return json_util.dumps({}), 409
+    key = "records-" + id
     con = Storage(server, key)
     to_save = {"_id": key, "data": req}
     filter_ = {"_id": key}
