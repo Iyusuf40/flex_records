@@ -20,8 +20,8 @@ export default function Container() {
 	        1: [1, 2, 3, 4],
 	        2: [10, 5, 2, 3]
 	      },
-	      noOfRows: 0,
-	      noOfCols: 0,
+	      noOfRows: 2,
+	      noOfCols: 4,
 	      ruleMode: false,
 	      currentRule: "", // rule for table eg sum-horizontal for left to right
 	                       // or sum-vertical for top to bottom

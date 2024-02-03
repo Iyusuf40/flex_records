@@ -147,7 +147,6 @@ function isTextInCell(value) {
 function subHorizontalLeftAdv(data, noOfRows, noOfCols, startIndex, endIndex, 
 	saveIndex) {
   for (const key in data) {
-    // const isIndexZeroNumber = Number(data[key][0]) ? true : false;
     const isIndexZeroNumber = getStartIndex(key, data, startIndex) === 0 ? 
 		                                                 true : false
     let res = isIndexZeroNumber ? 
@@ -172,10 +171,7 @@ function subHorizontalLeftAdv(data, noOfRows, noOfCols, startIndex, endIndex,
 function subHorizontalRightAdv(data, noOfRows, noOfCols, startIndex, endIndex, 
 	saveIndex) {
   for (const key in data) {
-    // const isIndexZeroNumber = Number(data[key][0]) ? true : false;
-    // let res = isIndexZeroNumber ? Number(data[key][0]) : Number(data[key][1]);
     let res = Number(data[key][endIndex]);
-    // implement search for first index where number starts and compute from there
     for (let index = endIndex - 1; index >= startIndex; index--) {
       let currentData = Number(data[key][index]);
       if (currentData) {
