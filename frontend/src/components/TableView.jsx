@@ -7,8 +7,6 @@ export default function TableView(props) {
     currentTable, tableData, noOfCols, noOfRows, table
   } = getCurrentTableProps(props)
 
-  const className = getClassName(table);
-
   const clearFormObj = {
     createTableMode: null,
     fields: {
@@ -20,13 +18,7 @@ export default function TableView(props) {
 
   let [formObj, setFormObj] = React.useState(clearFormObj);
 
-  let classCreateTableMode = '';
-
-  if (props.records.createTableBtnClicked) {
-    classCreateTableMode = '';
-  } else {
-    classCreateTableMode = 'hide';
-  }
+  let classForCreateTableMode = getClassForCreateTableMode(props)
 
   function parseCreateTableForm(formObj, e, recordState) {
     e.preventDefault();
@@ -37,8 +29,8 @@ export default function TableView(props) {
     setFormObj(clearFormObj);
   }
 
-  function cancelCreateTableForm(formObj, e) {
-    e.preventDefault();
+  function cancelCreateTableForm(event) {
+    event.preventDefault();
     setFormObj(clearFormObj);
     unsetCreateTableBtnClicked(props.setRecordsStateWrapper, props.records);
   }
@@ -54,86 +46,13 @@ export default function TableView(props) {
   }
 
   const tableView = [];
-  let rowIndex = 0;
-  if (tableData) {
-    for (let row = 1; row <= noOfRows; row++) {
-      const saveRowIndex = rowIndex;
-      const currentRow = tableData[row];
-      const rowContainer = [];
-      for (let colIndex = 0; colIndex < noOfCols; colIndex++) {
-        const cell = (
-          <input
-            type="text"
-            key={colIndex}
-            className={!colIndex ? 'label--col' : (className || '')}
-            placeholder={!colIndex ? 'label' : ''}
-            value={currentRow[colIndex] ? currentRow[colIndex] : ''}
-            data-col-index={colIndex}
-            data-row-index={saveRowIndex}
-            onChange={(e) => updateTableView(
-              currentTable,
-		          props.records,
-		          colIndex,
-	            e.target.value,
-	            saveRowIndex + 1,
-            )}
 
-            onClick={(e) => {
-              if (table.ruleMode && table.currentRule) { 
-                pickCells(
-                  table.currentRule,
-                  currentTable,
-                  row,
-                  colIndex,
-                  noOfRows,
-                  noOfCols,
-                  props.records
-                )
-              } else if ( table.ruleModeAdv && table.currentRule) {
-                pickCellsAdv(
-                  table.currentRule,
-                  currentTable,
-                  row,
-                  colIndex,
-                  noOfRows,
-                  noOfCols,
-                  props.records
-                )
-              }
-              if (table.insertMode) handleInsert(
-                currentTable, noOfRows, noOfCols, row, colIndex, props.records
-              )
-              if (table.deleteMode) handleDelete(currentTable, noOfRows, noOfCols, row, colIndex, props.records)
-                
-            } 
-    }
-          />
-        );
-        rowContainer.push(cell);
-      }
-      tableView.push(
-        <div
-          key={row}
-          className="row--container"
-        >
-          {'' && (
-          <span className="numbering">
-            {row}
-            :
-            {' '}
-          </span>
-          )}
-          {rowContainer}
-        </div>,
-      );
-      rowIndex++;
-    }
-  }
-  // const tableView = <input type="text" value="12" />
+  // tableView is populated with table fields in createTableRepresentation
+  createTableRepresentation(table, tableView, noOfRows, noOfCols)
 
   return (
     <div className="table--view">
-      <div className={`create--form--container ${classCreateTableMode}`}>
+      <div className={`create--form--container ${classForCreateTableMode}`}>
         <form className="create--form">
           <div className="form--block">
             <label htmlFor="table--name">Table name</label>
@@ -174,7 +93,7 @@ export default function TableView(props) {
               }}>
               create
             </button>
-            <button className="cancel--btn" onClick={(e) => cancelCreateTableForm(formObj, e)}>
+            <button className="cancel--btn" onClick={(e) => cancelCreateTableForm(e)}>
               cancel
             </button>
           </div>
@@ -334,6 +253,87 @@ export default function TableView(props) {
       </div>
     </div>
   );
+}
+
+function createTableRepresentation(table, tableView, noOfRows, noOfCols) {
+  const className = getClassName(table);
+  const tableData = table.data
+
+  if (tableData) {
+    let rowIndex = 0;
+    for (let row = 1; row <= noOfRows; row++) {
+      const saveRowIndex = rowIndex;
+      const currentRow = tableData[row];
+      const rowContainer = [];
+      for (let colIndex = 0; colIndex < noOfCols; colIndex++) {
+        const cell = (
+          <input
+            type="text"
+            key={colIndex}
+            className={!colIndex ? 'label--col' : (className || '')}
+            placeholder={!colIndex ? 'label' : ''}
+            value={currentRow[colIndex] ? currentRow[colIndex] : ''}
+            data-col-index={colIndex}
+            data-row-index={saveRowIndex}
+            onChange={(e) => updateTableView(
+              currentTable,
+		          props.records,
+		          colIndex,
+	            e.target.value,
+	            saveRowIndex + 1,
+            )}
+
+            onClick={(e) => {
+              if (table.ruleMode && table.currentRule) { 
+                pickCells(
+                  table.currentRule,
+                  currentTable,
+                  row,
+                  colIndex,
+                  noOfRows,
+                  noOfCols,
+                  props.records
+                )
+              } else if ( table.ruleModeAdv && table.currentRule) {
+                pickCellsAdv(
+                  table.currentRule,
+                  currentTable,
+                  row,
+                  colIndex,
+                  noOfRows,
+                  noOfCols,
+                  props.records
+                )
+              }
+              if (table.insertMode) handleInsert(
+                currentTable, noOfRows, noOfCols, row, colIndex, props.records
+              )
+              if (table.deleteMode) handleDelete(currentTable, noOfRows, noOfCols, row, colIndex, props.records)
+                
+            } 
+    }
+          />
+        );
+        rowContainer.push(cell);
+      }
+      tableView.push(
+        <div
+          key={row}
+          className="row--container"
+        >
+          {'' && (
+          <span className="numbering">
+            {row}
+            :
+            {' '}
+          </span>
+          )}
+          {rowContainer}
+        </div>,
+      );
+      rowIndex++;
+    }
+  }
 }
 
 function unsetCreateTableBtnClicked(setRecordsStateWrapper, recordState) {
@@ -734,4 +734,12 @@ function getCurrentTableProps(props) {
 	  : {};
   
   return {currentTable, tableData, noOfCols, noOfRows, table}
+}
+
+function getClassForCreateTableMode(props) {
+  if (props.records.createTableBtnClicked) {
+    return '';
+  } else {
+    return 'hide';
+  }
 }
