@@ -1,5 +1,5 @@
-import React from 'react';
-import architecture from '../images/infrastructure.drawio.png';
+import React from "react";
+import architecture from "../images/infrastructure.drawio.png";
 
 export default function Docs() {
   return (
@@ -16,21 +16,20 @@ export default function Docs() {
         <p>All 3 machines are Linux based on Ubuntu 20.04.5</p>
         <h3> Front-end:</h3>
         <p>
-          The front-end was built with react. react-router and
-          react-uuid were also incorporated.
-          The choice to use react was down to the need to maintain,
-          update and listen for state changes. The bulk of the app logic is
-          embedded in the frontend since it is wasteful and slow to perform
-          computations in the back-end before re-rendering the results in the
-          front-end.
+          The front-end was built with react. react-router and react-uuid were
+          also incorporated. The choice to use react was down to the need to
+          maintain, update and listen for state changes. The bulk of the app
+          logic is embedded in the frontend since it is wasteful and slow to
+          perform computations in the back-end before re-rendering the results
+          in the front-end.
         </p>
         <h3> Back-end:</h3>
         <p>
           The back-end of the app was built with python using Flask, Mongodb as
-          database and Pymongo as the database driver.
-          The choice for using python was because of I beign more proficient in
-          python. And Mongodb was used due to the constant changing nature of
-          the data structure sent to the backend.
+          database and Pymongo as the database driver. The choice for using
+          python was because of I beign more proficient in python. And Mongodb
+          was used due to the constant changing nature of the data structure
+          sent to the backend.
         </p>
 
         <b>API Endpoints:</b>
@@ -41,8 +40,8 @@ export default function Docs() {
           <ul>
             <li>Fetches the records associated with the id</li>
             <li>
-              Returns a JSON having all the records and data associated with that
-              ID with 200 status code if successful
+              Returns a JSON having all the records and data associated with
+              that ID with 200 status code if successful
             </li>
           </ul>
         </div>
@@ -51,8 +50,13 @@ export default function Docs() {
           POST /records_api/
           <br />
           <ul>
-            <li>Accepts a payload and validates it before persisting in the database</li>
-            <li>Returns a JSON of the payload and a 201 status code if successfull</li>
+            <li>
+              Accepts a payload and validates it before persisting in the
+              database
+            </li>
+            <li>
+              Returns a JSON of the payload and a 201 status code if successfull
+            </li>
           </ul>
         </div>
 
@@ -61,26 +65,25 @@ export default function Docs() {
           <br />
           <ul>
             <li>
-              Accepts a payload and validates it before persisting in the database,
-              ID is retrived from the payload and checked if record exists
+              Accepts a payload and validates it before persisting in the
+              database, ID is retrived from the payload and checked if record
+              exists
             </li>
-            <li>Returns a JSON of the payload and a 200 status code if successfull</li>
+            <li>
+              Returns a JSON of the payload and a 200 status code if successfull
+            </li>
           </ul>
         </div>
 
         <h2>Setting Up Locally:</h2>
         <p>
-          This section will give details on how to run the app locally on a Linux
-          machine
+          This section will give details on how to run the app locally on a
+          Linux machine
         </p>
         <h3>Front-end</h3>
         <p>
-          Install Node.js from this
-          {' '}
-          <a
-            href="https://nodejs.org/en/download/"
-            target="blank"
-          >
+          Install Node.js from this{" "}
+          <a href="https://nodejs.org/en/download/" target="blank">
             link
           </a>
           <span> </span>
@@ -94,10 +97,8 @@ export default function Docs() {
             target="blank"
           >
             link
-          </a>
-          {' '}
-          &nbsp;
-          if you don't have it installed.
+          </a>{" "}
+          &nbsp; if you don't have it installed.
           <br />
           Install pip3 by running 'sudo apt-get install python3-pip'
           <br />
@@ -108,9 +109,9 @@ export default function Docs() {
           >
             link
           </a>
-          . Ensure it is running.
-          Install Flask, Flask-CORS and pymongo by runing
-          'pip3 install Flask; pip3 install -U flask-cors; pip3 install pymongo'
+          . Ensure it is running. Install Flask, Flask-CORS and pymongo by
+          runing 'pip3 install Flask; pip3 install -U flask-cors; pip3 install
+          pymongo'
         </p>
         <h3>Starting the app</h3>
         <p>

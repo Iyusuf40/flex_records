@@ -23,11 +23,11 @@ input {
 }
 
 .input-2 {
- width: 150px;
+  width: 150px;
 }
 
 .input-3 {
- width: 200px;
+  width: 200px;
 }
 
 .numbering {
@@ -59,12 +59,12 @@ input {
 }
 
 .table--view {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 @media screen and (max-width: 400px) {
-  .table--view  {
+  .table--view {
     min-width: fit-content;
   }
 }
