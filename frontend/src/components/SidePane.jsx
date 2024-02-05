@@ -30,6 +30,25 @@ function createTableBtnClicked(setRecordsStateWrapper, recordState) {
   setRecordsStateWrapper(recordState, "createTableBtnClicked", true)
 }
 
+function modifyTable(tableName, recordState) {
+  const option = prompt(`Type 'delete' if you wish to delete the current table
+or any other word(s) to rename it as such`);
+  if (!option) {
+    return;
+  }
+  if (option.toLowerCase() === 'delete') {
+    deleteTable(tableName, recordState);
+  } else {
+    changeTableName(tableName, option, recordState);
+  }
+}
+
+async function switchUser() {
+  const id = promptForId()
+  if (!id) return
+  await setAltUser(getUrl, id, setRecordsState);
+}
+
 export default function SidePane(props) {
 
   const { tables } = props.records;
@@ -61,7 +80,7 @@ export default function SidePane(props) {
       {' '}
       <br />
       <br />
-      <button onClick={props.switchUser}>
+      <button onClick={switchUser}>
         switch user
       </button>
       {' '}
@@ -72,7 +91,7 @@ export default function SidePane(props) {
         {currentTable
           ? (
               <button
-                onClick={(event) => props.modifyTable(currentTable)}
+                onClick={(event) => modifyTable(currentTable, props.records)}
               >
                 modify table
               </button>

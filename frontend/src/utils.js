@@ -1,5 +1,6 @@
 import uuid from 'react-uuid';
 import utilities from './utilities';
+import advancedutils from './advancedutils';
 
 export const postUrl = 'http://localhost:3001/records';
 export const putUrl = 'http://localhost:3001/records';
@@ -39,7 +40,7 @@ export function attemptToGetFlexId(setRecordsState) {
     }
 }
   
-export function getRecords(init, flexId, {setRecordsState, setInit}) {
+export function getRecords(init, flexId, setRecordsState, setInit) {
     if (init.loaded) {
       return;
     }
@@ -222,17 +223,17 @@ export function removeCol(data, noOfCols) {
 *
 * currentState -> currentState of records object
 */
-export function applyRuleOnModification(currentState) {
+export function applyRuleOnModification(recordState) {
  try {
    /* apply advanced here */
-   if (currentState.tables[currentState.currentTable].prevRuleAdv) {
-      applyAdvancedRulesOnModification(currentState);
+   if (recordState.tables[recordState.currentTable].prevRuleAdv) {
+      applyAdvancedRulesOnModification(recordState);
    }
-   if (currentState.tables[currentState.currentTable].prevRule) {
-      const { currentTable } = currentState;
-      const ruleName = currentState.tables[currentTable].prevRule;
-      const { cellPlacement } = currentState.tables[currentTable];
-      implementRule(ruleName, currentState, currentTable, cellPlacement);
+   if (recordState.tables[recordState.currentTable].prevRule) {
+      const { currentTable } = recordState;
+      const ruleName = recordState.tables[currentTable].prevRule;
+      const { cellPlacement } = recordState.tables[currentTable];
+      implementRule(ruleName, recordState, currentTable, cellPlacement);
    }
  } catch (e) {
    alert(`could not apply rule. please clear rule and reapply it`)
@@ -243,11 +244,11 @@ export function applyRuleOnModification(currentState) {
  * applyAdvancedRulesOnModification - runs everytime a cell is changed
  * to reapply advanced rule
  */
-export function applyAdvancedRulesOnModification(currentState) {
-    if (!currentState.tables[currentState.currentTable].prevRuleAdv) {
+export function applyAdvancedRulesOnModification(recordState) {
+    if (!recordState.tables[recordState.currentTable].prevRuleAdv) {
         return;
     }
-    const { prevRuleAdv } = currentState.tables[currentState.currentTable];
+    const { prevRuleAdv } = recordState.tables[recordState.currentTable];
     const advAppMode = true; /**
                     * flag to check if in advanced rule application phase
                 * during table change.. So as not to create new
@@ -278,6 +279,7 @@ export function applyAdvancedRulesOnModification(currentState) {
             noOfCols,
             cellPlacement,
             saveIndex,
+            recordState,
             advAppMode,
         );
     }
@@ -303,6 +305,7 @@ export function applyAdvancedRulesOnModification(currentState) {
             noOfCols,
             cellPlacement,
             saveIndex,
+            recordState,
             advAppMode,
         );
     }
@@ -388,4 +391,475 @@ export function implementRule(ruleName, recordState, currentTable, cellPlacement
         utilities()[functionName](data, noOfRows, noOfCols)
     )
 
+}
+
+export function setDataField(recordState, data, tableName) {
+    const noOfRows = Object.keys(data).length
+    const noOfCols = data[1] ? data[1].length : 0
+    recordState.tables[tableName].noOfCols = noOfCols
+    recordState.tables[tableName].noOfRows = noOfRows
+    setRecordsStateWrapper(recordState, `tables.${tableName}.data`, data)
+}
+
+/**
+ * unsets rules for the current table
+ */
+export function clearRule(tableName, recordState) {
+    recordState.altered = true
+    recordState.tables[tableName].ruleMode = false
+    recordState.tables[tableName].ruleModeAdv = null
+    recordState.tables[tableName].prevRule = ""
+    recordState.tables[tableName].prevRuleAdv = null
+    recordState.tables[tableName].cellPlacement = ""
+    recordState.tables[tableName].currentRule = ""
+    recordState.tables[tableName].advAppMode = false
+    setRecordsStateWrapper(recordState, `tables.${tableName}.ruleMode`, false)
+}
+
+export function replaceAtIndex(array, index, value) {
+    array[index] = value;
+    return array;
+}
+
+
+/**
+ * getCellPlacement - brings in helper functions together to
+ * determine where to place computed data
+ */
+export function getCellPlacement(key, colIndex, noOfRows, noOfCols, recordState) {
+    let cellPlacement;
+    if (colIndex === noOfCols - 1 && key === noOfRows) {
+        cellPlacement = checkRowAndCols(key, colIndex, recordState);
+    } else if (colIndex === noOfCols - 1) {
+        cellPlacement = checkLastCol(colIndex, recordState) ? 'right' : 'column';
+    } else if (key === noOfRows) {
+        cellPlacement = checkLastRow(key, recordState) ? 'bottom' : 'row';
+    } else {
+        cellPlacement = false;
+    }
+    return cellPlacement;
+}
+
+/**
+ * checkRowAndCols - returns where to save applied rule
+ * computation results
+ */
+export function checkRowAndCols(key, colIndex, recordState) {
+    const rowIsEmpty = checkLastRow(key, recordState);
+    const colIsEmpty = checkLastCol(colIndex, recordState);
+    if (!rowIsEmpty && !colIsEmpty) {
+        return false;
+    }
+    return colIsEmpty ? 'right' : 'bottom';
+}
+
+/**
+* checkLastCol - checks if column at at the right edge is
+* empty to permit saving of data
+*/
+export function checkLastCol(colIndex, recordState) {
+ const table = getCurrentTable(recordState);
+ const { data } = table;
+ const empty = true;
+ for (const key in data) {
+   if (data[key][colIndex]) {
+     return false;
+   }
+ }
+ return empty;
+}
+
+/**
+ * checkLastRow - checks if column at at the bottom edge is
+ * empty to permit saving of data
+ */
+export function checkLastRow(key, recordState) {
+    const table = getCurrentTable(recordState);
+    const { data } = table;
+    const row = data[key];
+    const empty = true;
+    for (let index = 0; index < row.length; index++) {
+        if (row[index]) {
+        return false;
+        }
+    }
+    return empty;
+}
+
+export function getCurrentTable(recordState) {
+    const { currentTable } = recordState;
+    const table = recordState.tables[currentTable];
+    return table;
+}
+
+export function askForRange(cellPlacement, index) {
+    const choiceName = cellPlacement === 'right' ? 'column' : 'row';
+    // let opp = cellPlacement === "right" ? "row": "column";
+    const range = prompt(`you chose ${choiceName} number ${index},
+please specify from what ${choiceName} to apply rule. you can specify a single value
+or a range ex 3-7`);
+    return range;
+}
+
+export function isNumber(val) {
+    if (Number(val) === 0 || Number(val)) {
+      return true;
+    }
+    return false;
+}
+
+/**
+ * pickCells - after rule has been chosen, pickCells listens for cell click
+ * and determines if to go ahead with computations after the necassary
+ * conditions are met
+ */
+export function pickCells(ruleName, currentTable, key, colIndex, noOfRows, noOfCols, recordState) {
+    let cellPlacement = getCellPlacement(key, colIndex, noOfRows, noOfCols, recordState);
+    if (cellPlacement !== 'right' && cellPlacement !== 'bottom') {
+        if (!cellPlacement) {
+        return alert('basic rule can only be applied on last row or column. '
+        + 'and it must not be the last cell of the table as it is ambiguous where you want to'
+        + 'apply rule');
+        }
+        const option = prompt(`${cellPlacement} not empty. Do you want to overwrite values in  
+    ${cellPlacement}? type 'yes' or 'overwrite' to overwrite or 'no' to cancel`);
+        if (!option || (option && option.toLowerCase() === 'no')
+            || ((option.toLowerCase() !== 'yes')
+        && (option.toLowerCase() !== 'overwrite'))) {
+        return null;
+        } if ((option && option.toLowerCase() !== 'overwrite')
+            && (option.toLowerCase() !== 'yes')) {
+            recordState.tables[currentTable].ruleMode = false
+            recordState.tables[currentTable].currentRule = ""
+            setRecordsStateWrapper(recordState, `tables.${currentTable}.ruleMode`, false)
+        } else {
+        if (cellPlacement === 'row') {
+            cellPlacement = 'bottom';
+        } else if (cellPlacement === 'column') {
+            cellPlacement = 'right';
+        } else {
+            alert('rule will be applied on the last row');
+            cellPlacement = 'bottom';
+        }
+        implementRule(ruleName, recordState, currentTable, cellPlacement);
+        }
+    } else {
+        implementRule(ruleName, recordState, currentTable, cellPlacement);
+    }
+}
+
+export function pickCellsAdv(ruleName, currentTable, key, colIndex, noOfRows, noOfCols, recordState) {
+    const choice = getChoiceForPickCellsAdv();
+    let cellPlacement;
+    if (!choice) {
+      return;
+    }
+    if (choice && choice.toLowerCase() === 'row') {
+      cellPlacement = 'bottom';
+    } else {
+      cellPlacement = 'right';
+    }
+    const index = cellPlacement === 'bottom' ? key : (colIndex + 1);
+    const range = askForRange(cellPlacement, index);
+    if (!range) {
+      return;
+    }
+    const parsedRange = parseRange(range, index, cellPlacement, noOfRows, noOfCols);
+    if (!parsedRange) {
+      return;
+    }
+    if (parsedRange.length > 1) {
+      const startIndex = parsedRange[0];
+      const endIndex = parsedRange[1];
+      if (startIndex >= endIndex) {
+        return;
+      }
+      if (cellPlacement === 'bottom') {
+        applyRuleAdvRow(
+          startIndex,
+          endIndex,
+          ruleName,
+          currentTable,
+		  Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          key,
+          recordState
+        );
+      } else {
+        applyRuleAdvCol(
+          startIndex - 1,
+          endIndex - 1,
+          ruleName,
+          currentTable,
+		  Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          colIndex,
+          recordState
+        );
+      }
+    } else {
+      const startIndex = parsedRange[0];
+      if (cellPlacement === 'bottom') {
+	 const endIndex = Number(key) - 1;
+	 applyRuleAdvRow(
+          startIndex,
+          endIndex,
+          ruleName,
+          currentTable,
+		  Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          key,
+          recordState
+        );
+      } else {
+        const endIndex = Number(colIndex) - 1;
+	 applyRuleAdvCol(
+          startIndex - 1,
+          endIndex,
+          ruleName,
+          currentTable,
+		  Number(noOfRows),
+          Number(noOfCols),
+          cellPlacement,
+          colIndex,
+          recordState
+        );
+      }
+    }
+}
+
+export function applyRuleAdvRow(
+    startIndex,
+    endIndex,
+    ruleName,
+    currentTable,
+	noOfRows,
+    noOfCols,
+    cellPlacement,
+    saveIndex,
+    recordState,
+    advAppMode = false,
+  ) {
+    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
+    const args = {
+        startIndex,
+	    endIndex,
+	    ruleName,
+	    currentTable,
+	    noOfRows,
+	    noOfCols,
+	    cellPlacement,
+	    saveIndex,
+    };
+
+    const { data } = recordState.tables[currentTable];
+    const { prevRuleAdv } = recordState.tables[currentTable];
+
+    const updatedData = advancedutils()[functionName](
+        data,
+        noOfRows,
+        noOfCols,
+        startIndex,
+        endIndex,
+        saveIndex,
+    )
+
+    recordState.altered = true
+    recordState.tables[currentTable].ruleModeAdv = false
+    recordState.tables[currentTable].currentRule = ""
+    recordState.tables[currentTable].prevRuleAdv = createAdvRuleReprRow(prevRuleAdv, args, advAppMode)
+
+    setRecordsStateWrapper(recordState, `tables.${currentTable}.data`, updatedData)
+}
+
+export function applyRuleAdvCol(
+    startIndex,
+    endIndex,
+    ruleName,
+    currentTable,
+	noOfRows,
+    noOfCols,
+    cellPlacement,
+    saveIndex,
+    recordState,
+    advAppMode = false,
+  ) {
+    const args = {
+       startIndex,
+	   endIndex,
+	   ruleName,
+	   currentTable,
+	   noOfRows,
+	   noOfCols,
+	   cellPlacement,
+	   saveIndex,
+    };
+
+    const functionName = getRuleFunctionNameAdv(ruleName, cellPlacement);
+
+    const { data } = recordState.tables[currentTable];
+    const { prevRuleAdv } = recordState.tables[currentTable];
+
+    const updatedData = advancedutils()[functionName](
+        data,
+        noOfRows,
+        noOfCols,
+        startIndex,
+        endIndex,
+        saveIndex,
+    )
+
+    recordState.altered = true
+    recordState.tables[currentTable].ruleModeAdv = false
+    recordState.tables[currentTable].currentRule = ""
+    recordState.tables[currentTable].prevRuleAdv = createAdvRuleReprCol(prevRuleAdv, args, advAppMode)
+
+    setRecordsStateWrapper(recordState, `tables.${currentTable}.data`, updatedData)
+
+}
+
+function createAdvRuleReprRow(prev, args, advAppMode) {
+    let newRule;
+    if (advAppMode) {
+      return prev;
+    }
+    if (!prev) {
+      newRule = {
+        rowsRules: {
+	        1: args,
+        },
+      };
+    } else {
+      newRule = {
+        ...prev,
+        rowsRules: {
+          ...prev.rowsRules,
+	      [prev.rowsRules
+	        ? Object.keys(prev.rowsRules).length + 1
+	        : 1]: args,
+        },
+      };
+    }
+    return newRule;
+}
+
+function createAdvRuleReprCol(prev, args, advAppMode) {
+    let newRule;
+    if (advAppMode) {
+      return prev;
+    }
+    if (!prev) {
+      newRule = {
+        colsRules: {
+	  1: args,
+        },
+      };
+    } else {
+      newRule = {
+        ...prev,
+        colsRules: {
+          ...prev.colsRules,
+	  [prev.colsRules
+	     ? Object.keys(prev.colsRules).length + 1
+	     : 1]: args,
+        },
+      };
+    }
+    return newRule;
+}
+
+function getChoiceForPickCellsAdv() {
+    const choice = prompt(`Where do you want to apply rule? please type 'row' or
+'col' to apply rule accross the clicked row or across the clicked column respectively.
+`);
+    if (!choice) {
+      alert('aborting, no choice made');
+      return null;
+    }
+    if (choice.toLowerCase() !== 'col' && choice.toLowerCase() !== 'row') {
+      return getChoiceForPickCellsAdv();
+    }
+    return choice.toLowerCase();
+}
+
+function parseRange(range, index, cellPlacement, noOfRows, noOfCols) {
+    const list = range.split('-');
+    let startIndex;
+    let endIndex;
+    if (list.length > 1) {
+      startIndex = list[0];
+      endIndex = list[1];
+      if (!isNumber(startIndex) || !isNumber(endIndex)) {
+        return false;
+      }
+      if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols)
+          || !checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols)) {
+        return false;
+      }
+      return ([Number(startIndex), Number(endIndex)]);
+    }
+    startIndex = list[0];
+    if (!isNumber(startIndex)) {
+      return false;
+    }
+    if (!checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols)) {
+      return false;
+    }
+    return ([Number(startIndex)]);
+}
+
+function checkStartIndex(startIndex, cellPlacement, noOfRows, noOfCols) {
+    if (cellPlacement === 'bottom') {
+      if (Number(startIndex) >= Number(noOfRows) || Number(startIndex) < 1) {
+        return false;
+      }
+    } else if (Number(startIndex) >= Number(noOfCols) || Number(startIndex) < 1) {
+      return false;
+    }
+    return true;
+}
+
+function checkEndIndex(endIndex, cellPlacement, noOfRows, noOfCols) {
+    if (cellPlacement === 'bottom') {
+        if (Number(endIndex) > Number(noOfRows) || Number(endIndex) < 1) {
+        return false;
+        }
+    } else if (Number(endIndex) > Number(noOfCols) || Number(endIndex) < 1) {
+        return false;
+    }
+    return true;
+}
+
+export function checkIfRulesSet(tableName, recordState) {
+    const table = recordState.tables[tableName]
+    if (!table) return false
+    if (table.prevRule) return true
+    if (table.prevRuleAdv) {
+      if (table.prevRuleAdv.rowsRules && Object.keys(table.prevRuleAdv.rowsRules).length) return true
+      if (table.prevRuleAdv.colsRules && Object.keys(table.prevRuleAdv.colsRules).length) return true
+    }
+    return false
+}
+
+
+export function getData(tableName, recordState) {
+    const table = recordState.tables[tableName]
+    const data = table.data
+    return data
+}
+
+export function deleteTable(tableName, recordState) {
+    delete recordState.tables[tableName]
+    recordState.currentTable = ''
+    setRecordsStateWrapper(recordState, 'currentTable', '')
+}
+
+export function changeTableName(tableName, option, recordState) {
+    const saveTableDetails = recordState.tables[tableName]
+    delete recordState.tables[tableName]
+    recordState.tables[option] = saveTableDetails
+    setRecordsStateWrapper(recordState, 'currentTable', option)
 }
