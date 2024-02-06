@@ -425,6 +425,19 @@ export function clearRule(tableName, recordState) {
   recordState.tables[tableName].cellPlacement = "";
   recordState.tables[tableName].currentRule = "";
   recordState.tables[tableName].advAppMode = false;
+  recordState.tables[tableName].colorRowsAndCols = null;
+  recordState.tables[tableName].selectedCells = null;
+  recordState.tables[tableName].registeredFunctions = [];
+  setRecordsStateWrapper(recordState, `tables.${tableName}.ruleMode`, false);
+}
+
+/**
+ * unsets rules for the current table
+ */
+export function clearSelectedCells(tableName, recordState) {
+  recordState.altered = true;
+  recordState.tables[tableName].colorRowsAndCols = null;
+  recordState.tables[tableName].selectedCells = null;
   setRecordsStateWrapper(recordState, `tables.${tableName}.ruleMode`, false);
 }
 

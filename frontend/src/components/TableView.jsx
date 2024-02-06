@@ -1,5 +1,5 @@
 import React from "react";
-import { changeValueInNestedObj, removeCol } from "../utils";
+import { changeValueInNestedObj, clearRule, removeCol } from "../utils";
 
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
@@ -45,7 +45,9 @@ export default function TableView(props) {
   const tableView = [];
 
   // tableView is populated with table fields in createTableRepresentation
-  createTableRepresentation(table, tableView, noOfRows, noOfCols);
+  createTableRepresentation(props, tableView, noOfRows, noOfCols);
+
+  displayFunctionBtns(props.records);
 
   return (
     <div className="table--view">
@@ -162,6 +164,15 @@ export default function TableView(props) {
         <div className="rule--options">
           <input
             type="radio"
+            id="sum--function"
+            name="rules"
+            onClick={(e) =>
+              registerFunction(props.records, currentTable, "applySumFunction")
+            }
+          />
+          <label htmlFor="sum--function">sum function</label>
+          <input
+            type="radio"
             id="sum"
             name="rules"
             onClick={(e) => afterRulePick("sum", currentTable, props.records)}
@@ -266,9 +277,14 @@ export default function TableView(props) {
   );
 }
 
-function createTableRepresentation(table, tableView, noOfRows, noOfCols) {
-  const className = getClassName(table);
+function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
+  const currentTable = props.records.currentTable;
+  if (!currentTable) return;
+  const table = props.records.tables[currentTable];
+  const cellClassName = getClassName(table);
   const tableData = table.data;
+
+  const colorRowsAndCols = table.colorRowsAndCols;
 
   if (tableData) {
     let rowIndex = 0;
@@ -277,66 +293,93 @@ function createTableRepresentation(table, tableView, noOfRows, noOfCols) {
       const currentRow = tableData[row];
       const rowContainer = [];
       for (let colIndex = 0; colIndex < noOfCols; colIndex++) {
+        let extendInputClass = getColorClassForApplicableRowsAndCols(
+          colorRowsAndCols,
+          row,
+          colIndex,
+        );
+        extendInputClass += getClassForSelectedRowsOrCols(
+          colorRowsAndCols,
+          row,
+          colIndex,
+          props.records,
+        );
+
         const cell = (
-          <input
-            type="text"
-            key={colIndex}
-            className={!colIndex ? "label--col" : className || ""}
-            placeholder={!colIndex ? "label" : ""}
-            value={currentRow[colIndex] ? currentRow[colIndex] : ""}
-            data-col-index={colIndex}
-            data-row-index={saveRowIndex}
-            onChange={(e) =>
-              updateTableView(
-                currentTable,
-                props.records,
-                colIndex,
-                e.target.value,
-                saveRowIndex + 1,
-              )
-            }
-            onClick={(e) => {
-              if (table.ruleMode && table.currentRule) {
-                pickCells(
-                  table.currentRule,
+          <div className="cell--container" key={colIndex}>
+            <input
+              type="text"
+              key={colIndex}
+              className={(cellClassName || "") + extendInputClass}
+              value={currentRow[colIndex] ? currentRow[colIndex] : ""}
+              data-col-index={colIndex}
+              data-row-index={saveRowIndex}
+              onChange={(e) =>
+                updateTableView(
                   currentTable,
-                  row,
-                  colIndex,
-                  noOfRows,
-                  noOfCols,
                   props.records,
-                );
-              } else if (table.ruleModeAdv && table.currentRule) {
-                pickCellsAdv(
-                  table.currentRule,
-                  currentTable,
-                  row,
                   colIndex,
-                  noOfRows,
-                  noOfCols,
-                  props.records,
-                );
+                  e.target.value,
+                  saveRowIndex + 1,
+                )
               }
-              if (table.insertMode)
-                handleInsert(
-                  currentTable,
-                  noOfRows,
-                  noOfCols,
+              onClick={(e) => {
+                setCellInSelectedCells(
+                  colorRowsAndCols,
                   row,
                   colIndex,
                   props.records,
                 );
-              if (table.deleteMode)
-                handleDelete(
-                  currentTable,
-                  noOfRows,
-                  noOfCols,
-                  row,
-                  colIndex,
-                  props.records,
-                );
-            }}
-          />
+                if (table.ruleMode && table.currentRule) {
+                  pickCells(
+                    table.currentRule,
+                    currentTable,
+                    row,
+                    colIndex,
+                    noOfRows,
+                    noOfCols,
+                    props.records,
+                  );
+                } else if (table.ruleModeAdv && table.currentRule) {
+                  pickCellsAdv(
+                    table.currentRule,
+                    currentTable,
+                    row,
+                    colIndex,
+                    noOfRows,
+                    noOfCols,
+                    props.records,
+                  );
+                }
+                if (table.insertMode)
+                  handleInsert(
+                    currentTable,
+                    noOfRows,
+                    noOfCols,
+                    row,
+                    colIndex,
+                    props.records,
+                  );
+                if (table.deleteMode)
+                  handleDelete(
+                    currentTable,
+                    noOfRows,
+                    noOfCols,
+                    row,
+                    colIndex,
+                    props.records,
+                  );
+              }}
+            />
+            <span
+              className="add--rule--plus--sign"
+              onClick={() => {
+                setApplicableRowsAndColsToColor(row, colIndex, props.records);
+              }}
+            >
+              +
+            </span>
+          </div>
         );
         rowContainer.push(cell);
       }
@@ -395,6 +438,120 @@ will be overwritten`);
   return recordState;
 }
 
+function setApplicableRowsAndColsToColor(row, colIndex, recordState) {
+  const currentTable = recordState.currentTable;
+  setRecordsStateWrapper(
+    recordState,
+    `tables.${currentTable}.colorRowsAndCols`,
+    { currentTable, row, column: colIndex, saveRow: row, saveCol: colIndex },
+  );
+  alert(
+    "select the cells across the row or along the column you wish to apply a function to",
+  );
+}
+
+function unSetApplicableRowsAndColsToColor(recordState) {
+  const currentTable = recordState.currentTable;
+  setRecordsStateWrapper(
+    recordState,
+    `tables.${currentTable}.colorRowsAndCols`,
+    null,
+  );
+}
+
+function getColorClassForApplicableRowsAndCols(
+  colorRowsAndCols,
+  row,
+  colIndex,
+) {
+  if (
+    colorRowsAndCols &&
+    (colorRowsAndCols.row === row || colorRowsAndCols.column === colIndex)
+  ) {
+    return " cell--is--function--applicable--color";
+  }
+  return "";
+}
+
+function getClassForSelectedRowsOrCols(
+  colorRowsAndCols,
+  row,
+  colIndex,
+  recordState,
+) {
+  if (
+    colorRowsAndCols &&
+    (colorRowsAndCols.row === row || colorRowsAndCols.column === colIndex)
+  ) {
+    const currentTable = recordState.currentTable;
+    const selectedCells = recordState.tables[currentTable].selectedCells || [];
+    if (cellInSelected(row, colIndex, selectedCells))
+      return " cell--is--selected";
+  }
+  return "";
+}
+
+function cellInSelected(row, colIndex, selectedCells) {
+  for (const cell of selectedCells) {
+    if (cell.row === row && cell.column === colIndex) return true;
+  }
+  return false;
+}
+
+function getIndexOfellInSelected(row, colIndex, selectedCells) {
+  let index = 0;
+  for (const cell of selectedCells) {
+    if (cell.row === row && cell.column === colIndex) return index;
+    index++;
+  }
+  return -1;
+}
+
+function setCellInSelectedCells(colorRowsAndCols, row, colIndex, recordState) {
+  if (
+    colorRowsAndCols &&
+    (colorRowsAndCols.row === row || colorRowsAndCols.column === colIndex)
+  ) {
+    const currentTable = recordState.currentTable;
+    if (!currentTable) return;
+    if (!recordState.tables[currentTable].selectedCells)
+      recordState.tables[currentTable].selectedCells = [];
+    const cell = { row, column: colIndex, colIndex };
+    if (
+      !cellInSelected(
+        cell.row,
+        cell.column,
+        recordState.tables[currentTable].selectedCells,
+      )
+    )
+      recordState.tables[currentTable].selectedCells.push(cell);
+    else {
+      const indexOfCell = getIndexOfellInSelected(
+        cell.row,
+        cell.column,
+        recordState.tables[currentTable].selectedCells,
+      );
+      if (indexOfCell !== -1)
+        recordState.tables[currentTable].selectedCells.splice(indexOfCell, 1);
+    }
+    // keep track of current rows or columns
+    if (colorRowsAndCols.row === row)
+      recordState.tables[currentTable].colorRowsAndCols.column = null;
+    else recordState.tables[currentTable].colorRowsAndCols.row = null;
+
+    setRecordsStateWrapper(recordState, "currentTable", currentTable);
+  }
+}
+
+function displayFunctionBtns(recordState) {
+  const currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  // allow rule selection
+  if (recordState.tables[currentTable]?.selectedCells?.length)
+    recordState.tables[currentTable].ruleMode = true;
+  else recordState.tables[currentTable].ruleMode = false;
+}
+
 function addColumn(setRecordsStateWrapper, tableName, recordState) {
   if (recordState.currentTable === "") {
     alert("No table selected");
@@ -412,6 +569,7 @@ function addColumn(setRecordsStateWrapper, tableName, recordState) {
     newNoOfCols,
   );
   applyRuleOnModification(recordState);
+  runRegisteredFunctions(recordState, tableName);
 }
 
 function delColumn(setRecordsStateWrapper, tableName, recordState) {
@@ -452,6 +610,7 @@ function addRow(setRecordsStateWrapper, tableName, recordState) {
   recordState.altered = true;
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, tableData);
   applyRuleOnModification(recordState);
+  runRegisteredFunctions(recordState, tableName);
 }
 
 function delRow(setRecordsStateWrapper, tableName, recordState) {
@@ -536,6 +695,7 @@ function updateTableView(tableName, recordState, colIndex, value, SN) {
     replaceAtIndex(recordState.tables[tableName].data[SN], colIndex, value),
   );
   applyRuleOnModification(recordState);
+  runRegisteredFunctions(recordState, tableName);
 }
 
 /**
@@ -552,6 +712,81 @@ function afterRulePick(ruleName, tableName, recordState) {
     `tables.${tableName}.currentRule`,
     ruleName,
   );
+}
+
+function registerFunction(recordState, tableName, functionName) {
+  const cellSetForColoring = recordState.tables[tableName].colorRowsAndCols;
+  const selectedCells = recordState.tables[tableName].selectedCells;
+  if (!recordState.tables[tableName].registeredFunctions) {
+    recordState.tables[tableName].registeredFunctions = [];
+  }
+
+  recordState.tables[tableName].registeredFunctions.push({
+    functionName,
+    selectedCells,
+    cellSetForColoring,
+  });
+
+  setRecordsStateWrapper(recordState, "currentTable", tableName);
+  // force function application
+  runRegisteredFunctions(recordState, tableName);
+}
+
+function runRegisteredFunctions(recordState, tableName) {
+  const functionNameToFunctionApplierMap = {
+    applySumFunction: applySumFunction,
+  };
+
+  if (!tableName) return;
+
+  const registeredFunctions =
+    recordState?.tables[tableName].registeredFunctions;
+  if (!registeredFunctions) return;
+
+  for (const rFunction of registeredFunctions) {
+    const functioN = functionNameToFunctionApplierMap[rFunction.functionName];
+    if (!functioN) throw new Error("function doesnt exist");
+    functioN(
+      recordState,
+      tableName,
+      rFunction.selectedCells,
+      rFunction.cellSetForColoring,
+    );
+  }
+}
+
+function applySumFunction(
+  recordState,
+  tableName,
+  selectedCells,
+  cellSetForColoring,
+) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = sumFunctionImpl(data, selectedCells, cellSetForColoring);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function sumFunctionImpl(data, selectedCells, cellSetForColoring) {
+  const { saveRow, saveCol } = cellSetForColoring;
+  const relevantData = extractRelevantData(data, selectedCells);
+  let res = 0;
+  relevantData.forEach((v) => (res += Number(v)));
+  data[saveRow][saveCol] = res;
+  return data;
+}
+
+function extractRelevantData(data, selectedCells) {
+  const relevantData = [];
+  for (const cell of selectedCells) {
+    try {
+      relevantData.push(data[cell.row][cell.column]);
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  }
+  return relevantData;
 }
 
 /**
@@ -823,13 +1058,13 @@ export function unSetDeleteMode(tableName, recordState) {
 }
 
 function getClassName(table) {
-  if (!table && !table.cellSize) {
-    return null;
+  if (!table || !table.cellSize) {
+    return "cell--input";
   }
   const map = {
-    1: "input-1",
-    2: "input-2",
-    3: "input-3",
+    1: "cell--input input-1",
+    2: "cell--input input-2",
+    3: "cell--input input-3",
   };
   return map[table.cellSize];
 }

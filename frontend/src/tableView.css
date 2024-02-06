@@ -63,6 +63,39 @@ input {
   scrollbar-width: none; /* Firefox */
 }
 
+.cell--container {
+  margin-right: 10px;
+  margin-bottom: 5px;
+}
+
+.cell--input {
+  display: inline-block;
+  height: 80%;
+}
+
+.cell--is--function--applicable--color {
+  background-color: aquamarine;
+  cursor: pointer;
+}
+
+.cell--is--selected {
+  background-color: blue;
+}
+
+.add--rule--plus--sign {
+  display: inline-block;
+  padding: 2px;
+  background-color: rgb(122, 36, 33);
+  color: aliceblue;
+  width: 15px;
+  height: 80%;
+  text-align: center;
+  font-weight: bold;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+  cursor: pointer;
+}
+
 @media screen and (max-width: 400px) {
   .table--view {
     min-width: fit-content;
