@@ -142,16 +142,13 @@ export default function TableView(props) {
         <button onClick={(e) => setDeleteMode(currentTable, props.records)}>
           delete
         </button>
+
       </div>
+
       <div className="rules--buttons">
-        <button onClick={(e) => addRule(currentTable, props.records)}>
-          add rule +
-        </button>
-        <button onClick={(e) => addRuleAdv(currentTable, props.records)}>
-          advanced +
-        </button>
+
         <button onClick={(e) => clearRule(currentTable, props.records)}>
-          clear rule -
+          clear functions
         </button>
         <button onClick={(e) => increaseCellSize(currentTable, props.records)}>
           cell size +
@@ -159,6 +156,7 @@ export default function TableView(props) {
         <button onClick={(e) => decreaseCellSize(currentTable, props.records)}>
           cell size -
         </button>
+
       </div>
       {table.ruleMode ? (
         <div className="rule--options">
@@ -171,100 +169,37 @@ export default function TableView(props) {
             }
           />
           <label htmlFor="sum--function">sum function</label>
+
           <input
             type="radio"
-            id="sum"
-            name="rules"
-            onClick={(e) => afterRulePick("sum", currentTable, props.records)}
-          />
-          <label htmlFor="sum">sum</label>
-          <input
-            type="radio"
-            id="subtract"
+            id="sub--function"
             name="rules"
             onClick={(e) =>
-              afterRulePick("subtract", currentTable, props.records)
+              registerFunction(props.records, currentTable, "applySubFunction")
             }
           />
-          <label htmlFor="subtract">subtract</label>
+          <label htmlFor="sub--function">subtract function</label>
+
           <input
             type="radio"
-            id="subtractReverse"
+            id="mul--function"
             name="rules"
             onClick={(e) =>
-              afterRulePick("subtractReverse", currentTable, props.records)
+              registerFunction(props.records, currentTable, "applyMulFunction")
             }
           />
-          <label htmlFor="subtractReverse">subtract-reverse</label>
+          <label htmlFor="mul--function">multiply function</label>
+
           <input
             type="radio"
-            id="multiply"
+            id="average--function"
             name="rules"
             onClick={(e) =>
-              afterRulePick("multiply", currentTable, props.records)
+              registerFunction(props.records, currentTable, "applyAverageFunction")
             }
           />
-          <label htmlFor="multiply">multiply</label>
-          <input
-            type="radio"
-            id="average"
-            name="rules"
-            onClick={(e) =>
-              afterRulePick("average", currentTable, props.records)
-            }
-          />
-          <label htmlFor="average">average</label>
-        </div>
-      ) : (
-        ""
-      )}
-      {table.ruleModeAdv ? (
-        <div className="rule--options">
-          <input
-            type="radio"
-            id="sum"
-            name="rules"
-            onClick={(e) =>
-              afterRulePickAdv("sum", currentTable, props.records)
-            }
-          />
-          <label htmlFor="sum">sum adv</label>
-          <input
-            type="radio"
-            id="subtract"
-            name="rules"
-            onClick={(e) =>
-              afterRulePickAdv("subtract", currentTable, props.records)
-            }
-          />
-          <label htmlFor="subtract">subtract adv</label>
-          <input
-            type="radio"
-            id="subtractReverse"
-            name="rules"
-            onClick={(e) =>
-              afterRulePickAdv("subtractReverse", currentTable, props.records)
-            }
-          />
-          <label htmlFor="subtractReverse">subtract-reverse adv</label>
-          <input
-            type="radio"
-            id="multiply"
-            name="rules"
-            onClick={(e) =>
-              afterRulePickAdv("multiply", currentTable, props.records)
-            }
-          />
-          <label htmlFor="multiply">multiply adv</label>
-          <input
-            type="radio"
-            id="average"
-            name="rules"
-            onClick={(e) =>
-              afterRulePickAdv("average", currentTable, props.records)
-            }
-          />
-          <label htmlFor="average">average adv</label>
+          <label htmlFor="average--function">average function</label>
+
         </div>
       ) : (
         ""
@@ -810,6 +745,9 @@ function registerFunction(recordState, tableName, functionName) {
 function runRegisteredFunctions(recordState, tableName) {
   const functionNameToFunctionApplierMap = {
     applySumFunction: applySumFunction,
+    applySubFunction: applySubFunction,
+    applyMulFunction: applyMulFunction,
+    applyAverageFunction: applyAverageFunction
   };
 
   if (!tableName) return;
@@ -839,7 +777,64 @@ function sumFunctionImpl(data, cellsToOperateOnAsAGroup) {
   const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
   let res = 0;
   relevantData.forEach((v) => (res += Number(v)));
-  data[targetRow][targetCol] = res;
+  data[targetRow][targetCol] = `${res}`;
+  return data;
+}
+
+function applySubFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = subFunctionImpl(data, cellsToOperateOnAsAGroup);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function subFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
+  let res = 0
+  let start = false
+  relevantData.forEach((v) => {
+    if (start === false) {
+      start = true
+      res = Number(v)
+    } else {
+      res -= Number(v)
+    }
+  });
+  data[targetRow][targetCol] = `${res}`;
+  return data;
+}
+
+function applyMulFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = mulFunctionImpl(data, cellsToOperateOnAsAGroup);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function mulFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
+  let res = 1;
+  relevantData.forEach((v) => (res *= Number(v)));
+  data[targetRow][targetCol] = `${res}`;
+  return data;
+}
+
+function applyAverageFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = averageFunctionImpl(data, cellsToOperateOnAsAGroup);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function averageFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
+  let sum = 0;
+  relevantData.forEach((v) => (sum += Number(v)));
+  let res = sum / relevantData.length
+  data[targetRow][targetCol] = res.toFixed(2);
   return data;
 }
 
