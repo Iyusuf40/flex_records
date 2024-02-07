@@ -142,11 +142,9 @@ export default function TableView(props) {
         <button onClick={(e) => setDeleteMode(currentTable, props.records)}>
           delete
         </button>
-
       </div>
 
       <div className="rules--buttons">
-
         <button onClick={(e) => clearRule(currentTable, props.records)}>
           clear functions
         </button>
@@ -156,7 +154,6 @@ export default function TableView(props) {
         <button onClick={(e) => decreaseCellSize(currentTable, props.records)}>
           cell size -
         </button>
-
       </div>
       {table.ruleMode ? (
         <div className="rule--options">
@@ -195,11 +192,14 @@ export default function TableView(props) {
             id="average--function"
             name="rules"
             onClick={(e) =>
-              registerFunction(props.records, currentTable, "applyAverageFunction")
+              registerFunction(
+                props.records,
+                currentTable,
+                "applyAverageFunction",
+              )
             }
           />
           <label htmlFor="average--function">average function</label>
-
         </div>
       ) : (
         ""
@@ -747,7 +747,7 @@ function runRegisteredFunctions(recordState, tableName) {
     applySumFunction: applySumFunction,
     applySubFunction: applySubFunction,
     applyMulFunction: applyMulFunction,
-    applyAverageFunction: applyAverageFunction
+    applyAverageFunction: applyAverageFunction,
   };
 
   if (!tableName) return;
@@ -791,14 +791,14 @@ function applySubFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
 function subFunctionImpl(data, cellsToOperateOnAsAGroup) {
   const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
   const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
-  let res = 0
-  let start = false
+  let res = 0;
+  let start = false;
   relevantData.forEach((v) => {
     if (start === false) {
-      start = true
-      res = Number(v)
+      start = true;
+      res = Number(v);
     } else {
-      res -= Number(v)
+      res -= Number(v);
     }
   });
   data[targetRow][targetCol] = `${res}`;
@@ -821,7 +821,11 @@ function mulFunctionImpl(data, cellsToOperateOnAsAGroup) {
   return data;
 }
 
-function applyAverageFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+function applyAverageFunction(
+  recordState,
+  tableName,
+  cellsToOperateOnAsAGroup,
+) {
   const data = recordState.tables[tableName].data;
   const updatedData = averageFunctionImpl(data, cellsToOperateOnAsAGroup);
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
@@ -833,7 +837,7 @@ function averageFunctionImpl(data, cellsToOperateOnAsAGroup) {
   const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
   let sum = 0;
   relevantData.forEach((v) => (sum += Number(v)));
-  let res = sum / relevantData.length
+  let res = sum / relevantData.length;
   data[targetRow][targetCol] = res.toFixed(2);
   return data;
 }
