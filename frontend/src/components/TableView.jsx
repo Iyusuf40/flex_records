@@ -440,10 +440,20 @@ will be overwritten`);
 
 function setApplicableRowsAndColsToColor(row, colIndex, recordState) {
   const currentTable = recordState.currentTable;
+  const cellToColor = {
+    currentTable,
+    row,
+    column: colIndex,
+    targetRow: row,
+    targetCol: colIndex,
+  };
+  const colorRowsAndCols =
+    recordState.tables[currentTable].colorRowsAndCols || [];
+  colorRowsAndCols.push(cellToColor);
   setRecordsStateWrapper(
     recordState,
     `tables.${currentTable}.colorRowsAndCols`,
-    { currentTable, row, column: colIndex, saveRow: row, saveCol: colIndex },
+    colorRowsAndCols,
   );
   alert(
     "select the cells across the row or along the column you wish to apply a function to",
@@ -466,7 +476,7 @@ function getColorClassForApplicableRowsAndCols(
 ) {
   if (
     colorRowsAndCols &&
-    (colorRowsAndCols.row === row || colorRowsAndCols.column === colIndex)
+    cellInAxisOfColorRowsOrCols(row, colIndex, colorRowsAndCols)
   ) {
     return " cell--is--function--applicable--color";
   }
@@ -481,26 +491,40 @@ function getClassForSelectedRowsOrCols(
 ) {
   if (
     colorRowsAndCols &&
-    (colorRowsAndCols.row === row || colorRowsAndCols.column === colIndex)
+    cellInAxisOfColorRowsOrCols(row, colIndex, colorRowsAndCols)
   ) {
     const currentTable = recordState.currentTable;
-    const selectedCells = recordState.tables[currentTable].selectedCells || [];
-    if (cellInSelected(row, colIndex, selectedCells))
+    const selectedCells = recordState.tables[currentTable].selectedCells || {};
+    const { targetRow, targetCol } = getTargetRowAndCol(
+      colorRowsAndCols,
+      row,
+      colIndex,
+    );
+    const key = `${targetRow}.${targetCol}`;
+    if (cellInCellsGroup(row, colIndex, selectedCells[key]))
       return " cell--is--selected";
   }
   return "";
 }
 
-function cellInSelected(row, colIndex, selectedCells) {
-  for (const cell of selectedCells) {
+function cellInCellsGroup(row, colIndex, cellsGroup) {
+  if (!cellsGroup) return false;
+  for (const cell of cellsGroup) {
     if (cell.row === row && cell.column === colIndex) return true;
   }
   return false;
 }
 
-function getIndexOfellInSelected(row, colIndex, selectedCells) {
+function cellInAxisOfColorRowsOrCols(row, colIndex, colorRowsOrCols) {
+  for (const cell of colorRowsOrCols) {
+    if (cell.row === row || cell.column === colIndex) return true;
+  }
+  return false;
+}
+
+function getIndexOfCellInSelected(row, colIndex, cellsGroup) {
   let index = 0;
-  for (const cell of selectedCells) {
+  for (const cell of cellsGroup) {
     if (cell.row === row && cell.column === colIndex) return index;
     index++;
   }
@@ -510,44 +534,96 @@ function getIndexOfellInSelected(row, colIndex, selectedCells) {
 function setCellInSelectedCells(colorRowsAndCols, row, colIndex, recordState) {
   if (
     colorRowsAndCols &&
-    (colorRowsAndCols.row === row || colorRowsAndCols.column === colIndex)
+    cellInAxisOfColorRowsOrCols(row, colIndex, colorRowsAndCols)
   ) {
     const currentTable = recordState.currentTable;
     if (!currentTable) return;
     if (!recordState.tables[currentTable].selectedCells)
-      recordState.tables[currentTable].selectedCells = [];
-    const cell = { row, column: colIndex, colIndex };
+      recordState.tables[currentTable].selectedCells = {};
+    const { targetRow, targetCol } = getTargetRowAndCol(
+      colorRowsAndCols,
+      row,
+      colIndex,
+    );
+    const cell = { row, column: colIndex, colIndex, targetRow, targetCol };
+    const key = `${targetRow}.${targetCol}`;
     if (
-      !cellInSelected(
+      !cellInCellsGroup(
         cell.row,
         cell.column,
-        recordState.tables[currentTable].selectedCells,
+        recordState.tables[currentTable].selectedCells[key],
       )
-    )
-      recordState.tables[currentTable].selectedCells.push(cell);
-    else {
-      const indexOfCell = getIndexOfellInSelected(
+    ) {
+      pushCellInSelectedCells(
+        recordState.tables[currentTable].selectedCells,
+        key,
+        cell,
+      );
+    } else {
+      const indexOfCell = getIndexOfCellInSelected(
         cell.row,
         cell.column,
-        recordState.tables[currentTable].selectedCells,
+        recordState.tables[currentTable].selectedCells[key],
       );
       if (indexOfCell !== -1)
-        recordState.tables[currentTable].selectedCells.splice(indexOfCell, 1);
+        recordState.tables[currentTable].selectedCells[key].splice(
+          indexOfCell,
+          1,
+        );
     }
-    // keep track of current rows or columns
-    if (colorRowsAndCols.row === row)
-      recordState.tables[currentTable].colorRowsAndCols.column = null;
-    else recordState.tables[currentTable].colorRowsAndCols.row = null;
 
+    removeColorForNeglectedRowOrCol(
+      recordState.tables[currentTable].colorRowsAndCols,
+      row,
+      colIndex,
+      targetRow,
+      targetCol,
+    );
     setRecordsStateWrapper(recordState, "currentTable", currentTable);
   }
+}
+
+function removeColorForNeglectedRowOrCol(
+  colorRowsAndCols,
+  row,
+  colIndex,
+  targetRow,
+  targetCol,
+) {
+  for (const cell of colorRowsAndCols) {
+    if (cell.targetRow == row) {
+      // row is fixed, allow colored rows
+      cell.column = null;
+    } else if (cell.targetCol == colIndex) {
+      // column is fixed, allow colored columns
+      cell.row = null;
+    }
+  }
+}
+
+function pushCellInSelectedCells(selectedCells, key, cell) {
+  if (!selectedCells[key]) {
+    selectedCells[key] = [];
+  }
+  selectedCells[key].push(cell);
+}
+
+function getTargetRowAndCol(colorRowsAndCols, row, colIndex) {
+  for (const cell of colorRowsAndCols.toReversed()) {
+    if (cell.targetRow == row) {
+      return { targetRow: cell.targetRow, targetCol: cell.targetCol };
+    } else if (cell.targetCol == colIndex) {
+      return { targetRow: cell.targetRow, targetCol: cell.targetCol };
+    }
+  }
+  throw new Error("target not found");
 }
 
 function displayFunctionBtns(recordState) {
   const currentTable = recordState.currentTable;
   if (!currentTable) return;
   // allow rule selection
-  if (recordState.tables[currentTable]?.selectedCells?.length)
+  if (Object.keys(recordState.tables[currentTable]?.selectedCells || []).length)
     recordState.tables[currentTable].ruleMode = true;
   else recordState.tables[currentTable].ruleMode = false;
 }
@@ -715,16 +791,15 @@ function afterRulePick(ruleName, tableName, recordState) {
 }
 
 function registerFunction(recordState, tableName, functionName) {
-  const cellSetForColoring = recordState.tables[tableName].colorRowsAndCols;
   const selectedCells = recordState.tables[tableName].selectedCells;
   if (!recordState.tables[tableName].registeredFunctions) {
     recordState.tables[tableName].registeredFunctions = [];
   }
 
+  const cellsToOperateOnAsAGroup = Object.values(selectedCells);
   recordState.tables[tableName].registeredFunctions.push({
     functionName,
-    selectedCells,
-    cellSetForColoring,
+    cellsToOperateOnAsAGroup: cellsToOperateOnAsAGroup,
   });
 
   setRecordsStateWrapper(recordState, "currentTable", tableName);
@@ -746,33 +821,25 @@ function runRegisteredFunctions(recordState, tableName) {
   for (const rFunction of registeredFunctions) {
     const functioN = functionNameToFunctionApplierMap[rFunction.functionName];
     if (!functioN) throw new Error("function doesnt exist");
-    functioN(
-      recordState,
-      tableName,
-      rFunction.selectedCells,
-      rFunction.cellSetForColoring,
-    );
+    rFunction.cellsToOperateOnAsAGroup.forEach((cellsGroup) => {
+      functioN(recordState, tableName, cellsGroup);
+    });
   }
 }
 
-function applySumFunction(
-  recordState,
-  tableName,
-  selectedCells,
-  cellSetForColoring,
-) {
+function applySumFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
-  const updatedData = sumFunctionImpl(data, selectedCells, cellSetForColoring);
+  const updatedData = sumFunctionImpl(data, cellsToOperateOnAsAGroup);
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
   clearSelectedCells(tableName, recordState);
 }
 
-function sumFunctionImpl(data, selectedCells, cellSetForColoring) {
-  const { saveRow, saveCol } = cellSetForColoring;
-  const relevantData = extractRelevantData(data, selectedCells);
+function sumFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
   let res = 0;
   relevantData.forEach((v) => (res += Number(v)));
-  data[saveRow][saveCol] = res;
+  data[targetRow][targetCol] = res;
   return data;
 }
 
