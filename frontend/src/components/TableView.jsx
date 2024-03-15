@@ -47,7 +47,7 @@ export default function TableView(props) {
   // tableView is populated with table fields in createTableRepresentation
   createTableRepresentation(props, tableView, noOfRows, noOfCols);
 
-  displayFunctionBtns(props.records);
+  setRuleModeToDisplayBtns(props.records);
 
   return (
     <div className="table--view">
@@ -233,7 +233,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
           row,
           colIndex,
         );
-        extendInputClass += getClassForSelectedRowsOrCols(
+        extendInputClass += getColorClassForSelectedRowsOrCols(
           colorRowsAndCols,
           row,
           colIndex,
@@ -307,12 +307,12 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
               }}
             />
             <span
-              className="add--rule--plus--sign"
+              className="function--sign"
               onClick={() => {
-                setApplicableRowsAndColsToColor(row, colIndex, props.records);
+                addToRowsAndColsToColor(row, colIndex, props.records);
               }}
             >
-              +
+              𝑓 
             </span>
           </div>
         );
@@ -373,7 +373,7 @@ will be overwritten`);
   return recordState;
 }
 
-function setApplicableRowsAndColsToColor(row, colIndex, recordState) {
+function addToRowsAndColsToColor(row, colIndex, recordState) {
   const currentTable = recordState.currentTable;
   const cellToColor = {
     currentTable,
@@ -418,7 +418,7 @@ function getColorClassForApplicableRowsAndCols(
   return "";
 }
 
-function getClassForSelectedRowsOrCols(
+function getColorClassForSelectedRowsOrCols(
   colorRowsAndCols,
   row,
   colIndex,
@@ -475,6 +475,7 @@ function setCellInSelectedCells(colorRowsAndCols, row, colIndex, recordState) {
     if (!currentTable) return;
     if (!recordState.tables[currentTable].selectedCells)
       recordState.tables[currentTable].selectedCells = {};
+
     const { targetRow, targetCol } = getTargetRowAndCol(
       colorRowsAndCols,
       row,
@@ -554,7 +555,7 @@ function getTargetRowAndCol(colorRowsAndCols, row, colIndex) {
   throw new Error("target not found");
 }
 
-function displayFunctionBtns(recordState) {
+function setRuleModeToDisplayBtns(recordState) {
   const currentTable = recordState.currentTable;
   if (!currentTable) return;
   // allow rule selection

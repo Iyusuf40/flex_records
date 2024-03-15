@@ -37,7 +37,11 @@ export default function SidePane(props) {
       </button>{" "}
       <br />
       <br />
-      <button onClick={switchUser}>switch user</button> <br />
+      <button onClick={switchUser}>switch user</button> 
+      <br />
+      <br />
+      <button onClick={showId}>show ID</button> 
+      <br />
       <div className="table--list">
         {/* currentTable is not undefined? */}
         {currentTable ? (
@@ -100,4 +104,9 @@ async function switchUser() {
   const id = promptForId();
   if (!id) return;
   await setAltUser(getUrl, id, setRecordsState);
+}
+
+function showId() {
+  const flexId = localStorage.getItem("flexId")
+  alert("your ID is: " + flexId)
 }
