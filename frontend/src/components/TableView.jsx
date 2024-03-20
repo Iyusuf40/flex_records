@@ -1,5 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { changeValueInNestedObj, clearRule, removeCol } from "../utils";
+
+const RECTANGLE = {
+  canDraw: false,
+  topLeft: {},
+  bottomRight: {},
+  initPoint: {},
+  id: ""
+}
 
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
@@ -48,6 +56,9 @@ export default function TableView(props) {
   createTableRepresentation(props, tableView, noOfRows, noOfCols);
 
   setRuleModeToDisplayBtns(props.records);
+
+  enableRectangleDraw(currentTable, props.records)
+  disableRectangleDraw(currentTable, props.records)
 
   return (
     <div className="table--view">
@@ -153,6 +164,13 @@ export default function TableView(props) {
         </button>
         <button onClick={(e) => decreaseCellSize(currentTable, props.records)}>
           cell size -
+        </button>
+        <button 
+          className={table.selectTool ? `red` : ``}
+          onClick={(e) => {
+            toggleSelectTool(currentTable, props.records)
+          }}>
+          select tool
         </button>
       </div>
       {table.ruleMode ? (
@@ -1164,4 +1182,145 @@ function getClassForCreateTableMode(props) {
   } else {
     return "hide";
   }
+}
+
+function resetRectangle() {
+  RECTANGLE.canDraw = false,
+  RECTANGLE.topLeft = {}
+  RECTANGLE.bottomRight = {}
+  RECTANGLE.initPoint = {}
+}
+
+function toggleSelectTool(tableName, recordState) {
+  const value = recordState.tables[tableName].selectTool ? false : true
+  recordState.altered = true;
+  setRecordsStateWrapper(recordState, `tables.${tableName}.selectTool`, value);
+}
+
+function enableRectangleDraw(tableName, recordState) {
+  if (!recordState?.tables || !recordState?.tables[tableName].selectTool) return
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.addEventListener('mousedown', setCanDraw)
+  table?.addEventListener('mousemove', redrawRectangle)
+  table?.addEventListener('mouseup', unSetCanDraw)
+}
+
+function disableRectangleDraw(tableName, recordState) {
+  if (recordState?.tables && recordState?.tables[tableName]?.selectTool) return
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.removeEventListener('mousemove', redrawRectangle)
+  table?.removeEventListener('mousedown', setCanDraw)
+  table?.removeEventListener('mouseup', unSetCanDraw)
+}
+
+function setCanDraw(event) {
+  event.preventDefault()
+  resetRectangle()
+  RECTANGLE.canDraw = true
+  drawRectangle(event)
+}
+
+function unSetCanDraw(event) {
+  deleteRectangle()
+  resetRectangle()
+}
+
+function drawRectangle(event) {
+  if (!RECTANGLE.canDraw) return
+  if (RECTANGLE.id) return          // draw only 1 rect
+  event.preventDefault()
+  const id = Date.now().toString()
+  RECTANGLE.id = id
+
+  const rect = document.createElement("div")
+  rect.id = id
+
+  rect.style.top = `${event.pageY}px`
+  rect.style.left = `${event.pageX}px`
+
+  RECTANGLE.topLeft = {x: event.pageX, y: event.pageY} 
+  RECTANGLE.bottomRight = {x: event.pageX, y: event.pageY}
+  RECTANGLE.initPoint = {x: event.pageX, y: event.pageY} 
+
+  rect.classList.add("select--box")
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.appendChild(rect)
+}
+
+function redrawRectangle(event) {
+  if (!RECTANGLE.canDraw) return
+  if (!RECTANGLE.id) return
+  const id = RECTANGLE.id
+
+  const rect = document.getElementById(id)
+
+  const cursorPosition = {x: event.pageX, y: event.pageY}
+
+  const flipped = shouldFlip(cursorPosition)
+
+  setRectangleEdges(cursorPosition, flipped)
+  resetRectangleTopLeft(cursorPosition, flipped)
+
+  const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x)
+  const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y)
+  
+  rect.style.width = `${width}px`
+  rect.style.height = `${height}px`
+}
+
+function shouldFlip(cursorPosition) {
+  if (
+    cursorPosition.x < RECTANGLE.initPoint.x 
+    || cursorPosition.y < RECTANGLE.initPoint.y
+  ) {
+    return true
+  }
+  return false
+}
+
+function setRectangleEdges(cursorPosition, shouldFlip) {
+  if (shouldFlip) {
+
+    if (cursorPosition.x < RECTANGLE.initPoint.x) {
+      RECTANGLE.topLeft.x = cursorPosition.x              // shift topleft to the left
+      RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x
+      RECTANGLE.bottomRight.y = cursorPosition.y          // adjusts horizontal width of rect
+    }
+
+    if (cursorPosition.y < RECTANGLE.initPoint.y) {
+      RECTANGLE.topLeft.y = cursorPosition.y              // shift topleft up
+      RECTANGLE.bottomRight.y = RECTANGLE.initPoint.y     // anchor rectangle to init point
+      if (cursorPosition.x < RECTANGLE.initPoint.x)       // anchor rectangle to init point
+        RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x
+      else                                                // set horizontal width of rect
+        RECTANGLE.bottomRight.x = cursorPosition.x
+    }
+
+  } else {
+    RECTANGLE.bottomRight.x = cursorPosition.x
+    RECTANGLE.bottomRight.y = cursorPosition.y
+  }
+}
+
+function resetRectangleTopLeft(cursorPosition, shouldFlip) {
+  if (shouldFlip) {
+
+    const rect = document.getElementById(RECTANGLE.id)
+    if (cursorPosition.x < RECTANGLE.initPoint.x) {
+      rect.style.left = `${cursorPosition.x}px`
+    }
+
+    if (cursorPosition.y < RECTANGLE.initPoint.y) {
+      rect.style.top = `${cursorPosition.y}px`
+    }
+
+  }
+}
+
+function deleteRectangle() {
+  if (!RECTANGLE.id) return
+  const id = RECTANGLE.id
+  const el = document.getElementById(id)
+  RECTANGLE.id = ""
+  el.remove()
 }

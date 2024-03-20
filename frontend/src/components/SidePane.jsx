@@ -16,7 +16,7 @@ export default function SidePane(props) {
           )
         }
         key={tableName}
-        className={tableName === currentTable ? "current--table" : ""}
+        className={tableName === currentTable ? "current--table--name" : ""}
         data-name={tableName}
       >
         {tableName}

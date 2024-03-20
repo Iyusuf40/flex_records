@@ -4,6 +4,10 @@
   overflow: auto;
 }
 
+.current--table {
+  padding: 20px;
+}
+
 .row--container {
   padding: 2px;
   display: flex;
@@ -93,6 +97,16 @@ input {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
   cursor: pointer;
+}
+
+.red {
+  background-color: red;
+}
+
+.select--box {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px dashed black;
+  position: absolute;
 }
 
 @media screen and (max-width: 400px) {
