@@ -533,6 +533,7 @@ function setCellInSelectedCells(colorRowsAndCols, row, colIndex, recordState) {
       targetRow,
       targetCol,
     );
+
     setRecordsStateWrapper(recordState, "currentTable", currentTable);
   }
 }
@@ -1222,7 +1223,37 @@ function setCanDraw(event) {
 
 function unSetCanDraw(event) {
   deleteRectangle()
+  selectCellsInRectangle()
   resetRectangle()
+}
+
+function selectCellsInRectangle() {
+  const cellRep = document.querySelector(".cell--container")
+  let {width: cellWidth, height: cellHeight} = cellRep.getBoundingClientRect()
+  cellWidth = Math.round(cellWidth)
+  cellHeight = Math.round(cellHeight)
+  
+  const selectedCells = []
+
+  for (let row = RECTANGLE.topLeft.y; row <= RECTANGLE.bottomRight.y; row += cellHeight) {
+    for (let col = RECTANGLE.topLeft.x; col <= RECTANGLE.bottomRight.x; col += cellWidth) {
+      const elements = document.elementsFromPoint(col, row)
+      console.log(elements)
+      elements.forEach(el => {
+        if (el?.classList.contains('cell--container')) {
+          selectedCells.push(el)
+        }
+      })
+
+      // const element = document.elementFromPoint(col, row)
+      // console.log(element, "<--")
+      // if (element?.classList.contains('cell--container')) {
+      //   selectedCells.push(element)
+      // }
+    }
+  }
+
+  console.log(selectedCells.length, selectedCells)
 }
 
 function drawRectangle(event) {
