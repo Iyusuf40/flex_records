@@ -1229,31 +1229,54 @@ function unSetCanDraw(event) {
 
 function selectCellsInRectangle() {
   const cellRep = document.querySelector(".cell--container")
-  let {width: cellWidth, height: cellHeight} = cellRep.getBoundingClientRect()
-  cellWidth = Math.round(cellWidth)
-  cellHeight = Math.round(cellHeight)
+  let {width, height} = cellRep.getBoundingClientRect()
+
+  let cellWidth = Math.round(width)
+  let cellHeight = Math.round(height)
   
   const selectedCells = []
 
-  for (let row = RECTANGLE.topLeft.y; row <= RECTANGLE.bottomRight.y; row += cellHeight) {
-    for (let col = RECTANGLE.topLeft.x; col <= RECTANGLE.bottomRight.x; col += cellWidth) {
+  let row = Math.round(RECTANGLE.topLeft.y)
+  let col = Math.round(RECTANGLE.topLeft.x)
+
+  while (row <= RECTANGLE.bottomRight.y) {
+
+    col = Math.round(RECTANGLE.topLeft.x)
+    while (col <= RECTANGLE.bottomRight.x) {
       const elements = document.elementsFromPoint(col, row)
-      console.log(elements)
+
       elements.forEach(el => {
         if (el?.classList.contains('cell--container')) {
           selectedCells.push(el)
+          pasteSpan(col, row)
         }
       })
 
-      // const element = document.elementFromPoint(col, row)
-      // console.log(element, "<--")
-      // if (element?.classList.contains('cell--container')) {
-      //   selectedCells.push(element)
-      // }
+      col += cellWidth
     }
+
+    row += cellHeight
+
+    // if (col > RECTANGLE.bottomRight.x) console.log("col ->", col, col / cellWidth)
+    // if (row > RECTANGLE.bottomRight.y) console.log("row ->", row, row / cellHeight)
   }
 
-  console.log(selectedCells.length, selectedCells)
+  console.log(selectedCells.length, selectedCells, RECTANGLE.topLeft.y, row, RECTANGLE.topLeft.x, col)
+}
+
+function pasteSpan(x, y, bg = "red", size = 3) {
+  const sp = document.createElement("span")
+
+  sp.style.top = `${y}px`
+  sp.style.left = `${x}px`
+  sp.style.position = "absolute"
+  sp.style.width = `${size}px`
+  sp.style.height = `${size}px`
+  sp.style.backgroundColor = bg
+
+  sp.classList.add("select--box")
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.appendChild(sp)
 }
 
 function drawRectangle(event) {
