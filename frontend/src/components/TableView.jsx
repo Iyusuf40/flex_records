@@ -9,6 +9,9 @@ const RECTANGLE = {
   id: ""
 }
 
+const COLOR_CLASS_FOR_APPLICABLE_CELLS = " cell--is--function--applicable--color"
+const CLASS_CELL_IS_SELECTED = " cell--is--selected"
+
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
 
@@ -431,7 +434,7 @@ function getColorClassForApplicableRowsAndCols(
     colorRowsAndCols &&
     cellInAxisOfColorRowsOrCols(row, colIndex, colorRowsAndCols)
   ) {
-    return " cell--is--function--applicable--color";
+    return ` ${COLOR_CLASS_FOR_APPLICABLE_CELLS}`;
   }
   return "";
 }
@@ -455,7 +458,7 @@ function getColorClassForSelectedRowsOrCols(
     );
     const key = `${targetRow}.${targetCol}`;
     if (cellInCellsGroup(row, colIndex, selectedCells[key]))
-      return " cell--is--selected";
+      return ` ${CLASS_CELL_IS_SELECTED}`;
   }
   return "";
 }
@@ -1203,7 +1206,7 @@ function enableRectangleDraw(tableName, recordState) {
   const table = document.getElementsByClassName("current--table")[0]
   table?.addEventListener('mousedown', setCanDraw)
   table?.addEventListener('mousemove', redrawRectangle)
-  table?.addEventListener('mouseup', unSetCanDraw)
+  table?.addEventListener('mouseup', stopDraw)
 }
 
 function disableRectangleDraw(tableName, recordState) {
@@ -1211,7 +1214,7 @@ function disableRectangleDraw(tableName, recordState) {
   const table = document.getElementsByClassName("current--table")[0]
   table?.removeEventListener('mousemove', redrawRectangle)
   table?.removeEventListener('mousedown', setCanDraw)
-  table?.removeEventListener('mouseup', unSetCanDraw)
+  table?.removeEventListener('mouseup', stopDraw)
 }
 
 function setCanDraw(event) {
@@ -1221,7 +1224,7 @@ function setCanDraw(event) {
   drawRectangle(event)
 }
 
-function unSetCanDraw(event) {
+function stopDraw(event) {
   deleteRectangle()
   selectCellsInRectangle()
   resetRectangle()
@@ -1246,22 +1249,28 @@ function selectCellsInRectangle() {
       const elements = document.elementsFromPoint(col, row)
 
       elements.forEach(el => {
-        if (el?.classList.contains('cell--container')) {
+        if (el?.classList.contains('cell--container') && !el.__selected) {
           selectedCells.push(el)
-          pasteSpan(col, row)
+          el.__selected = true
         }
       })
+
+      if (RECTANGLE.bottomRight.x !== col && col + cellWidth > RECTANGLE.bottomRight.x) {  // record last edge of box - x axis
+        col = RECTANGLE.bottomRight.x - cellWidth
+      }
 
       col += cellWidth
     }
 
+    if (RECTANGLE.bottomRight.y !== row && row + cellHeight > RECTANGLE.bottomRight.y) {  // record last edge of box - y axis
+      row = RECTANGLE.bottomRight.y - cellHeight
+    }
+
     row += cellHeight
-
-    // if (col > RECTANGLE.bottomRight.x) console.log("col ->", col, col / cellWidth)
-    // if (row > RECTANGLE.bottomRight.y) console.log("row ->", row, row / cellHeight)
   }
+  
+  selectedCells.forEach(el => el.__selected = undefined)  // clean up
 
-  console.log(selectedCells.length, selectedCells, RECTANGLE.topLeft.y, row, RECTANGLE.topLeft.x, col)
 }
 
 function pasteSpan(x, y, bg = "red", size = 3) {
