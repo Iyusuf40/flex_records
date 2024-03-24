@@ -9,8 +9,10 @@ const RECTANGLE = {
   id: ""
 }
 
-const COLOR_CLASS_FOR_APPLICABLE_CELLS = " cell--is--function--applicable--color"
-const CLASS_CELL_IS_SELECTED = " cell--is--selected"
+const COLOR_CLASS_FOR_APPLICABLE_CELLS = "cell--is--function--applicable--color"
+const CLASS_CELL_IS_SELECTED = "cell--is--selected"
+
+const SELECTED_CELLS_ACCUMULATOR = []
 
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
@@ -243,9 +245,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   const colorRowsAndCols = table.colorRowsAndCols;
 
   if (tableData) {
-    let rowIndex = 0;
     for (let row = 1; row <= noOfRows; row++) {
-      const saveRowIndex = rowIndex;
       const currentRow = tableData[row];
       const rowContainer = [];
       for (let colIndex = 0; colIndex < noOfCols; colIndex++) {
@@ -268,15 +268,16 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
               key={colIndex}
               className={(cellClassName || "") + extendInputClass}
               value={currentRow[colIndex] ? currentRow[colIndex] : ""}
-              data-col-index={colIndex}
-              data-row-index={saveRowIndex}
+              col={colIndex}
+              row={row}
+              id={"cell--input"}
               onChange={(e) =>
                 updateTableView(
                   currentTable,
                   props.records,
                   colIndex,
                   e.target.value,
-                  saveRowIndex + 1,
+                  row,
                 )
               }
               onClick={(e) => {
@@ -345,7 +346,6 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
           {rowContainer}
         </div>,
       );
-      rowIndex++;
     }
   }
 }
@@ -720,13 +720,13 @@ function decreaseCellSize(tableName, recordState) {
 /**
  * updateTableView - handles text changes in cells
  */
-function updateTableView(tableName, recordState, colIndex, value, SN) {
+function updateTableView(tableName, recordState, colIndex, value, row) {
   // SN is serial number, used as key in storing rows in
   // records.tables.tableName.data
   setRecordsStateWrapper(
     recordState,
-    `tables.${tableName}.data.${SN}`,
-    replaceAtIndex(recordState.tables[tableName].data[SN], colIndex, value),
+    `tables.${tableName}.data.${row}`,
+    replaceAtIndex(recordState.tables[tableName].data[row], colIndex, value),
   );
   applyRuleOnModification(recordState);
   runRegisteredFunctions(recordState, tableName);
@@ -1202,7 +1202,7 @@ function toggleSelectTool(tableName, recordState) {
 }
 
 function enableRectangleDraw(tableName, recordState) {
-  if (!recordState?.tables || !recordState?.tables[tableName].selectTool) return
+  if (!recordState?.tables || !recordState?.tables[tableName]?.selectTool) return
   const table = document.getElementsByClassName("current--table")[0]
   table?.addEventListener('mousedown', setCanDraw)
   table?.addEventListener('mousemove', redrawRectangle)
@@ -1226,7 +1226,8 @@ function setCanDraw(event) {
 
 function stopDraw(event) {
   deleteRectangle()
-  selectCellsInRectangle()
+  const selectedCells = selectCellsInRectangle()
+  handleSelectedCells(selectedCells)
   resetRectangle()
 }
 
@@ -1271,6 +1272,41 @@ function selectCellsInRectangle() {
   
   selectedCells.forEach(el => el.__selected = undefined)  // clean up
 
+  return selectedCells
+}
+
+function handleSelectedCells(selectedCells) {
+  if (!selectedCells || selectedCells.length === 0) return
+
+  if (SELECTED_CELLS_ACCUMULATOR.length === 0) {
+    SELECTED_CELLS_ACCUMULATOR.push(selectedCells)
+    colorSelectedCells(selectedCells)
+    return
+  }
+
+  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0]
+
+  // check wether to place result in row or col
+  // compute result and
+  // register in registered functions
+  deColorizeSelectedCells(initialSelection)
+  SELECTED_CELLS_ACCUMULATOR.splice(0)
+}
+
+function colorSelectedCells(selectedCells) {
+  selectedCells.forEach(cell => {
+    Array.from(cell.children).forEach(child => {
+      if (child.id === "cell--input") child.classList.add(CLASS_CELL_IS_SELECTED)
+    })
+  })
+}
+
+function deColorizeSelectedCells(selectedCells) {
+  selectedCells.forEach(cell => {
+    Array.from(cell.children).forEach(child => {
+      if (child.id === "cell--input") child.classList.remove(CLASS_CELL_IS_SELECTED)
+    })
+  })
 }
 
 function pasteSpan(x, y, bg = "red", size = 3) {
