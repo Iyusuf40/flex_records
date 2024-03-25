@@ -202,6 +202,16 @@ export default function TableView(props) {
 
           <input
             type="radio"
+            id="rev--sub--function"
+            name="rules"
+            onClick={(e) =>
+              registerFunction(props.records, currentTable, "applyReverseSubFunction")
+            }
+          />
+          <label htmlFor="rev--sub--function">reverse subtract function</label>
+
+          <input
+            type="radio"
             id="mul--function"
             name="rules"
             onClick={(e) =>
@@ -769,6 +779,7 @@ function runRegisteredFunctions(recordState, tableName) {
   const functionNameToFunctionApplierMap = {
     applySumFunction: applySumFunction,
     applySubFunction: applySubFunction,
+    applyReverseSubFunction: applyReverseSubFunction,
     applyMulFunction: applyMulFunction,
     applyAverageFunction: applyAverageFunction,
   };
@@ -827,6 +838,31 @@ function subFunctionImpl(data, cellsToOperateOnAsAGroup) {
   data[targetRow][targetCol] = `${res}`;
   return data;
 }
+
+function applyReverseSubFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = reverseSubFunctionImpl(data, cellsToOperateOnAsAGroup);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function reverseSubFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
+  let res = 0;
+  let start = false;
+  relevantData.reverse().forEach((v) => {
+    if (start === false) {
+      start = true;
+      res = Number(v);
+    } else {
+      res -= Number(v);
+    }
+  });
+  data[targetRow][targetCol] = `${res}`;
+  return data;
+}
+
 
 function applyMulFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
@@ -1221,7 +1257,6 @@ function setCanDraw(event) {
   event.preventDefault()
   resetRectangle()
   RECTANGLE.canDraw = true
-  drawRectangle(event)
 }
 
 function stopDraw(event) {
@@ -1231,97 +1266,28 @@ function stopDraw(event) {
   resetRectangle()
 }
 
-function selectCellsInRectangle() {
-  const cellRep = document.querySelector(".cell--container")
-  let {width, height} = cellRep.getBoundingClientRect()
-
-  let cellWidth = Math.round(width)
-  let cellHeight = Math.round(height)
-  
-  const selectedCells = []
-
-  let row = Math.round(RECTANGLE.topLeft.y)
-  let col = Math.round(RECTANGLE.topLeft.x)
-
-  while (row <= RECTANGLE.bottomRight.y) {
-
-    col = Math.round(RECTANGLE.topLeft.x)
-    while (col <= RECTANGLE.bottomRight.x) {
-      const elements = document.elementsFromPoint(col, row)
-
-      elements.forEach(el => {
-        if (el?.classList.contains('cell--container') && !el.__selected) {
-          selectedCells.push(el)
-          el.__selected = true
-        }
-      })
-
-      if (RECTANGLE.bottomRight.x !== col && col + cellWidth > RECTANGLE.bottomRight.x) {  // record last edge of box - x axis
-        col = RECTANGLE.bottomRight.x - cellWidth
-      }
-
-      col += cellWidth
-    }
-
-    if (RECTANGLE.bottomRight.y !== row && row + cellHeight > RECTANGLE.bottomRight.y) {  // record last edge of box - y axis
-      row = RECTANGLE.bottomRight.y - cellHeight
-    }
-
-    row += cellHeight
-  }
-  
-  selectedCells.forEach(el => el.__selected = undefined)  // clean up
-
-  return selectedCells
-}
-
-function handleSelectedCells(selectedCells) {
-  if (!selectedCells || selectedCells.length === 0) return
-
-  if (SELECTED_CELLS_ACCUMULATOR.length === 0) {
-    SELECTED_CELLS_ACCUMULATOR.push(selectedCells)
-    colorSelectedCells(selectedCells)
-    return
+function redrawRectangle(event) {
+  if (!RECTANGLE.canDraw) return
+  if (!RECTANGLE.id) {
+    drawRectangle(event)
   }
 
-  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0]
+  const id = RECTANGLE.id
 
-  // check wether to place result in row or col
-  // compute result and
-  // register in registered functions
-  deColorizeSelectedCells(initialSelection)
-  SELECTED_CELLS_ACCUMULATOR.splice(0)
-}
+  const rect = document.getElementById(id)
 
-function colorSelectedCells(selectedCells) {
-  selectedCells.forEach(cell => {
-    Array.from(cell.children).forEach(child => {
-      if (child.id === "cell--input") child.classList.add(CLASS_CELL_IS_SELECTED)
-    })
-  })
-}
+  const cursorPosition = {x: event.pageX, y: event.pageY}
 
-function deColorizeSelectedCells(selectedCells) {
-  selectedCells.forEach(cell => {
-    Array.from(cell.children).forEach(child => {
-      if (child.id === "cell--input") child.classList.remove(CLASS_CELL_IS_SELECTED)
-    })
-  })
-}
+  const flipped = shouldFlip(cursorPosition)
 
-function pasteSpan(x, y, bg = "red", size = 3) {
-  const sp = document.createElement("span")
+  setRectangleEdges(cursorPosition, flipped)
+  resetRectangleTopLeft(cursorPosition, flipped)
 
-  sp.style.top = `${y}px`
-  sp.style.left = `${x}px`
-  sp.style.position = "absolute"
-  sp.style.width = `${size}px`
-  sp.style.height = `${size}px`
-  sp.style.backgroundColor = bg
-
-  sp.classList.add("select--box")
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.appendChild(sp)
+  const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x)
+  const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y)
+  
+  rect.style.width = `${width}px`
+  rect.style.height = `${height}px`
 }
 
 function drawRectangle(event) {
@@ -1344,27 +1310,6 @@ function drawRectangle(event) {
   rect.classList.add("select--box")
   const table = document.getElementsByClassName("current--table")[0]
   table?.appendChild(rect)
-}
-
-function redrawRectangle(event) {
-  if (!RECTANGLE.canDraw) return
-  if (!RECTANGLE.id) return
-  const id = RECTANGLE.id
-
-  const rect = document.getElementById(id)
-
-  const cursorPosition = {x: event.pageX, y: event.pageY}
-
-  const flipped = shouldFlip(cursorPosition)
-
-  setRectangleEdges(cursorPosition, flipped)
-  resetRectangleTopLeft(cursorPosition, flipped)
-
-  const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x)
-  const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y)
-  
-  rect.style.width = `${width}px`
-  rect.style.height = `${height}px`
 }
 
 function shouldFlip(cursorPosition) {
@@ -1422,4 +1367,184 @@ function deleteRectangle() {
   const el = document.getElementById(id)
   RECTANGLE.id = ""
   el.remove()
+}
+
+function selectCellsInRectangle() {
+  const cellRep = document.querySelector(".cell--container")
+  let {width, height} = cellRep.getBoundingClientRect()
+
+  let cellWidth = Math.round(width)
+  let cellHeight = Math.round(height)
+  
+  const selectedCells = []
+  const selectedCellsContainerList = []
+
+  let row = Math.round(RECTANGLE.topLeft.y)
+  let col = Math.round(RECTANGLE.topLeft.x)
+
+  while (row <= RECTANGLE.bottomRight.y) {
+
+    col = Math.round(RECTANGLE.topLeft.x)
+    while (col <= RECTANGLE.bottomRight.x) {
+      const elements = document.elementsFromPoint(col, row)
+
+      elements.forEach(el => {
+        if (el?.classList.contains('cell--container') && !el.__selected) {
+          Array.from(el.children).forEach(cell => {
+            if (cell.id === "cell--input") selectedCells.push(cell)
+          })
+          el.__selected = true
+          selectedCellsContainerList.push(el)
+        }
+      })
+
+      if (RECTANGLE.bottomRight.x !== col && col + cellWidth > RECTANGLE.bottomRight.x) {  // record last edge of box - x axis
+        col = RECTANGLE.bottomRight.x - cellWidth
+      }
+
+      col += cellWidth
+    }
+
+    if (RECTANGLE.bottomRight.y !== row && row + cellHeight > RECTANGLE.bottomRight.y) {  // record last edge of box - y axis
+      row = RECTANGLE.bottomRight.y - cellHeight
+    }
+
+    row += cellHeight
+  }
+  
+  selectedCellsContainerList.forEach(el => el.__selected = undefined)  // clean up
+
+  return selectedCells
+}
+
+function handleSelectedCells(selectedCells) {
+  if (!selectedCells || selectedCells.length === 0) return
+
+  if (SELECTED_CELLS_ACCUMULATOR.length === 0) {
+    SELECTED_CELLS_ACCUMULATOR.push(selectedCells)
+    colorSelectedCells(selectedCells)
+    return
+  }
+
+  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0]
+
+  if (thereIsIntersection(selectedCells, initialSelection)) {
+    alert("cannot place computation in cells used as input for computation")
+    return
+  }
+
+  // check wether to place result in row or col
+  const placementDesc = getDestinationDesc(selectedCells, initialSelection)
+  if (placementDesc === null) {
+    alert("destination row or column for computation must align with input for computation")
+    return
+  }
+
+  // set cells in selected cells
+  batchSetCellsInSelectedCells(initialSelection, placementDesc)
+
+  deColorizeSelectedCells(initialSelection)
+  SELECTED_CELLS_ACCUMULATOR.splice(0)
+}
+
+function colorSelectedCells(selectedCells) {
+  selectedCells.forEach(cell => {
+    cell.classList.add(CLASS_CELL_IS_SELECTED)
+  })
+}
+
+function deColorizeSelectedCells(selectedCells) {
+  selectedCells.forEach(cell => {
+    cell.classList.remove(CLASS_CELL_IS_SELECTED)
+  })
+}
+
+function thereIsIntersection(selectedCells, initialSelection) {
+  const hMap = new Map()
+  for (const cell of initialSelection) {
+    hMap.set(`${cell.getAttribute('row')}:${cell.getAttribute('col')}`, true)
+  }
+
+  for (const cell of selectedCells) {
+    if (hMap.get(`${cell.getAttribute('row')}:${cell.getAttribute('col')}`)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function getDestinationDesc(selectedCells, initialSelection) {
+  const targetCell = selectedCells[0]
+  const inputCell_0 = initialSelection[0]
+  const targetRow = Number(targetCell.getAttribute("row"))
+  const targetCol = Number(targetCell.getAttribute("col"))
+  const inputRow = Number(inputCell_0.getAttribute("row"))
+  const inputCol = Number(inputCell_0.getAttribute("col"))
+
+  if (targetCol === inputCol) {
+    return {
+      direction: "y",
+      targetRow: targetRow,
+      targetCol: targetCol
+    }
+  }
+
+  if (targetRow === inputRow) {
+    return {
+      direction: "x",
+      targetRow: targetRow,
+      targetCol: targetCol
+    }
+  }
+
+  return null
+}
+
+function batchSetCellsInSelectedCells(initialSelection, placementDesc) {
+  // colorRowsAndCols, row, colIndex, recordState
+
+  const currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  if (!recordState.tables[currentTable].selectedCells)
+    recordState.tables[currentTable].selectedCells = {};
+
+  let { targetRow, targetCol } = placementDesc
+
+  for (const el of initialSelection) {
+    const row = Number(el.getAttribute("row"))
+    const col = Number(el.getAttribute("col"))
+
+    if (placementDesc.direction === "x") {
+      targetRow = row
+    } else {
+      targetCol = col
+    }
+
+    const cell = { row, column: col, colIndex: col, targetRow, targetCol }
+    const key = `${targetRow}.${targetCol}`
+    pushCellInSelectedCells(
+      recordState.tables[currentTable].selectedCells,
+      key,
+      cell,
+    )
+  }
+
+  setRecordsStateWrapper(recordState, "currentTable", currentTable);
+}
+
+
+function pasteSpan(x, y, bg = "red", size = 3) {
+  const sp = document.createElement("span")
+
+  sp.style.top = `${y}px`
+  sp.style.left = `${x}px`
+  sp.style.position = "absolute"
+  sp.style.width = `${size}px`
+  sp.style.height = `${size}px`
+  sp.style.backgroundColor = bg
+
+  sp.classList.add("select--box")
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.appendChild(sp)
 }
