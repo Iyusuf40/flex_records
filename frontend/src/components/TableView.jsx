@@ -65,6 +65,8 @@ export default function TableView(props) {
   enableRectangleDraw(currentTable, props.records)
   disableRectangleDraw(currentTable, props.records)
 
+  displayRegisteredFunctions()
+
   return (
     <div className="table--view">
       <div className={`create--form--container ${classForCreateTableMode}`}>
@@ -163,6 +165,9 @@ export default function TableView(props) {
       <div className="rules--buttons">
         <button onClick={(e) => clearRule(currentTable, props.records)}>
           clear functions
+        </button>
+        <button onClick={(e) => unSetRuleModeToDisplayBtns()}>
+          off rule mode
         </button>
         <button onClick={(e) => increaseCellSize(currentTable, props.records)}>
           cell size +
@@ -275,12 +280,13 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
           <div className="cell--container" key={colIndex}>
             <input
               type="text"
-              key={colIndex}
+              key={`${row}:${colIndex}`}
               className={(cellClassName || "") + extendInputClass}
               value={currentRow[colIndex] ? currentRow[colIndex] : ""}
               col={colIndex}
               row={row}
-              id={"cell--input"}
+              iscell={"true"}
+              id={`${row}:${colIndex}`}
               onChange={(e) =>
                 updateTableView(
                   currentTable,
@@ -596,6 +602,16 @@ function setRuleModeToDisplayBtns(recordState) {
   else recordState.tables[currentTable].ruleMode = false;
 }
 
+function unSetRuleModeToDisplayBtns() {
+  if (!recordState) return
+  const currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  recordState.tables[currentTable].selectedCells = []
+  recordState.tables[currentTable].colorRowsAndCols = []
+
+  setRecordsStateWrapper(recordState, `tables.${currentTable}.ruleMode`, false);
+}
+
 function addColumn(setRecordsStateWrapper, tableName, recordState) {
   if (recordState.currentTable === "") {
     alert("No table selected");
@@ -605,8 +621,10 @@ function addColumn(setRecordsStateWrapper, tableName, recordState) {
   if (!recordState.tables[tableName].noOfRows) {
     return null;
   }
+
   recordState.altered = true;
   let newNoOfCols = recordState.tables[tableName].noOfCols + 1;
+  appendCol(recordState.tables[tableName].data, newNoOfCols)
   setRecordsStateWrapper(
     recordState,
     `tables.${tableName}.noOfCols`,
@@ -756,6 +774,22 @@ function afterRulePick(ruleName, tableName, recordState) {
     `tables.${tableName}.currentRule`,
     ruleName,
   );
+}
+
+function displayRegisteredFunctions() {
+  if (!recordState) return
+  const tableName = recordState.currentTable
+  if (!tableName) return
+  const registeredFunctions = recordState?.tables[tableName].registeredFunctions
+  // console.log(registeredFunctions)
+
+  // get names of buttons
+  // get topLeft Point and bottomRight Point of cells involved
+  // build div with id functions--display if it doesnt exist
+  // if it exists show it
+  // check if element with id name:topleft:bottomright doesnt exist
+  // if it doesnt build buttons setting id to name:topleft:bottomright
+  // set on hover to draw rect using bottomRight and topLeft
 }
 
 function registerFunction(recordState, tableName, functionName) {
@@ -989,15 +1023,16 @@ function deleteEntireRow(tableName, row, recordState) {
 }
 
 function deleteEntireCol(tableName, colIndex, recordState) {
-  const data = getData(tableName, recordState);
+  const data = getData(tableName, recordState)
+
   if (colIndex < 0) return;
   for (let row in data) {
     const currRow = data[row];
     const len = currRow.length;
-    for (let i = colIndex; i < len; i++) {
-      if (i < len - 1) currRow[i] = currRow[i + 1];
-      if (i === len - 1) currRow.length = len - 1;
+    for (let i = colIndex; i < len; i++) {  // move columns back
+      currRow[i] = currRow[i + 1];
     }
+    currRow.splice(len - 1)                 // delete last col
   }
   setDataField(recordState, data, tableName);
 }
@@ -1391,7 +1426,7 @@ function selectCellsInRectangle() {
       elements.forEach(el => {
         if (el?.classList.contains('cell--container') && !el.__selected) {
           Array.from(el.children).forEach(cell => {
-            if (cell.id === "cell--input") selectedCells.push(cell)
+            if (cell.getAttribute("iscell")) selectedCells.push(cell)
           })
           el.__selected = true
           selectedCellsContainerList.push(el)

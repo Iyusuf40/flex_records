@@ -224,6 +224,13 @@ export function removeCol(data, noOfCols) {
   return copy;
 }
 
+export function appendCol(data, noOfCols) {
+  for (const key in data) {
+    const row = data[key]
+    row.push("")
+  }
+}
+
 /**
  * applyRuleOnModification - reapplies the previously set rule on
  * new columns or rows created
