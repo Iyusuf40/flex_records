@@ -6,6 +6,7 @@
 
 .current--table {
   padding: 20px;
+  position: relative;
 }
 
 .row--container {
@@ -107,6 +108,34 @@ input {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px dashed black;
   position: absolute;
+}
+
+.hover--bold:hover {
+  font-weight: bold;
+}
+
+.registered--funcs--box {
+  background-color: rgba(19, 224, 214, 0.5);
+  border: 1px dashed black;
+  position: absolute;
+  z-index: 100;
+}
+
+#registered--funcs--display--elements--container {
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 1em .5em;
+  background-color: rgb(194, 226, 226);
+  position: absolute;
+  top: 0;
+  right: 10px;
+}
+
+.registered--func--display--el {
+  border-bottom: 1px solid black;
+  color: black;
+  cursor: pointer;
+  margin-bottom: 1em;
 }
 
 @media screen and (max-width: 400px) {

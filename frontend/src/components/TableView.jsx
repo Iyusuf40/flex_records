@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { changeValueInNestedObj, clearRule, removeCol } from "../utils";
+import { changeValueInNestedObj, clearRule, createEl, removeCol } from "../utils";
 
 const RECTANGLE = {
   canDraw: false,
@@ -781,15 +781,171 @@ function displayRegisteredFunctions() {
   const tableName = recordState.currentTable
   if (!tableName) return
   const registeredFunctions = recordState?.tables[tableName].registeredFunctions
-  // console.log(registeredFunctions)
 
   // get names of buttons
-  // get topLeft Point and bottomRight Point of cells involved
+  const registeredFunctionsDisplayDescs = extractDisplayReqFromRegisteredFuncs(registeredFunctions)
   // build div with id functions--display if it doesnt exist
-  // if it exists show it
+  createDivContainerForRegisteredFunctionsIfNotExist()
+  createRegisteredFunctionsDisplayElements(registeredFunctionsDisplayDescs)
+  showDivContainerForRegisteredFunctions()
+  // hideDivContainerForRegisteredFunctions()
+
   // check if element with id name:topleft:bottomright doesnt exist
   // if it doesnt build buttons setting id to name:topleft:bottomright
   // set on hover to draw rect using bottomRight and topLeft
+}
+
+function extractDisplayReqFromRegisteredFuncs(registeredFunctions) {
+  const displayResources = {}
+  let index = 0
+
+  for (const rFunc of registeredFunctions) {
+    const name = rFunc.functionName.replace("apply", "").replace("Function", "")
+    const cellsToOperateOnAsAGroup = rFunc.cellsToOperateOnAsAGroup
+    const topLeftCellAndBottomRightCell = getTopLeftCellAndBottomRightCell(cellsToOperateOnAsAGroup.flat())
+    const key = `${name}_${index}`
+    displayResources[key] = topLeftCellAndBottomRightCell
+    index++
+  }
+
+  function getTopLeftCellAndBottomRightCell(flattenedCellsToOperateOnAsAGroup) {
+    if (!flattenedCellsToOperateOnAsAGroup.length) return
+    const cellRep = flattenedCellsToOperateOnAsAGroup[0]
+    flattenedCellsToOperateOnAsAGroup.push({row: cellRep.targetRow, column: cellRep.targetCol})
+    let leastRow = cellRep.row
+    let leastCol = cellRep.column
+    let maxRow = cellRep.row
+    let maxCol = cellRep.column
+
+    for (const cellRep of flattenedCellsToOperateOnAsAGroup) {
+      if (cellRep.row < leastRow) leastRow = cellRep.row
+      if (cellRep.row > maxRow) maxRow = cellRep.row
+      if (cellRep.column < leastCol) leastCol = cellRep.column
+      if (cellRep.column > leastCol) maxCol = cellRep.column
+    }
+
+    return {leastRow, leastCol, maxRow, maxCol}
+
+  }
+
+  return displayResources
+}
+
+function createDivContainerForRegisteredFunctionsIfNotExist() {
+  const id = "registered--funcs--display--elements--container"
+  let registeredFuncsBtnsContainer = document.getElementById(id)
+  if (registeredFuncsBtnsContainer) return
+  registeredFuncsBtnsContainer = createEl("div", {id})
+  const currentTableEl = document.getElementsByClassName("current--table")[0]
+  currentTableEl.appendChild(registeredFuncsBtnsContainer)
+}
+
+function createRegisteredFunctionsDisplayElements(rFunctionsDisplayDescs) {
+  const id = "registered--funcs--display--elements--container"
+  let registeredFuncsBtnsContainer = document.getElementById(id)
+
+  removeAllRegFunctionDisplayEl()
+
+  for (const key in rFunctionsDisplayDescs) {
+    const rFunctionDisplayEl = createEl("div", {class: "registered--func--display--el"})
+    addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key)
+    const displayDesc = rFunctionsDisplayDescs[key]
+    addEventListenersForRFuncsDisplayElements(rFunctionDisplayEl, displayDesc)
+    registeredFuncsBtnsContainer.appendChild(rFunctionDisplayEl)
+  }
+}
+
+function removeAllRegFunctionDisplayEl() {
+  const elements = document.getElementsByClassName("registered--func--display--el")
+  Array.from(elements).forEach(el => el.remove())
+}
+
+function addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key) {
+  const textSpan = createEl("span")
+  textSpan.innerText = key
+  textSpan.style.color = "black"
+  const deleteSpan = createEl("span", {class: "hover--bold"})
+  deleteSpan.addEventListener("click", () => {
+    const index = Number(key.split("_")[1])
+    deleteRegisteredFunctionAtIndex(index)
+  })
+  deleteSpan.innerText = "x"
+  deleteSpan.style.color = "red"
+  const container = createEl("div")
+  container.appendChild(textSpan)
+  container.appendChild(deleteSpan)
+  container.style.display = "flex"
+  container.style.justifyContent = "space-between"
+  container.style.gap = "5px"
+  rFunctionDisplayEl.appendChild(container)
+}
+
+function addEventListenersForRFuncsDisplayElements(rFunctionDisplayEl, displayDesc) {
+  rFunctionDisplayEl.addEventListener("mouseenter", () => {
+    drawBoxOverRegisteredFunctions(displayDesc)
+  })
+
+  rFunctionDisplayEl.addEventListener("mouseleave", () => {
+    deleteBoxOverRegisteredFunctions()
+  })
+
+  rFunctionDisplayEl.addEventListener("touchstart", () => {
+    drawBoxOverRegisteredFunctions(displayDesc)
+  })
+
+  rFunctionDisplayEl.addEventListener("touchenter", () => {
+    drawBoxOverRegisteredFunctions(displayDesc)
+  })
+
+  rFunctionDisplayEl.addEventListener("touchleave", () => {
+    deleteBoxOverRegisteredFunctions()
+  })
+
+  rFunctionDisplayEl.addEventListener("touchend", () => {
+    deleteBoxOverRegisteredFunctions()
+  })
+
+  rFunctionDisplayEl.addEventListener("touchcancel", () => {
+    deleteBoxOverRegisteredFunctions()
+  })
+}
+
+function drawBoxOverRegisteredFunctions(displayDesc) {
+  const topLeftCellId = `${displayDesc.leastRow}:${displayDesc.leastCol}`
+  const bottomRightCellId = `${displayDesc.maxRow}:${displayDesc.maxCol}`
+  const topLeftCell = document.getElementById(topLeftCellId)
+  const bottomRightCell = document.getElementById(bottomRightCellId)
+  const left = topLeftCell.getBoundingClientRect().left
+  const top = topLeftCell.getBoundingClientRect().top
+  const width = bottomRightCell.getBoundingClientRect().right - left
+  const height = bottomRightCell.getBoundingClientRect().bottom - top
+
+  const box = createEl("div", {class: "registered--funcs--box"})
+
+  box.style.left = `${left}px`
+  box.style.top = `${top}px`
+  box.style.width = `${width}px`
+  box.style.height = `${height}px`
+
+  const body = document.querySelector("body")
+  body.appendChild(box)
+}
+
+function deleteBoxOverRegisteredFunctions() {
+  const boxes = document.getElementsByClassName("registered--funcs--box")
+  Array.from(boxes).forEach(box => box.remove())
+}
+
+function showDivContainerForRegisteredFunctions() {
+  const id = "registered--funcs--display--elements--container"
+  let registeredFuncsBtnsContainer = document.getElementById(id)
+  registeredFuncsBtnsContainer.classList.remove("hide")
+}
+
+function hideDivContainerForRegisteredFunctions() {
+  const id = "registered--funcs--display--elements--container"
+  let registeredFuncsBtnsContainer = document.getElementById(id)
+  registeredFuncsBtnsContainer.classList.add("hide")
 }
 
 function registerFunction(recordState, tableName, functionName) {
@@ -805,6 +961,15 @@ function registerFunction(recordState, tableName, functionName) {
   });
 
   setRecordsStateWrapper(recordState, "currentTable", tableName);
+  // force function application
+  runRegisteredFunctions(recordState, tableName);
+}
+
+function deleteRegisteredFunctionAtIndex(index) {
+  if (!recordState) return
+  const tableName = recordState.currentTable
+  recordState.tables[tableName].registeredFunctions.splice(index, 1)
+  setRecordsStateWrapper(recordState, "currentTable", tableName)
   // force function application
   runRegisteredFunctions(recordState, tableName);
 }
@@ -1343,8 +1508,10 @@ function drawRectangle(event) {
   RECTANGLE.initPoint = {x: event.pageX, y: event.pageY} 
 
   rect.classList.add("select--box")
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.appendChild(rect)
+  // const table = document.getElementsByClassName("current--table")[0]
+  // table?.appendChild(rect)
+  const body = document.querySelector("body")
+  body.appendChild(rect)
 }
 
 function shouldFlip(cursorPosition) {

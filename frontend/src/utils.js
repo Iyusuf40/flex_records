@@ -232,6 +232,19 @@ export function appendCol(data, noOfCols) {
 }
 
 /**
+ * 
+ * @param type e.g div, span, p etc 
+ * @param opts obj with props {id: string, class: string} 
+ * @returns 
+ */
+export function createEl(type, opts = {}) {
+  const el = document.createElement(type)
+  if (opts.id) el.id = opts.id
+  if (opts.class) el.classList.add(...opts.class.split(" "))
+  return el
+}
+
+/**
  * applyRuleOnModification - reapplies the previously set rule on
  * new columns or rows created
  *
