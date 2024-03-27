@@ -182,6 +182,12 @@ export default function TableView(props) {
           }}>
           select tool
         </button>
+        <button 
+          onClick={(e) => toggleShowOrHideRegisteredFunctions()}>
+          {table?.showOrHideRegisteredFunctions 
+            ? "hide functions" 
+            : "show functions"}
+        </button>
       </div>
       {table.ruleMode ? (
         <div className="rule--options">
@@ -787,15 +793,13 @@ function displayRegisteredFunctions() {
   // build div with id functions--display if it doesnt exist
   createDivContainerForRegisteredFunctionsIfNotExist()
   createRegisteredFunctionsDisplayElements(registeredFunctionsDisplayDescs)
-  showDivContainerForRegisteredFunctions()
-  // hideDivContainerForRegisteredFunctions()
-
-  // check if element with id name:topleft:bottomright doesnt exist
-  // if it doesnt build buttons setting id to name:topleft:bottomright
-  // set on hover to draw rect using bottomRight and topLeft
+  recordState?.tables[tableName].showOrHideRegisteredFunctions
+    ? showDivContainerForRegisteredFunctions()
+    : hideDivContainerForRegisteredFunctions()
 }
 
 function extractDisplayReqFromRegisteredFuncs(registeredFunctions) {
+  if (!registeredFunctions) return
   const displayResources = {}
   let index = 0
 
@@ -811,6 +815,8 @@ function extractDisplayReqFromRegisteredFuncs(registeredFunctions) {
   function getTopLeftCellAndBottomRightCell(flattenedCellsToOperateOnAsAGroup) {
     if (!flattenedCellsToOperateOnAsAGroup.length) return
     const cellRep = flattenedCellsToOperateOnAsAGroup[0]
+
+    // add target cell in box to draw
     flattenedCellsToOperateOnAsAGroup.push({row: cellRep.targetRow, column: cellRep.targetCol})
     let leastRow = cellRep.row
     let leastCol = cellRep.column
@@ -841,6 +847,7 @@ function createDivContainerForRegisteredFunctionsIfNotExist() {
 }
 
 function createRegisteredFunctionsDisplayElements(rFunctionsDisplayDescs) {
+  if (!rFunctionsDisplayDescs) return
   const id = "registered--funcs--display--elements--container"
   let registeredFuncsBtnsContainer = document.getElementById(id)
 
@@ -868,6 +875,7 @@ function addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key) {
   deleteSpan.addEventListener("click", () => {
     const index = Number(key.split("_")[1])
     deleteRegisteredFunctionAtIndex(index)
+    deleteBoxOverRegisteredFunctions()
   })
   deleteSpan.innerText = "x"
   deleteSpan.style.color = "red"
@@ -1437,12 +1445,23 @@ function toggleSelectTool(tableName, recordState) {
   setRecordsStateWrapper(recordState, `tables.${tableName}.selectTool`, value);
 }
 
+function toggleShowOrHideRegisteredFunctions() {
+  if (!recordState?.tables) return
+  const tableName = recordState.currentTable
+  const value = recordState.tables[tableName].showOrHideRegisteredFunctions ? false : true
+  setRecordsStateWrapper(recordState, `tables.${tableName}.showOrHideRegisteredFunctions`, value);
+}
+
 function enableRectangleDraw(tableName, recordState) {
   if (!recordState?.tables || !recordState?.tables[tableName]?.selectTool) return
   const table = document.getElementsByClassName("current--table")[0]
   table?.addEventListener('mousedown', setCanDraw)
   table?.addEventListener('mousemove', redrawRectangle)
   table?.addEventListener('mouseup', stopDraw)
+
+  table?.addEventListener('touchstart', setCanDraw)
+  table?.addEventListener('touchmove', redrawRectangle)
+  table?.addEventListener('touchend', stopDraw)
 }
 
 function disableRectangleDraw(tableName, recordState) {
@@ -1451,6 +1470,10 @@ function disableRectangleDraw(tableName, recordState) {
   table?.removeEventListener('mousemove', redrawRectangle)
   table?.removeEventListener('mousedown', setCanDraw)
   table?.removeEventListener('mouseup', stopDraw)
+
+  table?.removeEventListener('touchmove', redrawRectangle)
+  table?.removeEventListener('touchstart', setCanDraw)
+  table?.removeEventListener('touchend', stopDraw)
 }
 
 function setCanDraw(event) {
@@ -1472,11 +1495,16 @@ function redrawRectangle(event) {
     drawRectangle(event)
   }
 
+  event.preventDefault()
+
   const id = RECTANGLE.id
 
   const rect = document.getElementById(id)
 
-  const cursorPosition = {x: event.pageX, y: event.pageY}
+  const cursorPosition = {
+    x: event.pageX ?? event.changedTouches[0].pageX, 
+    y: event.pageY ?? event.changedTouches[0].pageY,
+  }
 
   const flipped = shouldFlip(cursorPosition)
 
@@ -1500,18 +1528,18 @@ function drawRectangle(event) {
   const rect = document.createElement("div")
   rect.id = id
 
-  rect.style.top = `${event.pageY}px`
-  rect.style.left = `${event.pageX}px`
+  const x = event.pageX ?? event.changedTouches[0].pageX
+  const y = event.pageY ?? event.changedTouches[0].pageY
+  rect.style.top = `${y}px`
+  rect.style.left = `${x}px`
 
-  RECTANGLE.topLeft = {x: event.pageX, y: event.pageY} 
-  RECTANGLE.bottomRight = {x: event.pageX, y: event.pageY}
-  RECTANGLE.initPoint = {x: event.pageX, y: event.pageY} 
+  RECTANGLE.topLeft = {x, y} 
+  RECTANGLE.bottomRight = {x, y}
+  RECTANGLE.initPoint = {x, y} 
 
   rect.classList.add("select--box")
-  // const table = document.getElementsByClassName("current--table")[0]
-  // table?.appendChild(rect)
-  const body = document.querySelector("body")
-  body.appendChild(rect)
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.appendChild(rect)
 }
 
 function shouldFlip(cursorPosition) {
