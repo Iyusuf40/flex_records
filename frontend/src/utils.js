@@ -974,3 +974,48 @@ export function changeTableName(tableName, option, recordState) {
   recordState.tables[option] = saveTableDetails;
   setRecordsStateWrapper(recordState, "currentTable", option);
 }
+
+export function pasteSpan(x, y, bg = "red", size = 3) {
+  const sp = document.createElement("span")
+
+  sp.style.top = `${y}px`
+  sp.style.left = `${x}px`
+  sp.style.position = "absolute"
+  sp.style.width = `${size}px`
+  sp.style.height = `${size}px`
+  sp.style.backgroundColor = bg
+
+  sp.classList.add("select--box")
+  const table = document.getElementsByClassName("current--table")[0]
+  table?.appendChild(sp)
+}
+
+/**
+ * 
+ * @param data map of keys to rows, 1: [a, b, c]
+ * 
+ * returns: string CSV rep
+ */
+export function extractCSVFromData(data) {
+  let csv = ""
+
+  for (const key in data) {
+    const row = data[key]
+    csv += row.join(",")
+    csv += "\n"
+  }
+
+  return csv
+}
+
+export function buildTableDataFromCsv(csv) {
+  let trimmedCsv = csv.trimEnd()
+  let rows = trimmedCsv.split("\n")
+  let data = {}
+
+  for (let row = 1; row <= rows.length; row++) {
+    data[row] = rows[row - 1].split(",")
+  }
+
+  return data
+}

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { changeValueInNestedObj, clearRule, createEl, removeCol } from "../utils";
+import { buildTableDataFromCsv, changeValueInNestedObj, clearRule, createEl, extractCSVFromData, removeCol } from "../utils";
 
 const RECTANGLE = {
   canDraw: false,
@@ -189,6 +189,28 @@ export default function TableView(props) {
             : "show functions"}
         </button>
       </div>
+
+      <div className="rules--buttons">
+        <button
+          onClick={(e) =>
+            handleDownloadCSV()
+          }
+        >
+          export to csv
+        </button>
+        <button>
+          <label className="pointer">
+            load from csv
+            <input
+              type="file"
+              className="hide"
+              onChange={(e) => handleUploadCsv(e)}
+            />
+          </label>
+        </button>
+
+      </div>
+
       {table.ruleMode ? (
         <div className="rule--options">
           <input
@@ -1763,18 +1785,88 @@ function batchSetCellsInSelectedCells(initialSelection, placementDesc) {
   setRecordsStateWrapper(recordState, "currentTable", currentTable);
 }
 
+function handleDownloadCSV() {
+  if (!recordState) throw new Error("recordState undefined")
+  if (!recordState.currentTable) throw new Error("currentTable undefined")
+  const tableName = recordState.currentTable
 
-function pasteSpan(x, y, bg = "red", size = 3) {
-  const sp = document.createElement("span")
+  const tableData = recordState.tables[tableName].data
+  const csv = extractCSVFromData(tableData)
 
-  sp.style.top = `${y}px`
-  sp.style.left = `${x}px`
-  sp.style.position = "absolute"
-  sp.style.width = `${size}px`
-  sp.style.height = `${size}px`
-  sp.style.backgroundColor = bg
+  downloadFile(tableName, csv)
+}
 
-  sp.classList.add("select--box")
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.appendChild(sp)
+// function adapted from https://stackoverflow.com/a/33542499
+function downloadFile(filename, content) {
+  const blob = new Blob([content], {type: 'text/csv'})
+  const elem = window.document.createElement('a')
+  elem.style.display = "none"
+  const url = window.URL.createObjectURL(blob)
+  elem.href = url
+  elem.download = filename  
+  document.body.appendChild(elem)
+  elem.click()
+  document.body.removeChild(elem)
+  URL.revokeObjectURL(url)
+}
+
+function handleUploadCsv(event) {
+  const file = event.target.files?.item(0)
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.readAsText(file)
+  reader.onload = (e) => {
+    const csv = e.target.result
+    const tableData = buildTableDataFromCsv(csv)
+    if (!isValidTableData(tableData)) throw new Error("Invalid table data")
+    const tableName = file.name.replace(".csv", "")
+    loadTableDataAsCurrentTable(tableData, tableName)
+  }
+}
+
+function isValidTableData(tableData) {
+  const firstRow = tableData[1]
+  if (!firstRow || !Array.isArray(firstRow)) return false
+
+  const len = firstRow.length
+
+  for (const row in tableData) {
+    if (typeof Number(row) !== "number")  return false
+    const currentRow = tableData[row]
+    if (!Array.isArray(currentRow)) return false
+    if (currentRow.length !== len) return false
+    for (let i = 0; i < currentRow.length; i++) {
+      const type = typeof currentRow[i]
+      if (type !== "string") return false
+    }
+  }
+
+  return true
+}
+
+function loadTableDataAsCurrentTable(tableData, tableName) {
+  // check if table with name exist
+  if (recordState.tables[tableName]) {
+    const resp = prompt(`table with name ${tableName} exists, do you want to overwrite it?`)
+    if (resp.toLocaleLowerCase() !== "y" && resp.toLocaleLowerCase() !== "yes") {
+      let name = prompt("type in the name you want to call this table")
+      if (!name) return
+      return loadTableDataAsCurrentTable(tableData, name)
+    }
+  }
+
+  recordState.currentTable = tableName
+  setRecordsStateWrapper(
+    recordState,
+    `tables.${tableName}`,
+    {
+      data: tableData,
+      noOfRows: Object.values(tableData).length,
+      noOfCols: tableData[1].length,
+      ruleMode: false,
+      currentRule: "",
+      altered: true,
+    },
+  )
 }

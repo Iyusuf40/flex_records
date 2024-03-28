@@ -33,12 +33,6 @@ a {
   color: #d684c4;
 }
 
-.outer--container {
-  height: 100%;
-  width: 90%;
-  margin: auto;
-}
-
 footer {
   width: 100%;
   height: 31px;
@@ -47,6 +41,16 @@ footer {
   border-top: 1px solid rgba(83, 67, 163, 0.426);
   text-align: center;
   line-height: 31px;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.outer--container {
+  height: 100%;
+  width: 90%;
+  margin: auto;
 }
 
 .container {
