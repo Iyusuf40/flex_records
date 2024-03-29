@@ -1823,6 +1823,9 @@ function handleUploadCsv(event) {
     const tableName = file.name.replace(".csv", "")
     loadTableDataAsCurrentTable(tableData, tableName)
   }
+
+  reader.addEventListener("error", (e) => console.error(e))
+  reader.addEventListener("abort", (e) => console.error(e))
 }
 
 function isValidTableData(tableData) {

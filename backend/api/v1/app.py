@@ -2,7 +2,7 @@
 """ flask application that serves as api to flex_records """
 
 
-from flask import Flask, request, abort
+from flask import Flask, request
 from flask_cors import CORS
 from storage.storage import Storage
 from bson import json_util
@@ -11,7 +11,7 @@ import os
 
 app = Flask(__name__)
 CORS(app)
-server = os.getenv("server")
+server = os.getenv("server") or "primary"
 
 
 @app.route("/records/<record_id>", strict_slashes=False)

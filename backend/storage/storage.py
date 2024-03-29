@@ -3,15 +3,15 @@
 and closure of connection"""
 
 
-from pymongo import MongoClient, ReadPreference
+from pymongo import MongoClient
 from bson import json_util
 
 
 class Storage:
     """ storage instance """
     def __init__(self, server="primary", col=None):
-        if server != "secondary":
-            server = "primary"
+        if server not in ["primary", "secondary"]:
+            raise ValueError("server must be primary or secondary")
         self.client = MongoClient(readPreference=server)
         self.db = self.client.flex_records
         self.col = self.db[col] if col else self.db.nonExistent
