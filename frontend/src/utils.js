@@ -105,7 +105,23 @@ export async function save(record, init) {
   if (!init.loaded) {
     return;
   }
-  const json = JSON.stringify(record);
+
+  const tableName = record.currentTable
+
+  if (!tableName) {  // may have been deleted
+    return
+  }
+
+  const tableData = record.tables[tableName]
+
+  const payload = {
+    tableName,
+    tableData,
+    id: record.id
+  }
+
+  const json = JSON.stringify(payload);
+
   await fetch(putUrl, {
     method: "PUT",
     body: json,
@@ -119,6 +135,30 @@ export function persist(record) {
   const json = JSON.stringify(record);
   fetch(postUrl, {
     method: "POST",
+    body: json,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+}
+
+export async function deleteTableAtBackend() {
+
+  const tableName = recordState.currentTable
+
+  if (!tableName) {
+    return
+  }
+
+  const payload = {
+    tableName,
+    id: recordState.id
+  }
+
+  const json = JSON.stringify(payload);
+
+  await fetch(putUrl, {
+    method: "DELETE",
     body: json,
     headers: {
       "Content-Type": "application/json",
@@ -963,6 +1003,7 @@ export function getData(tableName, recordState) {
 }
 
 export function deleteTable(tableName, recordState) {
+  deleteTableAtBackend()
   delete recordState.tables[tableName];
   recordState.currentTable = "";
   setRecordsStateWrapper(recordState, "currentTable", "");
@@ -970,6 +1011,7 @@ export function deleteTable(tableName, recordState) {
 
 export function changeTableName(tableName, option, recordState) {
   const saveTableDetails = recordState.tables[tableName];
+  deleteTableAtBackend()
   delete recordState.tables[tableName];
   recordState.tables[option] = saveTableDetails;
   setRecordsStateWrapper(recordState, "currentTable", option);

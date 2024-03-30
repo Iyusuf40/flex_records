@@ -637,6 +637,7 @@ function unSetRuleModeToDisplayBtns() {
   recordState.tables[currentTable].selectedCells = []
   recordState.tables[currentTable].colorRowsAndCols = []
 
+  resetSelecetedCellsAccumulator()
   setRecordsStateWrapper(recordState, `tables.${currentTable}.ruleMode`, false);
 }
 
@@ -807,7 +808,12 @@ function afterRulePick(ruleName, tableName, recordState) {
 function displayRegisteredFunctions() {
   if (!recordState) return
   const tableName = recordState.currentTable
-  if (!tableName) return
+  if (!tableName) {
+    // currentTable may be "" after deleting table, therefore remove any
+    // previously showing reg funcs display
+    deleteDivContainerForRegisteredFunctions()
+    return
+  }
   const registeredFunctions = recordState?.tables[tableName].registeredFunctions
 
   // get names of buttons
@@ -975,7 +981,13 @@ function showDivContainerForRegisteredFunctions() {
 function hideDivContainerForRegisteredFunctions() {
   const id = "registered--funcs--display--elements--container"
   let registeredFuncsBtnsContainer = document.getElementById(id)
-  registeredFuncsBtnsContainer.classList.add("hide")
+  registeredFuncsBtnsContainer?.classList.add("hide")
+}
+
+function deleteDivContainerForRegisteredFunctions() {
+  const id = "registered--funcs--display--elements--container"
+  let registeredFuncsBtnsContainer = document.getElementById(id)
+  registeredFuncsBtnsContainer?.remove()
 }
 
 function registerFunction(recordState, tableName, functionName) {
@@ -1696,6 +1708,12 @@ function handleSelectedCells(selectedCells) {
   batchSetCellsInSelectedCells(initialSelection, placementDesc)
 
   deColorizeSelectedCells(initialSelection)
+  SELECTED_CELLS_ACCUMULATOR.splice(0)
+}
+
+function resetSelecetedCellsAccumulator() {
+  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0]
+  deColorizeSelectedCells(initialSelection || [])
   SELECTED_CELLS_ACCUMULATOR.splice(0)
 }
 
