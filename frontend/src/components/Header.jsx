@@ -7,16 +7,13 @@ export default function Header() {
       <nav>
         <ul>
           <li>
-            <Link to="/">Welcome</Link>
+            <Link to="/">Home</Link>
           </li>
           <li>
             <Link to="records">Records</Link>
           </li>
           <li>
             <Link to="tutorial">Tutorial</Link>
-          </li>
-          <li>
-            <Link to="docs">docs</Link>
           </li>
         </ul>
       </nav>

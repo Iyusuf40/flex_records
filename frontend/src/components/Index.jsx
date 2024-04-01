@@ -12,7 +12,7 @@ export default function Index() {
       </h1>
       <div className="intro--container">
         <div className="intro--text text">
-          <h2>Save Simple Tabulated Data in Whatever Way You Want</h2>
+          <h2>Working with tabulated data made easy</h2>
           <p>
             With flex_records, it is very easy working with <span> </span>
             <Link to="records">tables</Link>. You define the size of the table
