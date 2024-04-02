@@ -1,7 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import introImage from "../images/intro--image.PNG";
-import computeImage from "../images/compute--image.PNG";
 
 export default function Index() {
   return (
@@ -10,6 +8,9 @@ export default function Index() {
         Save Alphanumeric Data in Tables and Perform Simple Computations on Them
         Easily
       </h1>
+      <div className="hero--container">
+
+      </div>
       <div className="intro--container">
         <div className="intro--text text">
           <h2>Working with tabulated data made easy</h2>
@@ -24,40 +25,33 @@ export default function Index() {
             instantly saved and sent to our servers for storage.
           </p>
         </div>
-        <div className="intro--image">
-          <img src={introImage} alt="introduction" />
-        </div>
       </div>
       <div className="compute--container">
         <div className="compute--text text">
           <h2>
-            Define Easy Computation Rules To Apply On a Row or Column Once and
+            Define Easy Computation Functions To Apply On a Row or Column Once and
             The App Updates Results on Table Changes
           </h2>
           <p>
             The power of flex_records lies in its ability to perform
             computations on your numeric data. Carrying out computations such as
-            sum, average etc on data in your table is very easy to achieve. With
-            basic rules, you only need 3 clicks and you have the result you want
-            on the last column or bottom row. It gets even more interesting with
-            advanced rules, where you specify on which row or column to save the
-            result of your computations as well as on what rows or columns
-            should the computation be limited to. Even more beautiful is on
-            update of your table values or structure, the computations are
+            sum, average etc on data in your table is very easy to achieve.
+            You can specify on which cell to store your computation 
+            and speficy its input cells, or you can select a group of cells 
+            to serve as input to a function. 
+            On update of your table values, the computations are
             redone to reflect the updated data.
           </p>
           <p>
-            When you want to abort applying the rules, you just click on the
-            <strong> clear rules</strong> button and your table will stop
-            updating on change.
+            When you want to stop applying a particular rule, you click on
+            <strong> show functions </strong> button and delete the function.
+            Alternatively, to clear all functions you click on 
+            <strong> clear functions </strong> button.
           </p>
           <p>
             Head on to the <Link to="tutorial">tutorial</Link> page to learn how
-            easy it is to apply rules on your column or row.
+            easy it is to apply functions on your table.
           </p>
-        </div>
-        <div className="compute--image">
-          <img src={computeImage} alt="compute" />
         </div>
       </div>
       <div className="access--anywhere--container">

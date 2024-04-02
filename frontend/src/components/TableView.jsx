@@ -896,6 +896,7 @@ function removeAllRegFunctionDisplayEl() {
 }
 
 function addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key) {
+  const container = createEl("div")
   const textSpan = createEl("span")
   textSpan.innerText = key
   textSpan.style.color = "black"
@@ -907,7 +908,6 @@ function addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key) {
   })
   deleteSpan.innerText = "x"
   deleteSpan.style.color = "red"
-  const container = createEl("div")
   container.appendChild(textSpan)
   container.appendChild(deleteSpan)
   container.style.display = "flex"

@@ -2,6 +2,8 @@
   height: 90vh;
   padding: 20px;
   overflow: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
 .current--table {
@@ -63,19 +65,31 @@ input {
   display: none;
 }
 
-.table--view {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
-}
-
 .cell--container {
   margin-right: 10px;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  height: 1.3rem;
 }
 
 .cell--input {
-  display: inline-block;
-  height: 80%;
+  display: block;
+  height: 100%;
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
+}
+
+.function--sign {
+  display: block;
+  padding: 2px;
+  background-color: #522081;
+  color: aliceblue;
+  width: 15px;
+  height: 100%;
+  text-align: center;
+  border-top-right-radius: 7px;
+  border-bottom-right-radius: 7px;
+  cursor: pointer;
 }
 
 .cell--is--function--applicable--color {
@@ -85,19 +99,6 @@ input {
 
 .cell--is--selected {
   background-color: blue;
-}
-
-.function--sign {
-  display: inline-block;
-  padding: 2px;
-  background-color: rgb(122, 36, 33);
-  color: aliceblue;
-  width: 15px;
-  height: 80%;
-  text-align: center;
-  border-top-right-radius: 5px;
-  border-bottom-right-radius: 5px;
-  cursor: pointer;
 }
 
 .red {
@@ -118,24 +119,24 @@ input {
   background-color: rgba(19, 224, 214, 0.5);
   border: 1px dashed black;
   position: absolute;
-  z-index: 100;
 }
 
 #registered--funcs--display--elements--container {
-  border: 1px solid black;
   border-radius: 10px;
   padding: 1em .5em;
-  background-color: rgb(194, 226, 226);
+  background-color: transparent;
   position: absolute;
   top: 0;
   right: 10px;
 }
 
 .registered--func--display--el {
-  border-bottom: 1px solid black;
   color: black;
   cursor: pointer;
-  margin-bottom: 1em;
+  background-color: rgb(119, 231, 231);
+  padding: 4px;
+  border-radius: 7px;
+  margin-top: 1rem;
 }
 
 @media screen and (max-width: 400px) {
