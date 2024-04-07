@@ -21,6 +21,7 @@ frontend/package-lock.json
 
 __pycache__
 *__pycache__*
+backend/storage/__pycache__
 venv
 *.venv
 *venv*
