@@ -4,12 +4,13 @@ import { Link } from "react-router-dom";
 export default function Index() {
   return (
     <div className="welcome--container">
-      <h1>
-        Save Alphanumeric Data in Tables and Perform Simple Computations on Them
-        Easily
-      </h1>
       <div className="hero--container">
-
+        <div className="hero--overlay--color">
+        <h1>
+          Save Alphanumeric Data in Tables and Carryout Computations on Them
+          Easily
+        </h1>
+        </div>
       </div>
       <div className="intro--container">
         <div className="intro--text text">
@@ -70,7 +71,7 @@ export default function Index() {
       </div>
       <div className="about--container">
         <div className="about--text text">
-          <h3>Contact:</h3>
+          <h2>Contact:</h2>
           <address>
             Mail:{" "}
             <a href="mailto: isyakuyusuf@outlook.com" target="blank">

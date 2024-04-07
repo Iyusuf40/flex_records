@@ -74,9 +74,9 @@ function findIndex(tablesList, currentTable) {
 }
 
 function swapCurrTableToFront(tablesList, index) {
-  let save = tablesList[0];
-  tablesList[0] = tablesList[index];
-  tablesList[index] = save;
+  let moveToFront = tablesList[index]
+  tablesList.splice(index, 1)
+  tablesList.unshift(moveToFront)
 }
 
 function handleTableClick(tableName, recordState, setRecordsStateWrapper) {

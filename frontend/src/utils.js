@@ -1010,6 +1010,16 @@ export function deleteTable(tableName, recordState) {
 }
 
 export function changeTableName(tableName, option, recordState) {
+
+  if (recordState.tables[option]) {
+    const resp = prompt(`table with name ${option} exists, do you want to overwrite it?`)
+    if (resp.toLocaleLowerCase() !== "y" && resp.toLocaleLowerCase() !== "yes") {
+      option = prompt("type in the name you want to call this table")
+      if (!option) return
+      return changeTableName(tableName, option, recordState)
+    }
+  }
+
   const saveTableDetails = recordState.tables[tableName];
   deleteTableAtBackend()
   delete recordState.tables[tableName];
