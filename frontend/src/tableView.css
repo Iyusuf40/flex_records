@@ -2,6 +2,13 @@
   height: 90vh;
   padding: 20px;
   overflow: auto;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.current--table {
+  padding: 20px;
+  position: relative;
 }
 
 .row--container {
@@ -23,11 +30,11 @@ input {
 }
 
 .input-2 {
- width: 150px;
+  width: 150px;
 }
 
 .input-3 {
- width: 200px;
+  width: 200px;
 }
 
 .numbering {
@@ -58,13 +65,82 @@ input {
   display: none;
 }
 
-.table--view {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+.cell--container {
+  margin-right: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  height: 1.3rem;
+}
+
+.cell--input {
+  display: block;
+  height: 100%;
+  border-top-left-radius: 7px;
+  border-bottom-left-radius: 7px;
+}
+
+.function--sign {
+  display: block;
+  padding: 2px;
+  background-color: #522081;
+  color: aliceblue;
+  width: 15px;
+  height: 100%;
+  text-align: center;
+  border-top-right-radius: 7px;
+  border-bottom-right-radius: 7px;
+  cursor: pointer;
+}
+
+.cell--is--function--applicable--color {
+  background-color: aquamarine;
+  cursor: pointer;
+}
+
+.cell--is--selected {
+  background-color: blue;
+}
+
+.red {
+  background-color: red;
+}
+
+.select--box {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px dashed black;
+  position: fixed;
+}
+
+.hover--bold:hover {
+  font-weight: bold;
+}
+
+.registered--funcs--box {
+  background-color: rgba(19, 224, 214, 0.5);
+  border: 1px dashed black;
+  position: absolute;
+}
+
+#registered--funcs--display--elements--container {
+  border-radius: 10px;
+  padding: 1em .5em;
+  background-color: transparent;
+  position: absolute;
+  top: 0;
+  right: 10px;
+}
+
+.registered--func--display--el {
+  color: black;
+  cursor: pointer;
+  background-color: rgb(119, 231, 231);
+  padding: 4px;
+  border-radius: 7px;
+  margin-top: 1rem;
 }
 
 @media screen and (max-width: 400px) {
-  .table--view  {
+  .table--view {
     min-width: fit-content;
   }
 }

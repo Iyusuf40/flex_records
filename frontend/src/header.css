@@ -4,9 +4,15 @@ nav {
   height: 50px;
   line-height: 50px;
   justify-content: center;
+  font-size: 1.3rem;
+  font-weight: bolder;
 }
 
-header { 
+nav li :hover {
+  border-bottom: 4px solid rgba(83, 67, 163);
+}
+
+header {
   display: flex;
   width: 100%;
   height: 50px;

@@ -1,16 +1,14 @@
 function checkIndexZeroVertical(data) {
-     let bool = (
-	              (Number(data[1][0]) || Number(data[1][0]) === 0)
-	              && data[1][0].length
-                      ) 
-		      ? true : false;
-     return bool; 
-
+  let bool =
+    (Number(data[1][0]) || Number(data[1][0]) === 0) && data[1][0].length
+      ? true
+      : false;
+  return bool;
 }
 
 function sumVertical(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = checkIndexZeroVertical(data);
-  for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
+  for (let index = isIndexZeroNumber ? 0 : 1; index < noOfCols; index++) {
     let res = 0;
     for (const key in data) {
       let currentData = Number(data[key][index]);
@@ -18,7 +16,7 @@ function sumVertical(data, noOfRows, noOfCols) {
         res += currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+    if ((res === 0 || res) && isTextInCell(data[noOfRows][index])) {
       data[noOfRows][index] = res.toString();
     }
   }
@@ -26,9 +24,8 @@ function sumVertical(data, noOfRows, noOfCols) {
 }
 
 function mulVertical(data, noOfRows, noOfCols) {
-  // const isIndexZeroNumber = Number(data[1][0]) ? true : false;
   const isIndexZeroNumber = checkIndexZeroVertical(data);
-  for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
+  for (let index = isIndexZeroNumber ? 0 : 1; index < noOfCols; index++) {
     let res = 1;
     let correctedIndex;
     let checkCol = checkColIndexZeroVertical(data, index);
@@ -40,11 +37,11 @@ function mulVertical(data, noOfRows, noOfCols) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         if (Number(key) !== noOfRows) {
-	  res *= currentData;
-	}
+          res *= currentData;
+        }
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+    if ((res === 0 || res) && isTextInCell(data[noOfRows][index])) {
       data[noOfRows][index] = res.toString();
     }
   }
@@ -53,21 +50,20 @@ function mulVertical(data, noOfRows, noOfCols) {
 
 function avgVertical(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = checkIndexZeroVertical(data);
-  for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
+  for (let index = isIndexZeroNumber ? 0 : 1; index < noOfCols; index++) {
     let res = 0;
     let count = 0;
     let checkCol = checkColIndexZeroVertical(data, index);
-    // let correctedIndex = checkCol ? 1 : 2;
     for (let key = checkCol ? 1 : 2; key <= noOfRows; key++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         if (Number(key) !== noOfRows) {
-	  res += currentData;
-	  count++;
+          res += currentData;
+          count++;
         }
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+    if ((res === 0 || res) && isTextInCell(data[noOfRows][index])) {
       data[noOfRows][index] = parseFloat((res / count).toString()).toFixed(2);
     }
   }
@@ -75,27 +71,25 @@ function avgVertical(data, noOfRows, noOfCols) {
 }
 
 function checkColIndexZeroVertical(data, idx) {
-     let bool = (
-	              (Number(data[1][idx]) ||
-		      (Number(data[1][idx])) === 0)
-	              && data[1][idx].length
-                      ) 
-		      ? true : false;
-     return bool; 
+  let bool =
+    (Number(data[1][idx]) || Number(data[1][idx]) === 0) && data[1][idx].length
+      ? true
+      : false;
+  return bool;
 }
 
 function subVerticalTop(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = checkIndexZeroVertical(data);
-  for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
+  for (let index = isIndexZeroNumber ? 0 : 1; index < noOfCols; index++) {
     let checkCol = checkColIndexZeroVertical(data, index);
-    let res = checkCol ? data[1][index] :  data[2][index];
-    for (let key = checkCol? 2: 3; key <= noOfRows; key++) {
+    let res = checkCol ? data[1][index] : data[2][index];
+    for (let key = checkCol ? 2 : 3; key <= noOfRows; key++) {
       let currentData = Number(data[key][index]);
       if (currentData && Number(key) !== noOfRows) {
         res -= currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+    if ((res === 0 || res) && isTextInCell(data[noOfRows][index])) {
       data[noOfRows][index] = res.toString();
     }
   }
@@ -104,7 +98,7 @@ function subVerticalTop(data, noOfRows, noOfCols) {
 
 function subVerticalBottom(data, noOfRows, noOfCols) {
   const isIndexZeroNumber = checkIndexZeroVertical(data);
-  for (let index = (isIndexZeroNumber ? 0 : 1); index < noOfCols; index++) {
+  for (let index = isIndexZeroNumber ? 0 : 1; index < noOfCols; index++) {
     let res = data[Number(noOfRows) - 1][index];
     for (let key = Number(noOfRows) - 2; key > 0; key--) {
       let currentData = Number(data[key][index]);
@@ -112,7 +106,7 @@ function subVerticalBottom(data, noOfRows, noOfCols) {
         res -= currentData;
       }
     }
-    if ((res === 0 || res) && (isTextInCell(data[noOfRows][index]))) {
+    if ((res === 0 || res) && isTextInCell(data[noOfRows][index])) {
       data[noOfRows][index] = res.toString();
     }
   }
@@ -122,7 +116,7 @@ function subVerticalBottom(data, noOfRows, noOfCols) {
 function sumHorizontal(data, noOfRows, noOfCols) {
   for (const key in data) {
     let res = 0;
-    for (let index = 0; index < (noOfCols - 1); index++) {
+    for (let index = 0; index < noOfCols - 1; index++) {
       let currentData = Number(data[key][index]);
       if (currentData) {
         res += currentData;
@@ -140,7 +134,7 @@ function sumHorizontal(data, noOfRows, noOfCols) {
  * so as to aid decision if to overwrite it or not
  */
 function isTextInCell(value) {
-  if ((!value) || (Number(value) === 0) || (Number(value))) {
+  if (!value || Number(value) === 0 || Number(value)) {
     return true;
   }
   return false;
@@ -148,11 +142,9 @@ function isTextInCell(value) {
 
 function subHorizontalLeft(data, noOfRows, noOfCols) {
   for (const key in data) {
-    // const isIndexZeroNumber = Number(data[key][0]) ? true : false;
-    const isIndexZeroNumber = getStartIndex(key, data) === 0 ? true : false
+    const isIndexZeroNumber = getStartIndex(key, data) === 0 ? true : false;
     let res = isIndexZeroNumber ? Number(data[key][0]) : Number(data[key][1]);
-    // implement search for first index where number starts and compute from there
-    for (let index = (isIndexZeroNumber ? 1 : 2); index < (noOfCols - 1); index++) {
+    for (let index = isIndexZeroNumber ? 1 : 2; index < noOfCols - 1; index++) {
       let currentData = Number(data[key][index]);
       if (currentData) {
         res -= currentData;
@@ -167,10 +159,7 @@ function subHorizontalLeft(data, noOfRows, noOfCols) {
 
 function subHorizontalRight(data, noOfRows, noOfCols) {
   for (const key in data) {
-    // const isIndexZeroNumber = Number(data[key][0]) ? true : false;
-    // let res = isIndexZeroNumber ? Number(data[key][0]) : Number(data[key][1]);
     let res = Number(data[key][noOfCols - 2]);
-    // implement search for first index where number starts and compute from there
     for (let index = noOfCols - 3; index >= 0; index--) {
       let currentData = Number(data[key][index]);
       if (currentData) {
@@ -185,21 +174,19 @@ function subHorizontalRight(data, noOfRows, noOfCols) {
 }
 
 function getStartIndex(key, data) {
-     let startIndex = (
-	              (Number(data[key][0]) ||
-                       Number(data[key][0]) === 0)
-	              && data[key][0].length
-                      ) 
-		      ? 0 : 1;
-     return startIndex; 
+  let startIndex =
+    (Number(data[key][0]) || Number(data[key][0]) === 0) && data[key][0].length
+      ? 0
+      : 1;
+  return startIndex;
 }
 
 function avgHorizontal(data, noOfRows, noOfCols) {
   for (const key in data) {
     let res = 0;
     let startIndex = getStartIndex(key, data);
-   let count = 0;
-    for (let index = startIndex; index < (noOfCols - 1); index++) {
+    let count = 0;
+    for (let index = startIndex; index < noOfCols - 1; index++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         res += currentData;
@@ -220,7 +207,7 @@ function mulHorizontal(data, noOfRows, noOfCols) {
       res = 0;
     }
     let startIndex = getStartIndex(key, data);
-    for (let index = startIndex; index < (noOfCols - 1); index++) {
+    for (let index = startIndex; index < noOfCols - 1; index++) {
       let currentData = Number(data[key][index]);
       if (currentData === 0 || currentData) {
         res *= currentData;
@@ -233,18 +220,18 @@ function mulHorizontal(data, noOfRows, noOfCols) {
   return data;
 }
 
-export default function utils () {
+export default function utils() {
   const utilities = {
-    "mulHorizontal": mulHorizontal,
-    "avgHorizontal": avgHorizontal,
-    "subHorizontalRight": subHorizontalRight,
-    "subHorizontalLeft": subHorizontalLeft,
-    "sumHorizontal": sumHorizontal,
-    "sumVertical": sumVertical,
-    "subVerticalTop": subVerticalTop,
-    "subVerticalBottom": subVerticalBottom,
-    "mulVertical": mulVertical,
-    "avgVertical": avgVertical,
-  }
+    mulHorizontal: mulHorizontal,
+    avgHorizontal: avgHorizontal,
+    subHorizontalRight: subHorizontalRight,
+    subHorizontalLeft: subHorizontalLeft,
+    sumHorizontal: sumHorizontal,
+    sumVertical: sumVertical,
+    subVerticalTop: subVerticalTop,
+    subVerticalBottom: subVerticalBottom,
+    mulVertical: mulVertical,
+    avgVertical: avgVertical,
+  };
   return utilities;
 }
