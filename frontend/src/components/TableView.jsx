@@ -1,18 +1,26 @@
 import React, { useEffect } from "react";
-import { buildTableDataFromCsv, changeValueInNestedObj, clearRule, createEl, extractCSVFromData, removeCol } from "../utils";
+import {
+  buildTableDataFromCsv,
+  changeValueInNestedObj,
+  clearRule,
+  createEl,
+  extractCSVFromData,
+  removeCol,
+} from "../utils";
 
 const RECTANGLE = {
   canDraw: false,
   topLeft: {},
   bottomRight: {},
   initPoint: {},
-  id: ""
-}
+  id: "",
+};
 
-const COLOR_CLASS_FOR_APPLICABLE_CELLS = "cell--is--function--applicable--color"
-const CLASS_CELL_IS_SELECTED = "cell--is--selected"
+const COLOR_CLASS_FOR_APPLICABLE_CELLS =
+  "cell--is--function--applicable--color";
+const CLASS_CELL_IS_SELECTED = "cell--is--selected";
 
-const SELECTED_CELLS_ACCUMULATOR = []
+const SELECTED_CELLS_ACCUMULATOR = [];
 
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
@@ -62,10 +70,10 @@ export default function TableView(props) {
 
   setRuleModeToDisplayBtns(props.records);
 
-  enableRectangleDraw(currentTable, props.records)
-  disableRectangleDraw(currentTable, props.records)
+  enableRectangleDraw(currentTable, props.records);
+  disableRectangleDraw(currentTable, props.records);
 
-  displayRegisteredFunctions()
+  displayRegisteredFunctions();
 
   return (
     <div className="table--view">
@@ -175,29 +183,23 @@ export default function TableView(props) {
         <button onClick={(e) => decreaseCellSize(currentTable, props.records)}>
           cell size -
         </button>
-        <button 
+        <button
           className={table.selectTool ? `red` : ``}
           onClick={(e) => {
-            toggleSelectTool(currentTable, props.records)
-          }}>
+            toggleSelectTool(currentTable, props.records);
+          }}
+        >
           select tool
         </button>
-        <button 
-          onClick={(e) => toggleShowOrHideRegisteredFunctions()}>
-          {table?.showOrHideRegisteredFunctions 
-            ? "hide functions" 
+        <button onClick={(e) => toggleShowOrHideRegisteredFunctions()}>
+          {table?.showOrHideRegisteredFunctions
+            ? "hide functions"
             : "show functions"}
         </button>
       </div>
 
       <div className="rules--buttons">
-        <button
-          onClick={(e) =>
-            handleDownloadCSV()
-          }
-        >
-          export to csv
-        </button>
+        <button onClick={(e) => handleDownloadCSV()}>export to csv</button>
         <button>
           <label className="pointer">
             load from csv
@@ -208,7 +210,6 @@ export default function TableView(props) {
             />
           </label>
         </button>
-
       </div>
 
       {table.ruleMode ? (
@@ -238,7 +239,11 @@ export default function TableView(props) {
             id="rev--sub--function"
             name="rules"
             onClick={(e) =>
-              registerFunction(props.records, currentTable, "applyReverseSubFunction")
+              registerFunction(
+                props.records,
+                currentTable,
+                "applyReverseSubFunction",
+              )
             }
           />
           <label htmlFor="rev--sub--function">reverse subtract function</label>
@@ -378,7 +383,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
                 addToRowsAndColsToColor(row, colIndex, props.records);
               }}
             >
-              𝑓 
+              𝑓
             </span>
           </div>
         );
@@ -631,13 +636,13 @@ function setRuleModeToDisplayBtns(recordState) {
 }
 
 function unSetRuleModeToDisplayBtns() {
-  if (!recordState) return
+  if (!recordState) return;
   const currentTable = recordState.currentTable;
   if (!currentTable) return;
-  recordState.tables[currentTable].selectedCells = []
-  recordState.tables[currentTable].colorRowsAndCols = []
+  recordState.tables[currentTable].selectedCells = [];
+  recordState.tables[currentTable].colorRowsAndCols = [];
 
-  resetSelecetedCellsAccumulator()
+  resetSelecetedCellsAccumulator();
   setRecordsStateWrapper(recordState, `tables.${currentTable}.ruleMode`, false);
 }
 
@@ -653,7 +658,7 @@ function addColumn(setRecordsStateWrapper, tableName, recordState) {
 
   recordState.altered = true;
   let newNoOfCols = recordState.tables[tableName].noOfCols + 1;
-  appendCol(recordState.tables[tableName].data, newNoOfCols)
+  appendCol(recordState.tables[tableName].data, newNoOfCols);
   setRecordsStateWrapper(
     recordState,
     `tables.${tableName}.noOfCols`,
@@ -806,188 +811,203 @@ function afterRulePick(ruleName, tableName, recordState) {
 }
 
 function displayRegisteredFunctions() {
-  if (!recordState) return
-  const tableName = recordState.currentTable
+  if (!recordState) return;
+  const tableName = recordState.currentTable;
   if (!tableName) {
     // currentTable may be "" after deleting table, therefore remove any
     // previously showing reg funcs display
-    deleteDivContainerForRegisteredFunctions()
-    return
+    deleteDivContainerForRegisteredFunctions();
+    return;
   }
-  const registeredFunctions = recordState?.tables[tableName].registeredFunctions
+  const registeredFunctions =
+    recordState?.tables[tableName].registeredFunctions;
 
   // get names of buttons
-  const registeredFunctionsDisplayDescs = extractDisplayReqFromRegisteredFuncs(registeredFunctions)
+  const registeredFunctionsDisplayDescs =
+    extractDisplayReqFromRegisteredFuncs(registeredFunctions);
   // build div with id functions--display if it doesnt exist
-  createDivContainerForRegisteredFunctionsIfNotExist()
-  createRegisteredFunctionsDisplayElements(registeredFunctionsDisplayDescs)
+  createDivContainerForRegisteredFunctionsIfNotExist();
+  createRegisteredFunctionsDisplayElements(registeredFunctionsDisplayDescs);
   recordState?.tables[tableName].showOrHideRegisteredFunctions
     ? showDivContainerForRegisteredFunctions()
-    : hideDivContainerForRegisteredFunctions()
+    : hideDivContainerForRegisteredFunctions();
 }
 
 function extractDisplayReqFromRegisteredFuncs(registeredFunctions) {
-  if (!registeredFunctions) return
-  const displayResources = {}
-  let index = 0
+  if (!registeredFunctions) return;
+  const displayResources = {};
+  let index = 0;
 
   for (const rFunc of registeredFunctions) {
-    const name = rFunc.functionName.replace("apply", "").replace("Function", "")
-    const cellsToOperateOnAsAGroup = rFunc.cellsToOperateOnAsAGroup
-    const topLeftCellAndBottomRightCell = getTopLeftCellAndBottomRightCell(cellsToOperateOnAsAGroup.flat())
-    const key = `${name}_${index}`
-    displayResources[key] = topLeftCellAndBottomRightCell
-    index++
+    const name = rFunc.functionName
+      .replace("apply", "")
+      .replace("Function", "");
+    const cellsToOperateOnAsAGroup = rFunc.cellsToOperateOnAsAGroup;
+    const topLeftCellAndBottomRightCell = getTopLeftCellAndBottomRightCell(
+      cellsToOperateOnAsAGroup.flat(),
+    );
+    const key = `${name}_${index}`;
+    displayResources[key] = topLeftCellAndBottomRightCell;
+    index++;
   }
 
   function getTopLeftCellAndBottomRightCell(flattenedCellsToOperateOnAsAGroup) {
-    if (!flattenedCellsToOperateOnAsAGroup.length) return
-    const cellRep = flattenedCellsToOperateOnAsAGroup[0]
+    if (!flattenedCellsToOperateOnAsAGroup.length) return;
+    const cellRep = flattenedCellsToOperateOnAsAGroup[0];
 
     // add target cell in box to draw
-    flattenedCellsToOperateOnAsAGroup.push({row: cellRep.targetRow, column: cellRep.targetCol})
-    let leastRow = cellRep.row
-    let leastCol = cellRep.column
-    let maxRow = cellRep.row
-    let maxCol = cellRep.column
+    flattenedCellsToOperateOnAsAGroup.push({
+      row: cellRep.targetRow,
+      column: cellRep.targetCol,
+    });
+    let leastRow = cellRep.row;
+    let leastCol = cellRep.column;
+    let maxRow = cellRep.row;
+    let maxCol = cellRep.column;
 
     for (const cellRep of flattenedCellsToOperateOnAsAGroup) {
-      if (cellRep.row < leastRow) leastRow = cellRep.row
-      if (cellRep.row > maxRow) maxRow = cellRep.row
-      if (cellRep.column < leastCol) leastCol = cellRep.column
-      if (cellRep.column > leastCol) maxCol = cellRep.column
+      if (cellRep.row < leastRow) leastRow = cellRep.row;
+      if (cellRep.row > maxRow) maxRow = cellRep.row;
+      if (cellRep.column < leastCol) leastCol = cellRep.column;
+      if (cellRep.column > leastCol) maxCol = cellRep.column;
     }
 
-    return {leastRow, leastCol, maxRow, maxCol}
-
+    return { leastRow, leastCol, maxRow, maxCol };
   }
 
-  return displayResources
+  return displayResources;
 }
 
 function createDivContainerForRegisteredFunctionsIfNotExist() {
-  const id = "registered--funcs--display--elements--container"
-  let registeredFuncsBtnsContainer = document.getElementById(id)
-  if (registeredFuncsBtnsContainer) return
-  registeredFuncsBtnsContainer = createEl("div", {id})
-  const currentTableEl = document.getElementsByClassName("current--table")[0]
-  currentTableEl.appendChild(registeredFuncsBtnsContainer)
+  const id = "registered--funcs--display--elements--container";
+  let registeredFuncsBtnsContainer = document.getElementById(id);
+  if (registeredFuncsBtnsContainer) return;
+  registeredFuncsBtnsContainer = createEl("div", { id });
+  const currentTableEl = document.getElementsByClassName("current--table")[0];
+  currentTableEl.appendChild(registeredFuncsBtnsContainer);
 }
 
 function createRegisteredFunctionsDisplayElements(rFunctionsDisplayDescs) {
-  if (!rFunctionsDisplayDescs) return
-  const id = "registered--funcs--display--elements--container"
-  let registeredFuncsBtnsContainer = document.getElementById(id)
+  if (!rFunctionsDisplayDescs) return;
+  const id = "registered--funcs--display--elements--container";
+  let registeredFuncsBtnsContainer = document.getElementById(id);
 
-  removeAllRegFunctionDisplayEl()
+  removeAllRegFunctionDisplayEl();
 
   for (const key in rFunctionsDisplayDescs) {
-    const rFunctionDisplayEl = createEl("div", {class: "registered--func--display--el"})
-    addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key)
-    const displayDesc = rFunctionsDisplayDescs[key]
-    addEventListenersForRFuncsDisplayElements(rFunctionDisplayEl, displayDesc)
-    registeredFuncsBtnsContainer.appendChild(rFunctionDisplayEl)
+    const rFunctionDisplayEl = createEl("div", {
+      class: "registered--func--display--el",
+    });
+    addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key);
+    const displayDesc = rFunctionsDisplayDescs[key];
+    addEventListenersForRFuncsDisplayElements(rFunctionDisplayEl, displayDesc);
+    registeredFuncsBtnsContainer.appendChild(rFunctionDisplayEl);
   }
 }
 
 function removeAllRegFunctionDisplayEl() {
-  const elements = document.getElementsByClassName("registered--func--display--el")
-  Array.from(elements).forEach(el => el.remove())
+  const elements = document.getElementsByClassName(
+    "registered--func--display--el",
+  );
+  Array.from(elements).forEach((el) => el.remove());
 }
 
 function addContentToRegFunctionDisplayEl(rFunctionDisplayEl, key) {
-  const container = createEl("div")
-  const textSpan = createEl("span")
-  textSpan.innerText = key
-  textSpan.style.color = "black"
-  const deleteSpan = createEl("span", {class: "hover--bold"})
+  const container = createEl("div");
+  const textSpan = createEl("span");
+  textSpan.innerText = key;
+  textSpan.style.color = "black";
+  const deleteSpan = createEl("span", { class: "hover--bold" });
   deleteSpan.addEventListener("click", () => {
-    const index = Number(key.split("_")[1])
-    deleteRegisteredFunctionAtIndex(index)
-    deleteBoxOverRegisteredFunctions()
-  })
-  deleteSpan.innerText = "x"
-  deleteSpan.style.color = "red"
-  container.appendChild(textSpan)
-  container.appendChild(deleteSpan)
-  container.style.display = "flex"
-  container.style.justifyContent = "space-between"
-  container.style.gap = "5px"
-  rFunctionDisplayEl.appendChild(container)
+    const index = Number(key.split("_")[1]);
+    deleteRegisteredFunctionAtIndex(index);
+    deleteBoxOverRegisteredFunctions();
+  });
+  deleteSpan.innerText = "x";
+  deleteSpan.style.color = "red";
+  container.appendChild(textSpan);
+  container.appendChild(deleteSpan);
+  container.style.display = "flex";
+  container.style.justifyContent = "space-between";
+  container.style.gap = "5px";
+  rFunctionDisplayEl.appendChild(container);
 }
 
-function addEventListenersForRFuncsDisplayElements(rFunctionDisplayEl, displayDesc) {
+function addEventListenersForRFuncsDisplayElements(
+  rFunctionDisplayEl,
+  displayDesc,
+) {
   rFunctionDisplayEl.addEventListener("mouseenter", () => {
-    drawBoxOverRegisteredFunctions(displayDesc)
-  })
+    drawBoxOverRegisteredFunctions(displayDesc);
+  });
 
   rFunctionDisplayEl.addEventListener("mouseleave", () => {
-    deleteBoxOverRegisteredFunctions()
-  })
+    deleteBoxOverRegisteredFunctions();
+  });
 
   rFunctionDisplayEl.addEventListener("touchstart", () => {
-    drawBoxOverRegisteredFunctions(displayDesc)
-  })
+    drawBoxOverRegisteredFunctions(displayDesc);
+  });
 
   rFunctionDisplayEl.addEventListener("touchenter", () => {
-    drawBoxOverRegisteredFunctions(displayDesc)
-  })
+    drawBoxOverRegisteredFunctions(displayDesc);
+  });
 
   rFunctionDisplayEl.addEventListener("touchleave", () => {
-    deleteBoxOverRegisteredFunctions()
-  })
+    deleteBoxOverRegisteredFunctions();
+  });
 
   rFunctionDisplayEl.addEventListener("touchend", () => {
-    deleteBoxOverRegisteredFunctions()
-  })
+    deleteBoxOverRegisteredFunctions();
+  });
 
   rFunctionDisplayEl.addEventListener("touchcancel", () => {
-    deleteBoxOverRegisteredFunctions()
-  })
+    deleteBoxOverRegisteredFunctions();
+  });
 }
 
 function drawBoxOverRegisteredFunctions(displayDesc) {
-  const topLeftCellId = `${displayDesc.leastRow}:${displayDesc.leastCol}`
-  const bottomRightCellId = `${displayDesc.maxRow}:${displayDesc.maxCol}`
-  const topLeftCell = document.getElementById(topLeftCellId)
-  const bottomRightCell = document.getElementById(bottomRightCellId)
-  const left = topLeftCell.getBoundingClientRect().left
-  const top = topLeftCell.getBoundingClientRect().top
-  const width = bottomRightCell.getBoundingClientRect().right - left
-  const height = bottomRightCell.getBoundingClientRect().bottom - top
+  const topLeftCellId = `${displayDesc.leastRow}:${displayDesc.leastCol}`;
+  const bottomRightCellId = `${displayDesc.maxRow}:${displayDesc.maxCol}`;
+  const topLeftCell = document.getElementById(topLeftCellId);
+  const bottomRightCell = document.getElementById(bottomRightCellId);
+  const left = topLeftCell.getBoundingClientRect().left;
+  const top = topLeftCell.getBoundingClientRect().top;
+  const width = bottomRightCell.getBoundingClientRect().right - left;
+  const height = bottomRightCell.getBoundingClientRect().bottom - top;
 
-  const box = createEl("div", {class: "registered--funcs--box"})
+  const box = createEl("div", { class: "registered--funcs--box" });
 
-  box.style.left = `${left}px`
-  box.style.top = `${top}px`
-  box.style.width = `${width}px`
-  box.style.height = `${height}px`
+  box.style.left = `${left}px`;
+  box.style.top = `${top}px`;
+  box.style.width = `${width}px`;
+  box.style.height = `${height}px`;
 
-  const body = document.querySelector("body")
-  body.appendChild(box)
+  const body = document.querySelector("body");
+  body.appendChild(box);
 }
 
 function deleteBoxOverRegisteredFunctions() {
-  const boxes = document.getElementsByClassName("registered--funcs--box")
-  Array.from(boxes).forEach(box => box.remove())
+  const boxes = document.getElementsByClassName("registered--funcs--box");
+  Array.from(boxes).forEach((box) => box.remove());
 }
 
 function showDivContainerForRegisteredFunctions() {
-  const id = "registered--funcs--display--elements--container"
-  let registeredFuncsBtnsContainer = document.getElementById(id)
-  registeredFuncsBtnsContainer.classList.remove("hide")
+  const id = "registered--funcs--display--elements--container";
+  let registeredFuncsBtnsContainer = document.getElementById(id);
+  registeredFuncsBtnsContainer.classList.remove("hide");
 }
 
 function hideDivContainerForRegisteredFunctions() {
-  const id = "registered--funcs--display--elements--container"
-  let registeredFuncsBtnsContainer = document.getElementById(id)
-  registeredFuncsBtnsContainer?.classList.add("hide")
+  const id = "registered--funcs--display--elements--container";
+  let registeredFuncsBtnsContainer = document.getElementById(id);
+  registeredFuncsBtnsContainer?.classList.add("hide");
 }
 
 function deleteDivContainerForRegisteredFunctions() {
-  const id = "registered--funcs--display--elements--container"
-  let registeredFuncsBtnsContainer = document.getElementById(id)
-  registeredFuncsBtnsContainer?.remove()
+  const id = "registered--funcs--display--elements--container";
+  let registeredFuncsBtnsContainer = document.getElementById(id);
+  registeredFuncsBtnsContainer?.remove();
 }
 
 function registerFunction(recordState, tableName, functionName) {
@@ -1008,10 +1028,10 @@ function registerFunction(recordState, tableName, functionName) {
 }
 
 function deleteRegisteredFunctionAtIndex(index) {
-  if (!recordState) return
-  const tableName = recordState.currentTable
-  recordState.tables[tableName].registeredFunctions.splice(index, 1)
-  setRecordsStateWrapper(recordState, "currentTable", tableName)
+  if (!recordState) return;
+  const tableName = recordState.currentTable;
+  recordState.tables[tableName].registeredFunctions.splice(index, 1);
+  setRecordsStateWrapper(recordState, "currentTable", tableName);
   // force function application
   runRegisteredFunctions(recordState, tableName);
 }
@@ -1080,7 +1100,11 @@ function subFunctionImpl(data, cellsToOperateOnAsAGroup) {
   return data;
 }
 
-function applyReverseSubFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+function applyReverseSubFunction(
+  recordState,
+  tableName,
+  cellsToOperateOnAsAGroup,
+) {
   const data = recordState.tables[tableName].data;
   const updatedData = reverseSubFunctionImpl(data, cellsToOperateOnAsAGroup);
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
@@ -1103,7 +1127,6 @@ function reverseSubFunctionImpl(data, cellsToOperateOnAsAGroup) {
   data[targetRow][targetCol] = `${res}`;
   return data;
 }
-
 
 function applyMulFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
@@ -1230,16 +1253,17 @@ function deleteEntireRow(tableName, row, recordState) {
 }
 
 function deleteEntireCol(tableName, colIndex, recordState) {
-  const data = getData(tableName, recordState)
+  const data = getData(tableName, recordState);
 
   if (colIndex < 0) return;
   for (let row in data) {
     const currRow = data[row];
     const len = currRow.length;
-    for (let i = colIndex; i < len; i++) {  // move columns back
+    for (let i = colIndex; i < len; i++) {
+      // move columns back
       currRow[i] = currRow[i + 1];
     }
-    currRow.splice(len - 1)                 // delete last col
+    currRow.splice(len - 1); // delete last col
   }
   setDataField(recordState, data, tableName);
 }
@@ -1467,308 +1491,320 @@ function getClassForCreateTableMode(props) {
 }
 
 function resetRectangle() {
-  RECTANGLE.canDraw = false,
-  RECTANGLE.topLeft = {}
-  RECTANGLE.bottomRight = {}
-  RECTANGLE.initPoint = {}
+  (RECTANGLE.canDraw = false), (RECTANGLE.topLeft = {});
+  RECTANGLE.bottomRight = {};
+  RECTANGLE.initPoint = {};
 }
 
 function toggleSelectTool(tableName, recordState) {
-  const value = recordState.tables[tableName].selectTool ? false : true
+  const value = recordState.tables[tableName].selectTool ? false : true;
   recordState.altered = true;
   setRecordsStateWrapper(recordState, `tables.${tableName}.selectTool`, value);
 }
 
 function toggleShowOrHideRegisteredFunctions() {
-  if (!recordState?.tables) return
-  const tableName = recordState.currentTable
-  const value = recordState.tables[tableName].showOrHideRegisteredFunctions ? false : true
-  setRecordsStateWrapper(recordState, `tables.${tableName}.showOrHideRegisteredFunctions`, value);
+  if (!recordState?.tables) return;
+  const tableName = recordState.currentTable;
+  const value = recordState.tables[tableName].showOrHideRegisteredFunctions
+    ? false
+    : true;
+  setRecordsStateWrapper(
+    recordState,
+    `tables.${tableName}.showOrHideRegisteredFunctions`,
+    value,
+  );
 }
 
 function enableRectangleDraw(tableName, recordState) {
-  if (!recordState?.tables || !recordState?.tables[tableName]?.selectTool) return
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.addEventListener('mousedown', setCanDraw)
-  table?.addEventListener('mousemove', redrawRectangle)
-  table?.addEventListener('mouseup', stopDraw)
+  if (!recordState?.tables || !recordState?.tables[tableName]?.selectTool)
+    return;
+  const table = document.getElementsByClassName("current--table")[0];
+  table?.addEventListener("mousedown", setCanDraw);
+  table?.addEventListener("mousemove", redrawRectangle);
+  table?.addEventListener("mouseup", stopDraw);
 
-  table?.addEventListener('touchstart', setCanDraw)
-  table?.addEventListener('touchmove', redrawRectangle)
-  table?.addEventListener('touchend', stopDraw)
+  table?.addEventListener("touchstart", setCanDraw);
+  table?.addEventListener("touchmove", redrawRectangle);
+  table?.addEventListener("touchend", stopDraw);
 }
 
 function disableRectangleDraw(tableName, recordState) {
-  if (recordState?.tables && recordState?.tables[tableName]?.selectTool) return
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.removeEventListener('mousemove', redrawRectangle)
-  table?.removeEventListener('mousedown', setCanDraw)
-  table?.removeEventListener('mouseup', stopDraw)
+  if (recordState?.tables && recordState?.tables[tableName]?.selectTool) return;
+  const table = document.getElementsByClassName("current--table")[0];
+  table?.removeEventListener("mousemove", redrawRectangle);
+  table?.removeEventListener("mousedown", setCanDraw);
+  table?.removeEventListener("mouseup", stopDraw);
 
-  table?.removeEventListener('touchmove', redrawRectangle)
-  table?.removeEventListener('touchstart', setCanDraw)
-  table?.removeEventListener('touchend', stopDraw)
+  table?.removeEventListener("touchmove", redrawRectangle);
+  table?.removeEventListener("touchstart", setCanDraw);
+  table?.removeEventListener("touchend", stopDraw);
 }
 
 function setCanDraw(event) {
-  event.preventDefault()
-  resetRectangle()
-  RECTANGLE.canDraw = true
+  event.preventDefault();
+  resetRectangle();
+  RECTANGLE.canDraw = true;
 }
 
 function stopDraw(event) {
-  deleteRectangle()
-  const selectedCells = selectCellsInRectangle()
-  handleSelectedCells(selectedCells)
-  resetRectangle()
+  deleteRectangle();
+  const selectedCells = selectCellsInRectangle();
+  handleSelectedCells(selectedCells);
+  resetRectangle();
 }
 
 function redrawRectangle(event) {
-  if (!RECTANGLE.canDraw) return
+  if (!RECTANGLE.canDraw) return;
   if (!RECTANGLE.id) {
-    drawRectangle(event)
+    drawRectangle(event);
   }
 
-  event.preventDefault()
+  event.preventDefault();
 
-  const id = RECTANGLE.id
+  const id = RECTANGLE.id;
 
-  const rect = document.getElementById(id)
+  const rect = document.getElementById(id);
 
   const cursorPosition = {
-    x: event.pageX ?? event.changedTouches[0].pageX, 
+    x: event.pageX ?? event.changedTouches[0].pageX,
     y: event.pageY ?? event.changedTouches[0].pageY,
-  }
+  };
 
-  const flipped = shouldFlip(cursorPosition)
+  const flipped = shouldFlip(cursorPosition);
 
-  setRectangleEdges(cursorPosition, flipped)
-  resetRectangleTopLeft(cursorPosition, flipped)
+  setRectangleEdges(cursorPosition, flipped);
+  resetRectangleTopLeft(cursorPosition, flipped);
 
-  const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x)
-  const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y)
-  
-  rect.style.width = `${width}px`
-  rect.style.height = `${height}px`
+  const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x);
+  const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y);
+
+  rect.style.width = `${width}px`;
+  rect.style.height = `${height}px`;
 }
 
 function drawRectangle(event) {
-  if (!RECTANGLE.canDraw) return
-  if (RECTANGLE.id) return          // draw only 1 rect
-  event.preventDefault()
-  const id = Date.now().toString()
-  RECTANGLE.id = id
+  if (!RECTANGLE.canDraw) return;
+  if (RECTANGLE.id) return; // draw only 1 rect
+  event.preventDefault();
+  const id = Date.now().toString();
+  RECTANGLE.id = id;
 
-  const rect = document.createElement("div")
-  rect.id = id
+  const rect = document.createElement("div");
+  rect.id = id;
 
-  const x = event.pageX ?? event.changedTouches[0].pageX
-  const y = event.pageY ?? event.changedTouches[0].pageY
-  rect.style.top = `${y}px`
-  rect.style.left = `${x}px`
+  const x = event.pageX ?? event.changedTouches[0].pageX;
+  const y = event.pageY ?? event.changedTouches[0].pageY;
+  rect.style.top = `${y}px`;
+  rect.style.left = `${x}px`;
 
-  RECTANGLE.topLeft = {x, y} 
-  RECTANGLE.bottomRight = {x, y}
-  RECTANGLE.initPoint = {x, y} 
+  RECTANGLE.topLeft = { x, y };
+  RECTANGLE.bottomRight = { x, y };
+  RECTANGLE.initPoint = { x, y };
 
-  rect.classList.add("select--box")
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.appendChild(rect)
+  rect.classList.add("select--box");
+  const table = document.getElementsByClassName("current--table")[0];
+  table?.appendChild(rect);
 }
 
 function shouldFlip(cursorPosition) {
   if (
-    cursorPosition.x < RECTANGLE.initPoint.x 
-    || cursorPosition.y < RECTANGLE.initPoint.y
+    cursorPosition.x < RECTANGLE.initPoint.x ||
+    cursorPosition.y < RECTANGLE.initPoint.y
   ) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
 
 function setRectangleEdges(cursorPosition, shouldFlip) {
   if (shouldFlip) {
-
     if (cursorPosition.x < RECTANGLE.initPoint.x) {
-      RECTANGLE.topLeft.x = cursorPosition.x              // shift topleft to the left
-      RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x
-      RECTANGLE.bottomRight.y = cursorPosition.y          // adjusts horizontal width of rect
+      RECTANGLE.topLeft.x = cursorPosition.x; // shift topleft to the left
+      RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x;
+      RECTANGLE.bottomRight.y = cursorPosition.y; // adjusts horizontal width of rect
     }
 
     if (cursorPosition.y < RECTANGLE.initPoint.y) {
-      RECTANGLE.topLeft.y = cursorPosition.y              // shift topleft up
-      RECTANGLE.bottomRight.y = RECTANGLE.initPoint.y     // anchor rectangle to init point
-      if (cursorPosition.x < RECTANGLE.initPoint.x)       // anchor rectangle to init point
-        RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x
-      else                                                // set horizontal width of rect
-        RECTANGLE.bottomRight.x = cursorPosition.x
+      RECTANGLE.topLeft.y = cursorPosition.y; // shift topleft up
+      RECTANGLE.bottomRight.y = RECTANGLE.initPoint.y; // anchor rectangle to init point
+      if (cursorPosition.x < RECTANGLE.initPoint.x)
+        // anchor rectangle to init point
+        RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x;
+      // set horizontal width of rect
+      else RECTANGLE.bottomRight.x = cursorPosition.x;
     }
-
   } else {
-    RECTANGLE.bottomRight.x = cursorPosition.x
-    RECTANGLE.bottomRight.y = cursorPosition.y
+    RECTANGLE.bottomRight.x = cursorPosition.x;
+    RECTANGLE.bottomRight.y = cursorPosition.y;
   }
 }
 
 function resetRectangleTopLeft(cursorPosition, shouldFlip) {
   if (shouldFlip) {
-
-    const rect = document.getElementById(RECTANGLE.id)
+    const rect = document.getElementById(RECTANGLE.id);
     if (cursorPosition.x < RECTANGLE.initPoint.x) {
-      rect.style.left = `${cursorPosition.x}px`
+      rect.style.left = `${cursorPosition.x}px`;
     }
 
     if (cursorPosition.y < RECTANGLE.initPoint.y) {
-      rect.style.top = `${cursorPosition.y}px`
+      rect.style.top = `${cursorPosition.y}px`;
     }
-
   }
 }
 
 function deleteRectangle() {
-  if (!RECTANGLE.id) return
-  const id = RECTANGLE.id
-  const el = document.getElementById(id)
-  RECTANGLE.id = ""
-  el.remove()
+  if (!RECTANGLE.id) return;
+  const id = RECTANGLE.id;
+  const el = document.getElementById(id);
+  RECTANGLE.id = "";
+  el.remove();
 }
 
 function selectCellsInRectangle() {
-  const cellRep = document.querySelector(".cell--container")
-  let {width, height} = cellRep.getBoundingClientRect()
+  const cellRep = document.querySelector(".cell--container");
+  let { width, height } = cellRep.getBoundingClientRect();
 
-  let cellWidth = Math.round(width)
-  let cellHeight = Math.round(height)
-  
-  const selectedCells = []
-  const selectedCellsContainerList = []
+  let cellWidth = Math.round(width);
+  let cellHeight = Math.round(height);
 
-  let row = Math.round(RECTANGLE.topLeft.y)
-  let col = Math.round(RECTANGLE.topLeft.x)
+  const selectedCells = [];
+  const selectedCellsContainerList = [];
+
+  let row = Math.round(RECTANGLE.topLeft.y);
+  let col = Math.round(RECTANGLE.topLeft.x);
 
   while (row <= RECTANGLE.bottomRight.y) {
-
-    col = Math.round(RECTANGLE.topLeft.x)
+    col = Math.round(RECTANGLE.topLeft.x);
     while (col <= RECTANGLE.bottomRight.x) {
-      const elements = document.elementsFromPoint(col, row)
+      const elements = document.elementsFromPoint(col, row);
 
-      elements.forEach(el => {
-        if (el?.classList.contains('cell--container') && !el.__selected) {
-          Array.from(el.children).forEach(cell => {
-            if (cell.getAttribute("iscell")) selectedCells.push(cell)
-          })
-          el.__selected = true
-          selectedCellsContainerList.push(el)
+      elements.forEach((el) => {
+        if (el?.classList.contains("cell--container") && !el.__selected) {
+          Array.from(el.children).forEach((cell) => {
+            if (cell.getAttribute("iscell")) selectedCells.push(cell);
+          });
+          el.__selected = true;
+          selectedCellsContainerList.push(el);
         }
-      })
+      });
 
-      if (RECTANGLE.bottomRight.x !== col && col + cellWidth > RECTANGLE.bottomRight.x) {  // record last edge of box - x axis
-        col = RECTANGLE.bottomRight.x - cellWidth
+      if (
+        RECTANGLE.bottomRight.x !== col &&
+        col + cellWidth > RECTANGLE.bottomRight.x
+      ) {
+        // record last edge of box - x axis
+        col = RECTANGLE.bottomRight.x - cellWidth;
       }
 
-      col += cellWidth
+      col += cellWidth;
     }
 
-    if (RECTANGLE.bottomRight.y !== row && row + cellHeight > RECTANGLE.bottomRight.y) {  // record last edge of box - y axis
-      row = RECTANGLE.bottomRight.y - cellHeight
+    if (
+      RECTANGLE.bottomRight.y !== row &&
+      row + cellHeight > RECTANGLE.bottomRight.y
+    ) {
+      // record last edge of box - y axis
+      row = RECTANGLE.bottomRight.y - cellHeight;
     }
 
-    row += cellHeight
+    row += cellHeight;
   }
-  
-  selectedCellsContainerList.forEach(el => el.__selected = undefined)  // clean up
 
-  return selectedCells
+  selectedCellsContainerList.forEach((el) => (el.__selected = undefined)); // clean up
+
+  return selectedCells;
 }
 
 function handleSelectedCells(selectedCells) {
-  if (!selectedCells || selectedCells.length === 0) return
+  if (!selectedCells || selectedCells.length === 0) return;
 
   if (SELECTED_CELLS_ACCUMULATOR.length === 0) {
-    SELECTED_CELLS_ACCUMULATOR.push(selectedCells)
-    colorSelectedCells(selectedCells)
-    return
+    SELECTED_CELLS_ACCUMULATOR.push(selectedCells);
+    colorSelectedCells(selectedCells);
+    return;
   }
 
-  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0]
+  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0];
 
   if (thereIsIntersection(selectedCells, initialSelection)) {
-    alert("cannot place computation in cells used as input for computation")
-    return
+    alert("cannot place computation in cells used as input for computation");
+    return;
   }
 
   // check wether to place result in row or col
-  const placementDesc = getDestinationDesc(selectedCells, initialSelection)
+  const placementDesc = getDestinationDesc(selectedCells, initialSelection);
   if (placementDesc === null) {
-    alert("destination row or column for computation must align with input for computation")
-    return
+    alert(
+      "destination row or column for computation must align with input for computation",
+    );
+    return;
   }
 
   // set cells in selected cells
-  batchSetCellsInSelectedCells(initialSelection, placementDesc)
+  batchSetCellsInSelectedCells(initialSelection, placementDesc);
 
-  deColorizeSelectedCells(initialSelection)
-  SELECTED_CELLS_ACCUMULATOR.splice(0)
+  deColorizeSelectedCells(initialSelection);
+  SELECTED_CELLS_ACCUMULATOR.splice(0);
 }
 
 function resetSelecetedCellsAccumulator() {
-  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0]
-  deColorizeSelectedCells(initialSelection || [])
-  SELECTED_CELLS_ACCUMULATOR.splice(0)
+  const initialSelection = SELECTED_CELLS_ACCUMULATOR[0];
+  deColorizeSelectedCells(initialSelection || []);
+  SELECTED_CELLS_ACCUMULATOR.splice(0);
 }
 
 function colorSelectedCells(selectedCells) {
-  selectedCells.forEach(cell => {
-    cell.classList.add(CLASS_CELL_IS_SELECTED)
-  })
+  selectedCells.forEach((cell) => {
+    cell.classList.add(CLASS_CELL_IS_SELECTED);
+  });
 }
 
 function deColorizeSelectedCells(selectedCells) {
-  selectedCells.forEach(cell => {
-    cell.classList.remove(CLASS_CELL_IS_SELECTED)
-  })
+  selectedCells.forEach((cell) => {
+    cell.classList.remove(CLASS_CELL_IS_SELECTED);
+  });
 }
 
 function thereIsIntersection(selectedCells, initialSelection) {
-  const hMap = new Map()
+  const hMap = new Map();
   for (const cell of initialSelection) {
-    hMap.set(`${cell.getAttribute('row')}:${cell.getAttribute('col')}`, true)
+    hMap.set(`${cell.getAttribute("row")}:${cell.getAttribute("col")}`, true);
   }
 
   for (const cell of selectedCells) {
-    if (hMap.get(`${cell.getAttribute('row')}:${cell.getAttribute('col')}`)) {
-      return true
+    if (hMap.get(`${cell.getAttribute("row")}:${cell.getAttribute("col")}`)) {
+      return true;
     }
   }
 
-  return false
+  return false;
 }
 
 function getDestinationDesc(selectedCells, initialSelection) {
-  const targetCell = selectedCells[0]
-  const inputCell_0 = initialSelection[0]
-  const targetRow = Number(targetCell.getAttribute("row"))
-  const targetCol = Number(targetCell.getAttribute("col"))
-  const inputRow = Number(inputCell_0.getAttribute("row"))
-  const inputCol = Number(inputCell_0.getAttribute("col"))
+  const targetCell = selectedCells[0];
+  const inputCell_0 = initialSelection[0];
+  const targetRow = Number(targetCell.getAttribute("row"));
+  const targetCol = Number(targetCell.getAttribute("col"));
+  const inputRow = Number(inputCell_0.getAttribute("row"));
+  const inputCol = Number(inputCell_0.getAttribute("col"));
 
   if (targetCol === inputCol) {
     return {
       direction: "y",
       targetRow: targetRow,
-      targetCol: targetCol
-    }
+      targetCol: targetCol,
+    };
   }
 
   if (targetRow === inputRow) {
     return {
       direction: "x",
       targetRow: targetRow,
-      targetCol: targetCol
-    }
+      targetCol: targetCol,
+    };
   }
 
-  return null
+  return null;
 }
 
 function batchSetCellsInSelectedCells(initialSelection, placementDesc) {
@@ -1779,115 +1815,116 @@ function batchSetCellsInSelectedCells(initialSelection, placementDesc) {
   if (!recordState.tables[currentTable].selectedCells)
     recordState.tables[currentTable].selectedCells = {};
 
-  let { targetRow, targetCol } = placementDesc
+  let { targetRow, targetCol } = placementDesc;
 
   for (const el of initialSelection) {
-    const row = Number(el.getAttribute("row"))
-    const col = Number(el.getAttribute("col"))
+    const row = Number(el.getAttribute("row"));
+    const col = Number(el.getAttribute("col"));
 
     if (placementDesc.direction === "x") {
-      targetRow = row
+      targetRow = row;
     } else {
-      targetCol = col
+      targetCol = col;
     }
 
-    const cell = { row, column: col, colIndex: col, targetRow, targetCol }
-    const key = `${targetRow}.${targetCol}`
+    const cell = { row, column: col, colIndex: col, targetRow, targetCol };
+    const key = `${targetRow}.${targetCol}`;
     pushCellInSelectedCells(
       recordState.tables[currentTable].selectedCells,
       key,
       cell,
-    )
+    );
   }
 
   setRecordsStateWrapper(recordState, "currentTable", currentTable);
 }
 
 function handleDownloadCSV() {
-  if (!recordState) throw new Error("recordState undefined")
-  if (!recordState.currentTable) throw new Error("currentTable undefined")
-  const tableName = recordState.currentTable
+  if (!recordState) throw new Error("recordState undefined");
+  if (!recordState.currentTable) throw new Error("currentTable undefined");
+  const tableName = recordState.currentTable;
 
-  const tableData = recordState.tables[tableName].data
-  const csv = extractCSVFromData(tableData)
+  const tableData = recordState.tables[tableName].data;
+  const csv = extractCSVFromData(tableData);
 
-  downloadFile(tableName, csv)
+  downloadFile(tableName, csv);
 }
 
 // function adapted from https://stackoverflow.com/a/33542499
 function downloadFile(filename, content) {
-  const blob = new Blob([content], {type: 'text/csv'})
-  const elem = window.document.createElement('a')
-  elem.style.display = "none"
-  const url = window.URL.createObjectURL(blob)
-  elem.href = url
-  elem.download = filename  
-  document.body.appendChild(elem)
-  elem.click()
-  document.body.removeChild(elem)
-  URL.revokeObjectURL(url)
+  const blob = new Blob([content], { type: "text/csv" });
+  const elem = window.document.createElement("a");
+  elem.style.display = "none";
+  const url = window.URL.createObjectURL(blob);
+  elem.href = url;
+  elem.download = filename;
+  document.body.appendChild(elem);
+  elem.click();
+  document.body.removeChild(elem);
+  URL.revokeObjectURL(url);
 }
 
 function handleUploadCsv(event) {
-  const file = event.target.files?.item(0)
-  if (!file) return
+  const file = event.target.files?.item(0);
+  if (!file) return;
 
-  const reader = new FileReader()
-  reader.readAsText(file)
+  const reader = new FileReader();
+  reader.readAsText(file);
   reader.onload = (e) => {
-    const csv = e.target.result
-    const tableData = buildTableDataFromCsv(csv)
-    if (!isValidTableData(tableData)) throw new Error("Invalid table data")
-    const tableName = file.name.replace(".csv", "")
-    loadTableDataAsCurrentTable(tableData, tableName)
-  }
+    const csv = e.target.result;
+    const tableData = buildTableDataFromCsv(csv);
+    if (!isValidTableData(tableData)) throw new Error("Invalid table data");
+    const tableName = file.name.replace(".csv", "");
+    loadTableDataAsCurrentTable(tableData, tableName);
+  };
 
-  reader.addEventListener("error", (e) => console.error(e))
-  reader.addEventListener("abort", (e) => console.error(e))
+  reader.addEventListener("error", (e) => console.error(e));
+  reader.addEventListener("abort", (e) => console.error(e));
 }
 
 function isValidTableData(tableData) {
-  const firstRow = tableData[1]
-  if (!firstRow || !Array.isArray(firstRow)) return false
+  const firstRow = tableData[1];
+  if (!firstRow || !Array.isArray(firstRow)) return false;
 
-  const len = firstRow.length
+  const len = firstRow.length;
 
   for (const row in tableData) {
-    if (typeof Number(row) !== "number")  return false
-    const currentRow = tableData[row]
-    if (!Array.isArray(currentRow)) return false
-    if (currentRow.length !== len) return false
+    if (typeof Number(row) !== "number") return false;
+    const currentRow = tableData[row];
+    if (!Array.isArray(currentRow)) return false;
+    if (currentRow.length !== len) return false;
     for (let i = 0; i < currentRow.length; i++) {
-      const type = typeof currentRow[i]
-      if (type !== "string") return false
+      const type = typeof currentRow[i];
+      if (type !== "string") return false;
     }
   }
 
-  return true
+  return true;
 }
 
 function loadTableDataAsCurrentTable(tableData, tableName) {
   // check if table with name exist
   if (recordState.tables[tableName]) {
-    const resp = prompt(`table with name ${tableName} exists, do you want to overwrite it?`)
-    if (resp.toLocaleLowerCase() !== "y" && resp.toLocaleLowerCase() !== "yes") {
-      let name = prompt("type in the name you want to call this table")
-      if (!name) return
-      return loadTableDataAsCurrentTable(tableData, name)
+    const resp = prompt(
+      `table with name ${tableName} exists, do you want to overwrite it?`,
+    );
+    if (
+      resp.toLocaleLowerCase() !== "y" &&
+      resp.toLocaleLowerCase() !== "yes"
+    ) {
+      let name = prompt("type in the name you want to call this table");
+      if (!name) return;
+      return loadTableDataAsCurrentTable(tableData, name);
     }
   }
 
-  recordState.currentTable = tableName
-  setRecordsStateWrapper(
-    recordState,
-    `tables.${tableName}`,
-    {
-      data: tableData,
-      noOfRows: Object.values(tableData).length,
-      noOfCols: tableData[1].length,
-      ruleMode: false,
-      currentRule: "",
-      altered: true,
-    },
-  )
+  recordState.currentTable = tableName;
+  setRecordsStateWrapper(recordState, `tables.${tableName}`, {
+    data: tableData,
+    noOfRows: Object.values(tableData).length,
+    noOfCols: tableData[1].length,
+    ruleMode: false,
+    currentRule: "",
+    altered: true,
+  });
 }

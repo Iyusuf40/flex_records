@@ -37,10 +37,10 @@ export default function SidePane(props) {
       </button>{" "}
       <br />
       <br />
-      <button onClick={switchUser}>switch user</button> 
+      <button onClick={switchUser}>switch user</button>
       <br />
       <br />
-      <button onClick={showId}>show ID</button> 
+      <button onClick={showId}>show ID</button>
       <br />
       <div className="table--list">
         {/* currentTable is not undefined? */}
@@ -74,9 +74,9 @@ function findIndex(tablesList, currentTable) {
 }
 
 function swapCurrTableToFront(tablesList, index) {
-  let moveToFront = tablesList[index]
-  tablesList.splice(index, 1)
-  tablesList.unshift(moveToFront)
+  let moveToFront = tablesList[index];
+  tablesList.splice(index, 1);
+  tablesList.unshift(moveToFront);
 }
 
 function handleTableClick(tableName, recordState, setRecordsStateWrapper) {
@@ -107,6 +107,6 @@ async function switchUser() {
 }
 
 function showId() {
-  const flexId = localStorage.getItem("flexId")
-  alert("your ID is: " + flexId)
+  const flexId = localStorage.getItem("flexId");
+  alert("your ID is: " + flexId);
 }
