@@ -6,10 +6,10 @@ export default function Index() {
     <div className="welcome--container">
       <div className="hero--container">
         <div className="hero--overlay--color">
-        <h1>
-          Save Alphanumeric Data in Tables and Carryout Computations on Them
-          Easily
-        </h1>
+          <h1>
+            Save Alphanumeric Data in Tables and Carryout Computations on Them
+            Easily
+          </h1>
         </div>
       </div>
       <div className="intro--container">
@@ -30,23 +30,22 @@ export default function Index() {
       <div className="compute--container">
         <div className="compute--text text">
           <h2>
-            Define Easy Computation Functions To Apply On a Row or Column Once and
-            The App Updates Results on Table Changes
+            Define Easy Computation Functions To Apply On a Row or Column Once
+            and The App Updates Results on Table Changes
           </h2>
           <p>
             The power of flex_records lies in its ability to perform
             computations on your numeric data. Carrying out computations such as
-            sum, average etc on data in your table is very easy to achieve.
-            You can specify on which cell to store your computation 
-            and speficy its input cells, or you can select a group of cells 
-            to serve as input to a function. 
-            On update of your table values, the computations are
+            sum, average etc on data in your table is very easy to achieve. You
+            can specify on which cell to store your computation and speficy its
+            input cells, or you can select a group of cells to serve as input to
+            a function. On update of your table values, the computations are
             redone to reflect the updated data.
           </p>
           <p>
             When you want to stop applying a particular rule, you click on
             <strong> show functions </strong> button and delete the function.
-            Alternatively, to clear all functions you click on 
+            Alternatively, to clear all functions you click on
             <strong> clear functions </strong> button.
           </p>
           <p>

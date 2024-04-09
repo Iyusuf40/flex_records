@@ -3,10 +3,7 @@ import Container from "./components/Container";
 import Index from "./components/Index";
 import Tutorial from "./components/Tutorial";
 import Root from "./components/Root";
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
@@ -30,13 +27,13 @@ const router = createBrowserRouter([
 ]);
 
 /**
- * 
+ *
  * routes:
- * 
+ *
  * /
  * /records
  * /tutorial
- * 
+ *
  */
 
 function App() {

@@ -106,19 +106,20 @@ export async function save(record, init) {
     return;
   }
 
-  const tableName = record.currentTable
+  const tableName = record.currentTable;
 
-  if (!tableName) {  // may have been deleted
-    return
+  if (!tableName) {
+    // may have been deleted
+    return;
   }
 
-  const tableData = record.tables[tableName]
+  const tableData = record.tables[tableName];
 
   const payload = {
     tableName,
     tableData,
-    id: record.id
-  }
+    id: record.id,
+  };
 
   const json = JSON.stringify(payload);
 
@@ -143,17 +144,16 @@ export function persist(record) {
 }
 
 export async function deleteTableAtBackend() {
-
-  const tableName = recordState.currentTable
+  const tableName = recordState.currentTable;
 
   if (!tableName) {
-    return
+    return;
   }
 
   const payload = {
     tableName,
-    id: recordState.id
-  }
+    id: recordState.id,
+  };
 
   const json = JSON.stringify(payload);
 
@@ -266,22 +266,22 @@ export function removeCol(data, noOfCols) {
 
 export function appendCol(data, noOfCols) {
   for (const key in data) {
-    const row = data[key]
-    row.push("")
+    const row = data[key];
+    row.push("");
   }
 }
 
 /**
- * 
- * @param type e.g div, span, p etc 
- * @param opts obj with props {id: string, class: string} 
- * @returns 
+ *
+ * @param type e.g div, span, p etc
+ * @param opts obj with props {id: string, class: string}
+ * @returns
  */
 export function createEl(type, opts = {}) {
-  const el = document.createElement(type)
-  if (opts.id) el.id = opts.id
-  if (opts.class) el.classList.add(...opts.class.split(" "))
-  return el
+  const el = document.createElement(type);
+  if (opts.id) el.id = opts.id;
+  if (opts.class) el.classList.add(...opts.class.split(" "));
+  return el;
 }
 
 /**
@@ -1003,71 +1003,75 @@ export function getData(tableName, recordState) {
 }
 
 export function deleteTable(tableName, recordState) {
-  deleteTableAtBackend()
+  deleteTableAtBackend();
   delete recordState.tables[tableName];
   recordState.currentTable = "";
   setRecordsStateWrapper(recordState, "currentTable", "");
 }
 
 export function changeTableName(tableName, option, recordState) {
-
   if (recordState.tables[option]) {
-    const resp = prompt(`table with name ${option} exists, do you want to overwrite it?`)
-    if (resp.toLocaleLowerCase() !== "y" && resp.toLocaleLowerCase() !== "yes") {
-      option = prompt("type in the name you want to call this table")
-      if (!option) return
-      return changeTableName(tableName, option, recordState)
+    const resp = prompt(
+      `table with name ${option} exists, do you want to overwrite it?`,
+    );
+    if (
+      resp.toLocaleLowerCase() !== "y" &&
+      resp.toLocaleLowerCase() !== "yes"
+    ) {
+      option = prompt("type in the name you want to call this table");
+      if (!option) return;
+      return changeTableName(tableName, option, recordState);
     }
   }
 
   const saveTableDetails = recordState.tables[tableName];
-  deleteTableAtBackend()
+  deleteTableAtBackend();
   delete recordState.tables[tableName];
   recordState.tables[option] = saveTableDetails;
   setRecordsStateWrapper(recordState, "currentTable", option);
 }
 
 export function pasteSpan(x, y, bg = "red", size = 3) {
-  const sp = document.createElement("span")
+  const sp = document.createElement("span");
 
-  sp.style.top = `${y}px`
-  sp.style.left = `${x}px`
-  sp.style.position = "absolute"
-  sp.style.width = `${size}px`
-  sp.style.height = `${size}px`
-  sp.style.backgroundColor = bg
+  sp.style.top = `${y}px`;
+  sp.style.left = `${x}px`;
+  sp.style.position = "absolute";
+  sp.style.width = `${size}px`;
+  sp.style.height = `${size}px`;
+  sp.style.backgroundColor = bg;
 
-  sp.classList.add("select--box")
-  const table = document.getElementsByClassName("current--table")[0]
-  table?.appendChild(sp)
+  sp.classList.add("select--box");
+  const table = document.getElementsByClassName("current--table")[0];
+  table?.appendChild(sp);
 }
 
 /**
- * 
+ *
  * @param data map of keys to rows, 1: [a, b, c]
- * 
+ *
  * returns: string CSV rep
  */
 export function extractCSVFromData(data) {
-  let csv = ""
+  let csv = "";
 
   for (const key in data) {
-    const row = data[key]
-    csv += row.join(",")
-    csv += "\n"
+    const row = data[key];
+    csv += row.join(",");
+    csv += "\n";
   }
 
-  return csv
+  return csv;
 }
 
 export function buildTableDataFromCsv(csv) {
-  let trimmedCsv = csv.trimEnd()
-  let rows = trimmedCsv.split("\n")
-  let data = {}
+  let trimmedCsv = csv.trimEnd();
+  let rows = trimmedCsv.split("\n");
+  let data = {};
 
   for (let row = 1; row <= rows.length; row++) {
-    data[row] = rows[row - 1].split(",")
+    data[row] = rows[row - 1].split(",");
   }
 
-  return data
+  return data;
 }

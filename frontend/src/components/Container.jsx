@@ -28,7 +28,7 @@ export default function Container() {
 
   window.setRecordsStateWrapper = setRecordsStateWrapper;
   window.setRecordsState = setRecordsState;
-  window.recordState = recordState
+  window.recordState = recordState;
 
   return (
     <div className="container">
