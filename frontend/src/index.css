@@ -3,6 +3,7 @@ body {
   margin: 0;
   background-color: rgb(197, 220, 226);
   font-family: "Abhaya Libre", sans-serif;
+  font-weight: 400;
   min-height: 100vh;
   width: 100%;
   position: relative;
@@ -114,7 +115,7 @@ button:hover {
   background-image: linear-gradient(
     to bottom right,
     rgb(117, 204, 226),
-    rgb(51, 39, 94)
+    rgb(218, 224, 131)
   );
   padding: 5px 15px;
   border-radius: 20px;
