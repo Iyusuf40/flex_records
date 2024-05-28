@@ -1,3 +1,3 @@
-const obj = {a: 1, b: 2}
+const t = "abc"
 
-console.log(Object.values(obj))
+t.forEach(e => console.log(e))

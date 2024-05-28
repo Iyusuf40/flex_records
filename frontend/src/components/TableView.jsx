@@ -1886,13 +1886,10 @@ function isValidTableData(tableData) {
   const firstRow = tableData[1];
   if (!firstRow || !Array.isArray(firstRow)) return false;
 
-  const len = firstRow.length;
-
   for (const row in tableData) {
     if (typeof Number(row) !== "number") return false;
     const currentRow = tableData[row];
     if (!Array.isArray(currentRow)) return false;
-    if (currentRow.length !== len) return false;
     for (let i = 0; i < currentRow.length; i++) {
       const type = typeof currentRow[i];
       if (type !== "string") return false;
@@ -1922,7 +1919,7 @@ function loadTableDataAsCurrentTable(tableData, tableName) {
   setRecordsStateWrapper(recordState, `tables.${tableName}`, {
     data: tableData,
     noOfRows: Object.values(tableData).length,
-    noOfCols: tableData[1].length,
+    noOfCols: Math.max(...Object.values(tableData).map(row => row.length)),// tableData[1].length,
     ruleMode: false,
     currentRule: "",
     altered: true,
