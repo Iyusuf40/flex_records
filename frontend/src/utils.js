@@ -4,6 +4,7 @@ import advancedutils from "./advancedutils";
 
 export const postUrl = "https://flexrecords.cloza.org/records_api";
 export const putUrl = "https://flexrecords.cloza.org/records_api";
+export const deleteUrl = "https://flexrecords.cloza.org/records_api";
 export let getUrl = "https://flexrecords.cloza.org/records_api/";
 
 export async function getAltUser(url, id, setRecordsState) {
@@ -157,7 +158,7 @@ export async function deleteTableAtBackend() {
 
   const json = JSON.stringify(payload);
 
-  await fetch(putUrl, {
+  await fetch(deleteUrl, {
     method: "DELETE",
     body: json,
     headers: {

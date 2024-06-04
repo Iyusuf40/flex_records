@@ -79,7 +79,7 @@ def update_records():
     else:
         return json_util.dumps({}), 409
 
-@app.route("/records", methods=["DELETE"], strict_slashes=False)
+@app.route("/records_api", methods=["DELETE"], strict_slashes=False)
 def delete_records():
     """ deletes a record """
     error = False
