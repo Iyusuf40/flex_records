@@ -813,12 +813,11 @@ function afterRulePick(ruleName, tableName, recordState) {
 function displayRegisteredFunctions() {
   if (!recordState) return;
   const tableName = recordState.currentTable;
-  if (!tableName) {
-    // currentTable may be "" after deleting table, therefore remove any
-    // previously showing reg funcs display
-    deleteDivContainerForRegisteredFunctions();
-    return;
-  }
+
+  deleteDivContainerForRegisteredFunctions();
+
+  if (!tableName) return;
+  
   const registeredFunctions =
     recordState?.tables[tableName].registeredFunctions;
 
