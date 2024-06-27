@@ -1490,7 +1490,8 @@ function getClassForCreateTableMode(props) {
 }
 
 function resetRectangle() {
-  (RECTANGLE.canDraw = false), (RECTANGLE.topLeft = {});
+  RECTANGLE.canDraw = false
+  RECTANGLE.topLeft = {}
   RECTANGLE.bottomRight = {};
   RECTANGLE.initPoint = {};
 }
@@ -1574,6 +1575,8 @@ function redrawRectangle(event) {
   setRectangleEdges(cursorPosition, flipped);
   resetRectangleTopLeft(cursorPosition, flipped);
 
+  scrollTableIfCursorCloseToEdge(cursorPosition, flipped)
+
   const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x);
   const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y);
 
@@ -1584,15 +1587,18 @@ function redrawRectangle(event) {
 function drawRectangle(event) {
   if (!RECTANGLE.canDraw) return;
   if (RECTANGLE.id) return; // draw only 1 rect
+
   event.preventDefault();
+
   const id = Date.now().toString();
   RECTANGLE.id = id;
 
   const rect = document.createElement("div");
   rect.id = id;
 
-  const x = event.pageX ?? event.changedTouches[0].pageX;
-  const y = event.pageY ?? event.changedTouches[0].pageY;
+  let x = event.pageX ?? event.changedTouches[0].pageX;
+  let y = event.pageY ?? event.changedTouches[0].pageY;
+
   rect.style.top = `${y}px`;
   rect.style.left = `${x}px`;
 
@@ -1639,6 +1645,7 @@ function setRectangleEdges(cursorPosition, shouldFlip) {
 }
 
 function resetRectangleTopLeft(cursorPosition, shouldFlip) {
+
   if (shouldFlip) {
     const rect = document.getElementById(RECTANGLE.id);
     if (cursorPosition.x < RECTANGLE.initPoint.x) {
@@ -1649,6 +1656,74 @@ function resetRectangleTopLeft(cursorPosition, shouldFlip) {
       rect.style.top = `${cursorPosition.y}px`;
     }
   }
+}
+
+function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
+  let tableContainer = document.getElementsByClassName("current--table")[0]
+  let tableView = document.getElementsByClassName("table--view")[0]
+  if (!tableContainer || !tableView) {
+    throw new Error(
+      "scrollTableIfCursorCloseToEdge: tableContainer and tableView cannot be undefined"
+    )
+  }
+
+  const scrollTreshold = 75
+  const scrollPixel = 200
+
+  let tableBoundingRect = tableContainer.getBoundingClientRect()
+  let tableViewLeft = tableView.getBoundingClientRect().left
+  let tableEdgeTop = Math.max(tableBoundingRect.top, 0)
+  let tableEdgeBottom = Math.min(tableBoundingRect.bottom, window.innerHeight)
+  let tableEdgeLeft = Math.max(tableBoundingRect.left - tableViewLeft, 0)
+  let tableEdgeRight = Math.min(tableBoundingRect.right, window.innerWidth)
+  
+  // scroll down
+  if (
+    tableEdgeBottom - cursorPosition.y < scrollTreshold
+    && tableBoundingRect.bottom > tableEdgeBottom
+  ) {
+    tableView.scrollBy({
+      top: scrollPixel, left: 0, behavior: "smooth"
+    })
+    return
+  }
+
+  // scroll up
+  if (
+    cursorPosition.y - tableEdgeTop < scrollTreshold
+    && tableEdgeTop > tableBoundingRect.top
+    && flipped
+  ) {
+    tableView.scrollBy({
+      top: -scrollPixel, left: 0, behavior: "smooth"
+    })
+    return
+  }
+
+  // scroll right
+  if (
+    tableEdgeRight - cursorPosition.x < scrollTreshold
+    && tableBoundingRect.right > tableEdgeRight
+    && !flipped
+  ) {
+    tableView.scrollBy({
+      left: scrollPixel, top: 0, behavior: "smooth"
+    })
+    return
+  }
+
+  // scroll left
+  if (
+    cursorPosition.x - tableEdgeLeft - tableView.getBoundingClientRect().left < scrollTreshold
+    && tableEdgeLeft > tableBoundingRect.left - tableViewLeft
+    && flipped
+  ) {
+    tableView.scrollBy({
+      left: -scrollPixel, top: 0, behavior: "smooth"
+    })
+    return
+  }
+
 }
 
 function deleteRectangle() {

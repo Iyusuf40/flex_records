@@ -9,6 +9,8 @@
 .current--table {
   padding: 20px;
   position: relative;
+  width: fit-content;
+  height: fit-content;
 }
 
 .row--container {
