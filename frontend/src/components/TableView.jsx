@@ -1589,6 +1589,7 @@ function drawRectangle(event) {
   if (RECTANGLE.id) return; // draw only 1 rect
 
   setCurrentTableBoundingRect()
+  setCurrentTableCSSProps()
 
   event.preventDefault();
 
@@ -1603,8 +1604,8 @@ function drawRectangle(event) {
   let x = event.pageX ?? event.changedTouches[0].pageX;
   let y = event.pageY ?? event.changedTouches[0].pageY;
 
-  let relativeY = -table.getBoundingClientRect().bottom + y + getPadding(table, "padding-top")
-  let relativeX = -table.getBoundingClientRect().left + x - getPadding(table, "padding-left")
+  let relativeY = -tableViewScrollData.currentTableBoundingRect.bottom + y + getPadding(table, "padding-top")
+  let relativeX = -tableViewScrollData.currentTableBoundingRect.left + x - getPadding(table, "padding-left")
   rect.style.top = `${relativeY}px`;
   rect.style.left = `${relativeX}px`;
 
@@ -1616,22 +1617,16 @@ function drawRectangle(event) {
   table?.appendChild(rect);
 }
 
-function shouldFlip(cursorPosition) {
-  if (
-    cursorPosition.x < RECTANGLE.initPoint.x ||
-    cursorPosition.y < RECTANGLE.initPoint.y
-  ) {
-    return true;
-  }
-  return false;
-}
-
 function setRectangleEdges(cursorPosition, shouldFlip) {
   if (shouldFlip) {
-    if (cursorPosition.x < RECTANGLE.initPoint.x) {
-      RECTANGLE.topLeft.x = cursorPosition.x; // shift topleft to the left
-      RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x;
-      RECTANGLE.bottomRight.y = cursorPosition.y; // adjusts horizontal width of rect
+    let adjustedY = getAdjustedY(cursorPosition.y)
+    let adjustedX = getAdjustedX(cursorPosition.x)
+
+    if (adjustedX < RECTANGLE.initPoint.relativeX) {
+      console.log("entered")
+      RECTANGLE.topLeft.x = adjustedX; // shift topleft to the left
+      RECTANGLE.bottomRight.x = RECTANGLE.initPoint.relativeX;
+      RECTANGLE.bottomRight.y = adjustedY; // adjusts horizontal width of rect
     }
 
     if (cursorPosition.y < RECTANGLE.initPoint.y) {
@@ -1649,16 +1644,55 @@ function setRectangleEdges(cursorPosition, shouldFlip) {
   }
 }
 
+function shouldFlip(cursorPosition) {
+
+  let adjustedY = getAdjustedY(cursorPosition.y)
+  let adjustedX = getAdjustedX(cursorPosition.x)
+
+  if (
+    adjustedX < RECTANGLE.initPoint.relativeX ||
+    adjustedY < RECTANGLE.initPoint.relativeY
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function getAdjustedX(x) {
+  return x 
+  - tableViewScrollData.currentTableBoundingRect.left
+  - tableViewScrollData.updatedLeft
+  - parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-left"))
+}
+
+function getAdjustedY(y) {
+
+  let tableBottom = tableViewScrollData.currentTableBoundingRect.bottom
+  let updatedTop = tableViewScrollData.updatedTop
+  let paddingTop = parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-top"))
+
+  return y - tableBottom + updatedTop + paddingTop
+}
+
 function resetRectangleTopLeftIfShouldFlip(cursorPosition, shouldFlip) {
+
+  return
 
   if (shouldFlip) {
     const rect = document.getElementById(RECTANGLE.id);
-    if (cursorPosition.x < RECTANGLE.initPoint.x) {
-      rect.style.left = `${cursorPosition.x}px`;
+
+    console.table({
+      cx: cursorPosition.x,
+      relX: RECTANGLE.initPoint.relativeX,
+      cy: cursorPosition.y,
+      relY: RECTANGLE.initPoint.relativeY,
+    })
+    if (cursorPosition.x < RECTANGLE.initPoint.relativeX) {
+      rect.style.left = `${RECTANGLE.initPoint.relativeX - cursorPosition.x}px`;
     }
 
-    if (cursorPosition.y < RECTANGLE.initPoint.y) {
-      rect.style.top = `${cursorPosition.y}px`;
+    if (cursorPosition.y < RECTANGLE.initPoint.relativeY) {
+      rect.style.top = `${RECTANGLE.initPoint.relativeY - cursorPosition.y}px`;
     }
   }
 }
@@ -1673,12 +1707,19 @@ function resetRectangleTopLeft(x, y) {
 
 let tableViewScrollData = {
   updatedTop: 0,
-  currentTableBoundingRect: null
+  updatedLeft: 0,
+  currentTableBoundingRect: null,
+  currentTableCSSProps: null
 }
 
 function setCurrentTableBoundingRect() {
   let tableContainer = document.getElementsByClassName("current--table")[0]
   tableViewScrollData.currentTableBoundingRect = tableContainer.getBoundingClientRect()
+}
+
+function setCurrentTableCSSProps() {
+  let tableContainer = document.getElementsByClassName("current--table")[0]
+  tableViewScrollData.currentTableCSSProps = getComputedStyle(tableContainer)
 }
 
 function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
@@ -1730,12 +1771,8 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
   if (
     cursorPosition.y - tableEdgeTop < scrollTreshold
     && tableEdgeTop > tableBoundingRect.top
-    && flipped
   ) {
-    tableView.scrollBy({
-      top: -scrollPixel, left: 0, behavior: "smooth"
-    })
-    
+
     // TO-DO
   }
 
@@ -1745,9 +1782,6 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
     && tableBoundingRect.right > tableEdgeRight
     && !flipped
   ) {
-    tableView.scrollBy({
-      left: scrollPixel, top: 0, behavior: "smooth"
-    })
 
     // TO-DO
   }
@@ -1758,15 +1792,29 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
     && tableEdgeLeft > tableBoundingRect.left - tableViewLeft
     && flipped
   ) {
-    tableView.scrollBy({
-      left: -scrollPixel, top: 0, behavior: "smooth"
-    })
+
 
     // TO-DO
   }
 
+  applyScrollTop(cursorPosition)
+
   setRectangleEdges(cursorPosition, flipped);
 
+}
+
+function applyScrollTop(cursorPosition) {
+  // console.table({
+  //   cy: cursorPosition.y,
+  //   tut: tableViewScrollData.updatedTop,
+  //   tableBoundT: tableViewScrollData.currentTableBoundingRect.top,
+  //   diff: cursorPosition.y - (tableViewScrollData.updatedTop + tableViewScrollData.currentTableBoundingRect.top),
+  //   rectTLY : RECTANGLE.topLeft.y
+  // })
+
+  if (cursorPosition.y - (tableViewScrollData.updatedTop + tableViewScrollData.currentTableBoundingRect.top) < 0) {
+    cursorPosition.y += tableViewScrollData.updatedTop
+  }
 }
 
 function getPadding(el, side) {
@@ -1804,14 +1852,14 @@ function selectCellsInRectangle() {
   
   let startCol = (RECTANGLE.topLeft.x - tableContainerBoundingRect.left) / cellWidth
 
-  console.table({
-    ty: RECTANGLE.topLeft.y,
-    by: RECTANGLE.bottomRight.y,
-    "tableContainerBoundingRect.top": tableContainerBoundingRect.top,
-    rowsCount,
-    startRow,
-    startCol
-  })
+  // console.table({
+  //   ty: RECTANGLE.topLeft.y,
+  //   by: RECTANGLE.bottomRight.y,
+  //   "tableContainerBoundingRect.top": tableContainerBoundingRect.top,
+  //   rowsCount,
+  //   startRow,
+  //   startCol
+  // })
 
   let row = Math.round(startRow)
   let col = Math.floor(startCol)
