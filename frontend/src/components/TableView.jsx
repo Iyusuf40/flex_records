@@ -1671,13 +1671,33 @@ function setCurrentTableCSSProps() {
 }
 
 function resetTableViewScroll() {
+  resetUpdatedTopLeft()
+  resetActualTableElBoundingRect()
+  resetScrolling()
+}
+
+function resetUpdatedTopLeft() {
   let tableView = document.getElementsByClassName("table--view")[0]
-  let currentTableEl = document.querySelector(".current--table")
   tableViewScrollData.updatedTop = tableView.scrollTop
   tableViewScrollData.updatedLeft = tableView.scrollLeft
-  tableViewScrollData.actualTableBoundingRect = {right: currentTableEl.getBoundingClientRect().right}
+}
+
+function resetScrolling() {
   tableViewScrollData.scrollingX = false
   tableViewScrollData.scrollingY = false
+}
+
+function resetActualTableElBoundingRect() {
+  let currentTableEl = document.querySelector(".current--table")
+
+  let currentTableElBoundingRect = currentTableEl.getBoundingClientRect()
+
+  tableViewScrollData.actualTableBoundingRect = {
+    right: currentTableElBoundingRect.right + tableViewScrollData.updatedLeft,
+    left: currentTableElBoundingRect.left + tableViewScrollData.updatedLeft,
+    top: currentTableElBoundingRect.top + tableViewScrollData.updatedTop,
+    bottom: currentTableElBoundingRect.bottom + tableViewScrollData.updatedTop
+  }
 }
 
 function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
@@ -1698,32 +1718,38 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
 
   let tableViewLeft = tableViewBoundingRect.left
   let tableEdgeTop = Math.max(tableBoundingRect.top, 0)
-  let tableEdgeBottom = Math.min(tableBoundingRect.bottom, window.innerHeight)
+  let tableEdgeBottom = Math.min(
+    tableViewScrollData.actualTableBoundingRect.bottom
+    - tableViewScrollData.updatedTop
+    - parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-bottom"))
+    , window.innerHeight)
+    
   let tableEdgeLeft = Math.max(tableBoundingRect.left - tableViewLeft, 0)
-  let tableEdgeRight = Math.min(tableBoundingRect.right, window.innerWidth)
+
+  let tableEdgeRight = Math.min(
+    tableViewScrollData.actualTableBoundingRect.right 
+    - tableViewScrollData.updatedLeft
+    - parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-left"))
+    , window.innerWidth
+  )
 
   // scroll down
   if (
     tableEdgeBottom - cursorPosition.y < scrollTreshold
-    && tableBoundingRect.bottom > tableEdgeBottom
+    && tableEdgeBottom >= window.innerHeight
   ) {
 
     let scrollableLength = Math.max(
       0,
       Math.min(
         scrollPixel, 
-        (
-          tableViewScrollData.currentTableBoundingRect.bottom 
-          - tableViewScrollData.updatedTop
-          - cursorPosition.y
-        )
+        tableEdgeBottom = cursorPosition.y
       )
     )
 
     tableView.scrollTop += scrollableLength
     tableViewScrollData.updatedTop += scrollableLength
     cursorPosition.y += scrollableLength
-    tableViewScrollData.scrollingY = true
   }
 
   // scroll up
@@ -1739,43 +1765,30 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
 
     // TO-DO: Handle flipped scroll upward
 
-    // console.table({
-    //   scrollableLength,
-    //   diff: cursorPosition.y
-    //   - tableViewScrollData.currentTableBoundingRect.top 
-    //   - tableViewScrollData.updatedTop
-    // })
-
     tableView.scrollTop -= scrollableLength
     tableViewScrollData.updatedTop -= scrollableLength
     cursorPosition.y -= scrollableLength
-    tableViewScrollData.scrollingY = true
   }
 
   // scroll right
   if (
     tableEdgeRight - cursorPosition.x < scrollTreshold
-    && tableBoundingRect.right > tableEdgeRight
+    && tableEdgeRight >= window.innerWidth
   ) {
-
 
     let scrollableLength = Math.max(
       0,
       Math.min(scrollPixel, tableEdgeRight - cursorPosition.x)
     )
 
-    // do not overshoot the edge
-    if (tableViewScrollData.updatedLeft + window.innerWidth >= tableViewScrollData.actualTableBoundingRect.right) {
-      scrollableLength = 0
-    }
-
     // TO-DO: Handle flipped scroll backward
 
-    tableView.scrollLeft += scrollableLength
-    tableViewScrollData.updatedLeft += scrollableLength
-    cursorPosition.x += scrollableLength
+    if (scrollableLength > 0) {
+      tableView.scrollLeft += scrollableLength
+      tableViewScrollData.updatedLeft += scrollableLength
+      cursorPosition.x += scrollableLength
+    }
 
-    tableViewScrollData.scrollingX = true
   }
 
   // scroll left
@@ -1798,7 +1811,7 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
     tableViewScrollData.updatedLeft -= scrollableLength
     cursorPosition.x -= scrollableLength
 
-    tableViewScrollData.scrollingX = true
+    // tableViewScrollData.scrollingX = true
   }
   
   setRectangleEdges(cursorPosition, flipped);
@@ -1818,14 +1831,6 @@ function setRectangleEdges(cursorPosition, shouldFlip) {
     }
 
     if (adjustedY < RECTANGLE.initPoint.relativeY) {
-      if (tableViewScrollData.scrollingY) {
-        console.log("reached <-------")
-        console.table({
-          adjustedY,
-          ty: RECTANGLE.topLeft.relativeY,
-          tv_top: tableViewScrollData.updatedTop,
-        })
-      }
       RECTANGLE.topLeft.relativeY = adjustedY; // shift topleft up
       RECTANGLE.bottomRight.relativeY = RECTANGLE.initPoint.relativeY; // anchor rectangle to init point
       if (adjustedX < RECTANGLE.initPoint.relativeX)
@@ -1841,16 +1846,18 @@ function setRectangleEdges(cursorPosition, shouldFlip) {
 }
 
 function getAdjustedX(x) {
-  return x 
-  - tableViewScrollData.currentTableBoundingRect.left
-  + (tableViewScrollData.scrollingX ? tableViewScrollData.updatedLeft : 0)
+  let adjustedX = x 
+  - tableViewScrollData.actualTableBoundingRect.left
+  + tableViewScrollData.updatedLeft
   - parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-left"))
+  
+  return adjustedX
 }
 
 function getAdjustedY(y) {
 
-  let tableBottom = tableViewScrollData.currentTableBoundingRect.bottom
-  let updatedTop = tableViewScrollData.scrollingY ? tableViewScrollData.updatedTop : 0
+  let tableBottom = tableViewScrollData.actualTableBoundingRect.bottom
+  let updatedTop = tableViewScrollData.updatedTop
   let paddingTop = parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-top"))
 
   return y - tableBottom + updatedTop + paddingTop
@@ -1900,19 +1907,19 @@ function selectCellsInRectangle() {
     RECTANGLE.topLeft.relativeX 
   ) / cellWidth
 
-  console.table({
-    topleft_y: RECTANGLE.topLeft.relativeY,
-    alignedY,
-    bottomright_y: RECTANGLE.bottomRight.relativeY,
-    "t_BoundingRect.bottom + topleft_y": RECTANGLE.topLeft.relativeY + tableContainerBoundingRect.bottom,
-    "tableContainerBoundingRect.top": tableContainerBoundingRect.top,
-    "tableContainerBoundingRect.bottom": tableContainerBoundingRect.bottom,
-    rowsCount,
-    colsCount,
-    startRow,
-    startCol,
-    height
-  })
+  // console.table({
+  //   topleft_y: RECTANGLE.topLeft.relativeY,
+  //   alignedY,
+  //   bottomright_y: RECTANGLE.bottomRight.relativeY,
+  //   "t_BoundingRect.bottom + topleft_y": RECTANGLE.topLeft.relativeY + tableContainerBoundingRect.bottom,
+  //   "tableContainerBoundingRect.top": tableContainerBoundingRect.top,
+  //   "tableContainerBoundingRect.bottom": tableContainerBoundingRect.bottom,
+  //   rowsCount,
+  //   colsCount,
+  //   startRow,
+  //   startCol,
+  //   height
+  // })
 
   let row = Math.round(startRow)
   let col = Math.floor(startCol)
