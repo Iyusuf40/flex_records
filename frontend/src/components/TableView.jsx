@@ -1605,8 +1605,8 @@ function drawRectangle(event) {
   let x = event.pageX ?? event.changedTouches[0].pageX;
   let y = event.pageY ?? event.changedTouches[0].pageY;
 
-  let relativeY = -tableViewScrollData.currentTableBoundingRect.bottom + y + getPadding(table, "padding-top")
-  let relativeX = -tableViewScrollData.currentTableBoundingRect.left + x - getPadding(table, "padding-left")
+  let relativeY = getAdjustedY(y)
+  let relativeX = getAdjustedX(x)
   rect.style.top = `${relativeY}px`;
   rect.style.left = `${relativeX}px`;
 
@@ -1714,10 +1714,15 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
   const scrollPixel = 200
 
   let tableBoundingRect = tableContainer.getBoundingClientRect()
-  let tableViewBoundingRect = tableView.getBoundingClientRect()
 
-  let tableViewLeft = tableViewBoundingRect.left
-  let tableEdgeTop = Math.max(tableBoundingRect.top, 0)
+  let tableViewLeft = tableViewScrollData.actualTableBoundingRect.left
+    - tableViewScrollData.updatedLeft
+
+  let tableEdgeTop = Math.max(
+    tableViewScrollData.actualTableBoundingRect.top
+    - tableViewScrollData.updatedTop
+    , 0)
+
   let tableEdgeBottom = Math.min(
     tableViewScrollData.actualTableBoundingRect.bottom
     - tableViewScrollData.updatedTop
@@ -1734,6 +1739,21 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
   )
 
   // scroll down
+  scrollTableViewDown(cursorPosition, tableBoundingRect, tableView, tableEdgeBottom, scrollTreshold, scrollPixel)
+
+  // scroll up
+  scrollTableViewUp(cursorPosition, tableBoundingRect, tableView, tableEdgeTop, scrollTreshold, scrollPixel)
+
+  // scroll right
+  scrollTableViewRight(cursorPosition, tableBoundingRect, tableView, tableEdgeRight, scrollTreshold, scrollPixel)
+
+  // scroll left
+  scrollTableViewLeft(cursorPosition, tableBoundingRect, tableView, tableEdgeLeft, scrollTreshold, scrollPixel)  
+  
+  setRectangleEdges(cursorPosition, flipped);
+}
+
+function scrollTableViewDown(cursorPosition, tableBoundingRect, tableView, tableEdgeBottom, scrollTreshold, scrollPixel) {
   if (
     tableEdgeBottom - cursorPosition.y < scrollTreshold
     && tableEdgeBottom >= window.innerHeight
@@ -1751,8 +1771,9 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
     tableViewScrollData.updatedTop += scrollableLength
     cursorPosition.y += scrollableLength
   }
+}
 
-  // scroll up
+function scrollTableViewUp(cursorPosition, tableBoundingRect, tableView, tableEdgeTop, scrollTreshold, scrollPixel) {
   if (
     cursorPosition.y - tableEdgeTop < scrollTreshold
     && tableEdgeTop > tableBoundingRect.top
@@ -1763,14 +1784,13 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
       Math.min(scrollPixel, cursorPosition.y - tableEdgeTop)
     )
 
-    // TO-DO: Handle flipped scroll upward
-
     tableView.scrollTop -= scrollableLength
     tableViewScrollData.updatedTop -= scrollableLength
     cursorPosition.y -= scrollableLength
   }
+}
 
-  // scroll right
+function scrollTableViewRight(cursorPosition, tableBoundingRect, tableView, tableEdgeRight, scrollTreshold, scrollPixel) {
   if (
     tableEdgeRight - cursorPosition.x < scrollTreshold
     && tableEdgeRight >= window.innerWidth
@@ -1781,17 +1801,18 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
       Math.min(scrollPixel, tableEdgeRight - cursorPosition.x)
     )
 
-    // TO-DO: Handle flipped scroll backward
-
     if (scrollableLength > 0) {
       tableView.scrollLeft += scrollableLength
       tableViewScrollData.updatedLeft += scrollableLength
       cursorPosition.x += scrollableLength
     }
-
   }
+}
 
-  // scroll left
+function scrollTableViewLeft(cursorPosition, tableBoundingRect, tableView, tableEdgeLeft, scrollTreshold, scrollPixel) {
+  let tableViewBoundingRect = tableView.getBoundingClientRect()
+  let tableViewLeft = tableViewBoundingRect.left
+
   if (
     cursorPosition.x - tableEdgeLeft - tableView.getBoundingClientRect().left < scrollTreshold
     && tableEdgeLeft > tableBoundingRect.left - tableViewLeft
@@ -1805,17 +1826,10 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
       )
     )
 
-    // TO-DO: Handle flipped scroll backward
-
     tableView.scrollLeft -= scrollableLength
     tableViewScrollData.updatedLeft -= scrollableLength
     cursorPosition.x -= scrollableLength
-
-    // tableViewScrollData.scrollingX = true
   }
-  
-  setRectangleEdges(cursorPosition, flipped);
-
 }
 
 function setRectangleEdges(cursorPosition, shouldFlip) {
