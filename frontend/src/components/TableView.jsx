@@ -1738,22 +1738,39 @@ function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
     , window.innerWidth
   )
 
+  let dataRequiredForScroll = {
+    cursorPosition, 
+    tableBoundingRect, 
+    tableView, 
+    scrollTreshold, 
+    scrollPixel,
+    tableEdgeRight,
+    tableEdgeLeft,
+    tableEdgeTop,
+    tableEdgeBottom
+  }
   // scroll down
-  scrollTableViewDown(cursorPosition, tableBoundingRect, tableView, tableEdgeBottom, scrollTreshold, scrollPixel)
+  scrollTableViewDown(dataRequiredForScroll)
 
   // scroll up
-  scrollTableViewUp(cursorPosition, tableBoundingRect, tableView, tableEdgeTop, scrollTreshold, scrollPixel)
+  scrollTableViewUp(dataRequiredForScroll)
 
   // scroll right
-  scrollTableViewRight(cursorPosition, tableBoundingRect, tableView, tableEdgeRight, scrollTreshold, scrollPixel)
+  scrollTableViewRight(dataRequiredForScroll)
 
   // scroll left
-  scrollTableViewLeft(cursorPosition, tableBoundingRect, tableView, tableEdgeLeft, scrollTreshold, scrollPixel)  
+  scrollTableViewLeft(dataRequiredForScroll)  
   
   setRectangleEdges(cursorPosition, flipped);
 }
 
-function scrollTableViewDown(cursorPosition, tableBoundingRect, tableView, tableEdgeBottom, scrollTreshold, scrollPixel) {
+function scrollTableViewDown({
+  cursorPosition, 
+  tableView, 
+  tableEdgeBottom, 
+  scrollTreshold, 
+  scrollPixel
+}) {
   if (
     tableEdgeBottom - cursorPosition.y < scrollTreshold
     && tableEdgeBottom >= window.innerHeight
@@ -1773,7 +1790,14 @@ function scrollTableViewDown(cursorPosition, tableBoundingRect, tableView, table
   }
 }
 
-function scrollTableViewUp(cursorPosition, tableBoundingRect, tableView, tableEdgeTop, scrollTreshold, scrollPixel) {
+function scrollTableViewUp({
+  cursorPosition, 
+  tableBoundingRect, 
+  tableView, 
+  scrollTreshold, 
+  scrollPixel,
+  tableEdgeTop
+}) {
   if (
     cursorPosition.y - tableEdgeTop < scrollTreshold
     && tableEdgeTop > tableBoundingRect.top
@@ -1790,7 +1814,13 @@ function scrollTableViewUp(cursorPosition, tableBoundingRect, tableView, tableEd
   }
 }
 
-function scrollTableViewRight(cursorPosition, tableBoundingRect, tableView, tableEdgeRight, scrollTreshold, scrollPixel) {
+function scrollTableViewRight({
+  cursorPosition, 
+  tableView, 
+  scrollTreshold, 
+  scrollPixel,
+  tableEdgeRight
+}) {
   if (
     tableEdgeRight - cursorPosition.x < scrollTreshold
     && tableEdgeRight >= window.innerWidth
@@ -1809,7 +1839,14 @@ function scrollTableViewRight(cursorPosition, tableBoundingRect, tableView, tabl
   }
 }
 
-function scrollTableViewLeft(cursorPosition, tableBoundingRect, tableView, tableEdgeLeft, scrollTreshold, scrollPixel) {
+function scrollTableViewLeft({
+  cursorPosition, 
+  tableBoundingRect, 
+  tableView, 
+  scrollTreshold, 
+  scrollPixel,
+  tableEdgeLeft
+}) {
   let tableViewBoundingRect = tableView.getBoundingClientRect()
   let tableViewLeft = tableViewBoundingRect.left
 
