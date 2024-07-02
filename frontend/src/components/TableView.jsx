@@ -75,6 +75,12 @@ export default function TableView(props) {
 
   displayRegisteredFunctions();
 
+  useEffect(() => {
+    let html = document.querySelector("html")
+    // alsways scroll to the top on page reload
+    html.scrollTop = 0
+  }, [])
+
   return (
     <div className="table--view">
       <div className={`create--form--container ${classForCreateTableMode}`}>
@@ -1780,7 +1786,7 @@ function scrollTableViewDown({
       0,
       Math.min(
         scrollPixel, 
-        tableEdgeBottom = cursorPosition.y
+        tableEdgeBottom - cursorPosition.y
       )
     )
 
@@ -1914,6 +1920,25 @@ function getAdjustedY(y) {
   return y - tableBottom + updatedTop + paddingTop
 }
 
+function reverseAdjustedX(adjustedX) {
+  let x = adjustedX 
+    + tableViewScrollData.actualTableBoundingRect.left
+    - tableViewScrollData.updatedLeft
+    + parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-left"))
+  return x
+}
+
+function reverseAdjustedY(adjustedY) {
+
+  let tableBottom = tableViewScrollData.actualTableBoundingRect.bottom
+  let updatedTop = tableViewScrollData.updatedTop
+  let paddingTop = parseFloat(tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-top"))
+
+  let y = adjustedY + tableBottom - updatedTop - paddingTop 
+
+  return y
+}
+
 function getPadding(el, side) {
   return parseFloat(
     window.getComputedStyle(el, null).getPropertyValue(side)
@@ -1929,79 +1954,37 @@ function deleteRectangle() {
 }
 
 function selectCellsInRectangle() {
-  const cellRep = document.querySelector(".cell--container");
-  const tableContainerEl = document.querySelector(".current--table")
-  const tableContainerBoundingRect = tableContainerEl.getBoundingClientRect()
-  const cellRepCompStyle = getComputedStyle(cellRep)
-
-  let { width, height } = cellRep.getBoundingClientRect();
-
-  width += getPadding(cellRep, "padding-right") + parseInt(cellRepCompStyle.marginRight)
-  height += getPadding(cellRep, "padding-bottom") + parseInt(cellRepCompStyle.marginBottom)
-
-  let cellWidth = width;
-  let cellHeight = height;
-
-  let colsCount = (RECTANGLE.bottomRight.relativeX - RECTANGLE.topLeft.relativeX) / cellWidth
-  let rowsCount = (RECTANGLE.bottomRight.relativeY - RECTANGLE.topLeft.relativeY) / cellHeight
-
-  let alignedY = RECTANGLE.topLeft.relativeY
-    + tableContainerBoundingRect.bottom
-    - getPadding(tableContainerEl, "padding-top")
-    - getPadding(tableContainerEl, "padding-bottom")
-    - getPadding(cellRep, "padding-bottom")
-    - tableContainerBoundingRect.top
-
-  let startRow = (alignedY / cellHeight) + 1
-
-  let startCol = (
-    RECTANGLE.topLeft.relativeX 
-  ) / cellWidth
-
-  // console.table({
-  //   topleft_y: RECTANGLE.topLeft.relativeY,
-  //   alignedY,
-  //   bottomright_y: RECTANGLE.bottomRight.relativeY,
-  //   "t_BoundingRect.bottom + topleft_y": RECTANGLE.topLeft.relativeY + tableContainerBoundingRect.bottom,
-  //   "tableContainerBoundingRect.top": tableContainerBoundingRect.top,
-  //   "tableContainerBoundingRect.bottom": tableContainerBoundingRect.bottom,
-  //   rowsCount,
-  //   colsCount,
-  //   startRow,
-  //   startCol,
-  //   height
-  // })
-
-  let row = Math.round(startRow)
-  let col = Math.floor(startCol)
-
-  let keyToCellMap = {}
 
   let cells = Array.from(document.getElementsByClassName("cell--input"))
 
+  const selectedCells = []
+
+  if (cells.length === 0) return selectedCells
+
+  let cellBoundingRect = cells[0].getBoundingClientRect()
+
+  // use half cell height and width to pad select box so as to
+  // select cells half highlighted
+  let halfCellHeight = cellBoundingRect.height / 2
+  let halfCellWidth = cellBoundingRect.width / 2
+
+  let topLeftX = reverseAdjustedX(RECTANGLE.topLeft.relativeX) - halfCellWidth
+  let topLeftY = reverseAdjustedY(RECTANGLE.topLeft.relativeY) - halfCellHeight
+  let bottomRightX = reverseAdjustedX(RECTANGLE.bottomRight.relativeX) +  halfCellWidth
+  let bottomRightY = reverseAdjustedY(RECTANGLE.bottomRight.relativeY) + halfCellHeight
+
   cells.forEach(cell => {
-    let key = cell.getAttribute("data-key")
-    keyToCellMap[key] = cell
+    cellBoundingRect = cell.getBoundingClientRect()
+    if (
+      Math.floor(cellBoundingRect.left) >= topLeftX
+      && Math.floor(cellBoundingRect.top) >= topLeftY
+      && Math.floor(cellBoundingRect.right) <= bottomRightX
+      && Math.floor(cellBoundingRect.bottom) <= bottomRightY
+    ) {
+
+      selectedCells.push(cell)
+    } 
   })
-
-  const selectedCells = [];
-
-  const rowLoopEnd = Math.round(startRow + rowsCount)
-  const colLoopEnd = Math.round(startCol + colsCount)
-
-  while (row < rowLoopEnd) {
-
-    col = Math.floor(startCol)
-
-    while(col < colLoopEnd) {
-      let key = `${row}:${col}`
-      let cell = keyToCellMap[key]
-      if (cell) selectedCells.push(cell)
-      col++
-    }
-
-    row++
-  }
 
   return selectedCells;
 }
