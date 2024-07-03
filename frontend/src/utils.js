@@ -1057,7 +1057,7 @@ export function extractCSVFromData(data) {
 
   for (const key in data) {
     const row = [...data[key]];
-    quoteCSVFieldContainingComma(row)
+    quoteCSVFieldContainingComma(row);
     csv += row.join(",");
     csv += "\n";
   }
@@ -1067,9 +1067,9 @@ export function extractCSVFromData(data) {
 
 function quoteCSVFieldContainingComma(row) {
   row.forEach((field, index) => {
-    let stringVal = `${field}`
+    let stringVal = `${field}`;
     if (stringVal.includes(",")) {
-      row[index] = `"${stringVal}"`
+      row[index] = `"${stringVal}"`;
     }
   });
 }
@@ -1080,71 +1080,70 @@ export function buildTableDataFromCsv(csv) {
   let data = {};
 
   for (let rowIndex = 1; rowIndex <= rows.length; rowIndex++) {
-    let currentRow = rows[rowIndex - 1]
-    if (!currentRow) break
-    let constructedRow = splitCSVRows(currentRow)
-    data[rowIndex] = constructedRow
+    let currentRow = rows[rowIndex - 1];
+    if (!currentRow) break;
+    let constructedRow = splitCSVRows(currentRow);
+    data[rowIndex] = constructedRow;
   }
 
   return data;
 }
 
 /**
- * 
- * @param row - comma separated string e.g a,b,c,d 
+ *
+ * @param row - comma separated string e.g a,b,c,d
  * @returns constructedRow - list of columns computed from row e.g [a, b, c]
  */
 function splitCSVRows(row) {
-  let constructedRow = []
-  let processingRow = row
+  let constructedRow = [];
+  let processingRow = row;
   while (true) {
-    let [column, remainingRow] = getNextCSVColumn(processingRow)
-    processingRow = remainingRow
-    constructedRow.push(column)
-    if (remainingRow === "") 
-      break
+    let [column, remainingRow] = getNextCSVColumn(processingRow);
+    processingRow = remainingRow;
+    constructedRow.push(column);
+    if (remainingRow === "") break;
   }
-  return constructedRow
+  return constructedRow;
 }
 
 /**
- * 
- * @param row - comma separated string e.g a,b,c,d 
+ *
+ * @param row - comma separated string e.g a,b,c,d
  * @returns next column in row and yetToBeProcessedSectionOfRow
  * e.g [a, b,c,d] if called again returns [b, c,d]
  */
 function getNextCSVColumn(row) {
-  let col = ""
-  let i = 0
+  let col = "";
+  let i = 0;
 
   for (i = 0; i < row.length; i++) {
-    let currentChar = row[i]
+    let currentChar = row[i];
 
     if (currentChar === '"' && row[i + 1] === '"') {
-      col += currentChar
-      i += 1
-      continue
+      col += currentChar;
+      i += 1;
+      continue;
     } else if (currentChar === '"') {
-      let quoteClosureIndex = getQuoteClosureIndexAhead(row, i)
+      let quoteClosureIndex = getQuoteClosureIndexAhead(row, i);
       if (quoteClosureIndex !== -1) {
-        col += row.slice(i + 1, quoteClosureIndex)
-        i = quoteClosureIndex
-        continue
+        col += row.slice(i + 1, quoteClosureIndex);
+        i = quoteClosureIndex;
+        continue;
       }
     } else if (currentChar === ",") {
-      break
+      break;
     }
 
-    col += currentChar
+    col += currentChar;
   }
 
-  row = row.slice(i + 1)
-  return [col, row]
+  row = row.slice(i + 1);
+  return [col, row];
 }
 
 function getQuoteClosureIndexAhead(row, index) {
   for (let i = index + 1; i < row.length; i++) {
-    if (row[i] === '"') return i
+    if (row[i] === '"') return i;
   }
-  return -1
+  return -1;
 }
