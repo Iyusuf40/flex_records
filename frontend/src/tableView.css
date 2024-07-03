@@ -1,6 +1,7 @@
 .table--view {
   height: 90vh;
   padding: 20px;
+  /* position: relative; */
   overflow: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -9,6 +10,8 @@
 .current--table {
   padding: 20px;
   position: relative;
+  width: fit-content;
+  height: fit-content;
 }
 
 .row--container {
@@ -108,7 +111,7 @@ input {
 .select--box {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px dashed black;
-  position: fixed;
+  position: relative;
 }
 
 .hover--bold:hover {

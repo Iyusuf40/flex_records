@@ -75,6 +75,12 @@ export default function TableView(props) {
 
   displayRegisteredFunctions();
 
+  useEffect(() => {
+    let html = document.querySelector("html");
+    // alsways scroll to the top on page reload
+    html.scrollTop = 0;
+  }, []);
+
   return (
     <div className="table--view">
       <div className={`create--form--container ${classForCreateTableMode}`}>
@@ -817,7 +823,7 @@ function displayRegisteredFunctions() {
   deleteDivContainerForRegisteredFunctions();
 
   if (!tableName) return;
-  
+
   const registeredFunctions =
     recordState?.tables[tableName].registeredFunctions;
 
@@ -1490,9 +1496,11 @@ function getClassForCreateTableMode(props) {
 }
 
 function resetRectangle() {
-  (RECTANGLE.canDraw = false), (RECTANGLE.topLeft = {});
+  RECTANGLE.canDraw = false;
+  RECTANGLE.topLeft = {};
   RECTANGLE.bottomRight = {};
   RECTANGLE.initPoint = {};
+  resetTableViewScroll();
 }
 
 function toggleSelectTool(tableName, recordState) {
@@ -1571,11 +1579,16 @@ function redrawRectangle(event) {
 
   const flipped = shouldFlip(cursorPosition);
 
-  setRectangleEdges(cursorPosition, flipped);
-  resetRectangleTopLeft(cursorPosition, flipped);
+  resetRectangleTopLeftIfShouldFlip(cursorPosition, flipped);
 
-  const width = Math.abs(RECTANGLE.bottomRight.x - RECTANGLE.topLeft.x);
-  const height = Math.abs(RECTANGLE.bottomRight.y - RECTANGLE.topLeft.y);
+  scrollTableIfCursorCloseToEdge(cursorPosition, flipped);
+
+  const width = Math.abs(
+    RECTANGLE.bottomRight.relativeX - RECTANGLE.topLeft.relativeX,
+  );
+  const height = Math.abs(
+    RECTANGLE.bottomRight.relativeY - RECTANGLE.topLeft.relativeY,
+  );
 
   rect.style.width = `${width}px`;
   rect.style.height = `${height}px`;
@@ -1584,71 +1597,372 @@ function redrawRectangle(event) {
 function drawRectangle(event) {
   if (!RECTANGLE.canDraw) return;
   if (RECTANGLE.id) return; // draw only 1 rect
+
+  setCurrentTableBoundingRect();
+  setCurrentTableCSSProps();
+
   event.preventDefault();
+
   const id = Date.now().toString();
   RECTANGLE.id = id;
+
+  const table = document.getElementsByClassName("current--table")[0];
 
   const rect = document.createElement("div");
   rect.id = id;
 
-  const x = event.pageX ?? event.changedTouches[0].pageX;
-  const y = event.pageY ?? event.changedTouches[0].pageY;
-  rect.style.top = `${y}px`;
-  rect.style.left = `${x}px`;
+  let x = event.pageX ?? event.changedTouches[0].pageX;
+  let y = event.pageY ?? event.changedTouches[0].pageY;
 
-  RECTANGLE.topLeft = { x, y };
-  RECTANGLE.bottomRight = { x, y };
-  RECTANGLE.initPoint = { x, y };
+  let relativeY = getAdjustedY(y);
+  let relativeX = getAdjustedX(x);
+  rect.style.top = `${relativeY}px`;
+  rect.style.left = `${relativeX}px`;
+
+  RECTANGLE.topLeft = { relativeX, relativeY };
+  RECTANGLE.bottomRight = { relativeX, relativeY };
+  RECTANGLE.initPoint = { relativeX, relativeY };
 
   rect.classList.add("select--box");
-  const table = document.getElementsByClassName("current--table")[0];
   table?.appendChild(rect);
 }
 
 function shouldFlip(cursorPosition) {
+  let adjustedY = getAdjustedY(cursorPosition.y);
+  let adjustedX = getAdjustedX(cursorPosition.x);
+
   if (
-    cursorPosition.x < RECTANGLE.initPoint.x ||
-    cursorPosition.y < RECTANGLE.initPoint.y
+    adjustedX < RECTANGLE.initPoint.relativeX ||
+    adjustedY < RECTANGLE.initPoint.relativeY
   ) {
     return true;
   }
   return false;
 }
 
-function setRectangleEdges(cursorPosition, shouldFlip) {
+function resetRectangleTopLeftIfShouldFlip(cursorPosition, shouldFlip) {
   if (shouldFlip) {
-    if (cursorPosition.x < RECTANGLE.initPoint.x) {
-      RECTANGLE.topLeft.x = cursorPosition.x; // shift topleft to the left
-      RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x;
-      RECTANGLE.bottomRight.y = cursorPosition.y; // adjusts horizontal width of rect
+    const rect = document.getElementById(RECTANGLE.id);
+
+    let adjustedY = getAdjustedY(cursorPosition.y);
+    let adjustedX = getAdjustedX(cursorPosition.x);
+
+    if (adjustedX < RECTANGLE.initPoint.relativeX) {
+      rect.style.left = `${adjustedX}px`;
     }
 
-    if (cursorPosition.y < RECTANGLE.initPoint.y) {
-      RECTANGLE.topLeft.y = cursorPosition.y; // shift topleft up
-      RECTANGLE.bottomRight.y = RECTANGLE.initPoint.y; // anchor rectangle to init point
-      if (cursorPosition.x < RECTANGLE.initPoint.x)
-        // anchor rectangle to init point
-        RECTANGLE.bottomRight.x = RECTANGLE.initPoint.x;
-      // set horizontal width of rect
-      else RECTANGLE.bottomRight.x = cursorPosition.x;
+    if (adjustedY < RECTANGLE.initPoint.relativeY) {
+      rect.style.top = `${adjustedY}px`;
     }
-  } else {
-    RECTANGLE.bottomRight.x = cursorPosition.x;
-    RECTANGLE.bottomRight.y = cursorPosition.y;
   }
 }
 
-function resetRectangleTopLeft(cursorPosition, shouldFlip) {
-  if (shouldFlip) {
-    const rect = document.getElementById(RECTANGLE.id);
-    if (cursorPosition.x < RECTANGLE.initPoint.x) {
-      rect.style.left = `${cursorPosition.x}px`;
-    }
+let tableViewScrollData = {
+  updatedTop: 0,
+  updatedLeft: 0,
+  currentTableBoundingRect: null,
+  currentTableCSSProps: null,
+  scrollingX: false,
+  scrollingY: false,
+  actualTableBoundingRect: null,
+};
 
-    if (cursorPosition.y < RECTANGLE.initPoint.y) {
-      rect.style.top = `${cursorPosition.y}px`;
+function setCurrentTableBoundingRect() {
+  let tableContainer = document.getElementsByClassName("current--table")[0];
+  tableViewScrollData.currentTableBoundingRect =
+    tableContainer.getBoundingClientRect();
+}
+
+function setCurrentTableCSSProps() {
+  let tableContainer = document.getElementsByClassName("current--table")[0];
+  tableViewScrollData.currentTableCSSProps = getComputedStyle(tableContainer);
+}
+
+function resetTableViewScroll() {
+  resetUpdatedTopLeft();
+  resetActualTableElBoundingRect();
+  resetScrolling();
+}
+
+function resetUpdatedTopLeft() {
+  let tableView = document.getElementsByClassName("table--view")[0];
+  tableViewScrollData.updatedTop = tableView.scrollTop;
+  tableViewScrollData.updatedLeft = tableView.scrollLeft;
+}
+
+function resetScrolling() {
+  tableViewScrollData.scrollingX = false;
+  tableViewScrollData.scrollingY = false;
+}
+
+function resetActualTableElBoundingRect() {
+  let currentTableEl = document.querySelector(".current--table");
+
+  let currentTableElBoundingRect = currentTableEl.getBoundingClientRect();
+
+  tableViewScrollData.actualTableBoundingRect = {
+    right: currentTableElBoundingRect.right + tableViewScrollData.updatedLeft,
+    left: currentTableElBoundingRect.left + tableViewScrollData.updatedLeft,
+    top: currentTableElBoundingRect.top + tableViewScrollData.updatedTop,
+    bottom: currentTableElBoundingRect.bottom + tableViewScrollData.updatedTop,
+  };
+}
+
+function scrollTableIfCursorCloseToEdge(cursorPosition, flipped) {
+  let tableContainer = document.getElementsByClassName("current--table")[0];
+  let tableView = document.getElementsByClassName("table--view")[0];
+  let rect = document.getElementById(RECTANGLE.id);
+  if (!tableContainer || !tableView || !rect) {
+    throw new Error(
+      "scrollTableIfCursorCloseToEdge: tableContainer, tableView and rect cannot be undefined",
+    );
+  }
+
+  const scrollTreshold = 75;
+  const scrollPixel = 200;
+
+  let tableBoundingRect = tableContainer.getBoundingClientRect();
+
+  let tableViewLeft =
+    tableViewScrollData.actualTableBoundingRect.left -
+    tableViewScrollData.updatedLeft;
+
+  let tableEdgeTop = Math.max(
+    tableViewScrollData.actualTableBoundingRect.top -
+      tableViewScrollData.updatedTop,
+    0,
+  );
+
+  let tableEdgeBottom = Math.min(
+    tableViewScrollData.actualTableBoundingRect.bottom -
+      tableViewScrollData.updatedTop -
+      parseFloat(
+        tableViewScrollData.currentTableCSSProps.getPropertyValue(
+          "padding-bottom",
+        ),
+      ),
+    window.innerHeight,
+  );
+
+  let tableEdgeLeft = Math.max(tableBoundingRect.left - tableViewLeft, 0);
+
+  let tableEdgeRight = Math.min(
+    tableViewScrollData.actualTableBoundingRect.right -
+      tableViewScrollData.updatedLeft -
+      parseFloat(
+        tableViewScrollData.currentTableCSSProps.getPropertyValue(
+          "padding-left",
+        ),
+      ),
+    window.innerWidth,
+  );
+
+  let dataRequiredForScroll = {
+    cursorPosition,
+    tableBoundingRect,
+    tableView,
+    scrollTreshold,
+    scrollPixel,
+    tableEdgeRight,
+    tableEdgeLeft,
+    tableEdgeTop,
+    tableEdgeBottom,
+  };
+  // scroll down
+  scrollTableViewDown(dataRequiredForScroll);
+
+  // scroll up
+  scrollTableViewUp(dataRequiredForScroll);
+
+  // scroll right
+  scrollTableViewRight(dataRequiredForScroll);
+
+  // scroll left
+  scrollTableViewLeft(dataRequiredForScroll);
+
+  setRectangleEdges(cursorPosition, flipped);
+}
+
+function scrollTableViewDown({
+  cursorPosition,
+  tableView,
+  tableEdgeBottom,
+  scrollTreshold,
+  scrollPixel,
+}) {
+  if (
+    tableEdgeBottom - cursorPosition.y < scrollTreshold &&
+    tableEdgeBottom >= window.innerHeight
+  ) {
+    let scrollableLength = Math.max(
+      0,
+      Math.min(scrollPixel, tableEdgeBottom - cursorPosition.y),
+    );
+
+    tableView.scrollTop += scrollableLength;
+    tableViewScrollData.updatedTop += scrollableLength;
+    cursorPosition.y += scrollableLength;
+  }
+}
+
+function scrollTableViewUp({
+  cursorPosition,
+  tableBoundingRect,
+  tableView,
+  scrollTreshold,
+  scrollPixel,
+  tableEdgeTop,
+}) {
+  if (
+    cursorPosition.y - tableEdgeTop < scrollTreshold &&
+    tableEdgeTop > tableBoundingRect.top
+  ) {
+    let scrollableLength = Math.max(
+      0,
+      Math.min(scrollPixel, cursorPosition.y - tableEdgeTop),
+    );
+
+    tableView.scrollTop -= scrollableLength;
+    tableViewScrollData.updatedTop -= scrollableLength;
+    cursorPosition.y -= scrollableLength;
+  }
+}
+
+function scrollTableViewRight({
+  cursorPosition,
+  tableView,
+  scrollTreshold,
+  scrollPixel,
+  tableEdgeRight,
+}) {
+  if (
+    tableEdgeRight - cursorPosition.x < scrollTreshold &&
+    tableEdgeRight >= window.innerWidth
+  ) {
+    let scrollableLength = Math.max(
+      0,
+      Math.min(scrollPixel, tableEdgeRight - cursorPosition.x),
+    );
+
+    if (scrollableLength > 0) {
+      tableView.scrollLeft += scrollableLength;
+      tableViewScrollData.updatedLeft += scrollableLength;
+      cursorPosition.x += scrollableLength;
     }
   }
+}
+
+function scrollTableViewLeft({
+  cursorPosition,
+  tableBoundingRect,
+  tableView,
+  scrollTreshold,
+  scrollPixel,
+  tableEdgeLeft,
+}) {
+  let tableViewBoundingRect = tableView.getBoundingClientRect();
+  let tableViewLeft = tableViewBoundingRect.left;
+
+  if (
+    cursorPosition.x - tableEdgeLeft - tableView.getBoundingClientRect().left <
+      scrollTreshold &&
+    tableEdgeLeft > tableBoundingRect.left - tableViewLeft
+  ) {
+    let scrollableLength = Math.max(
+      0,
+      Math.min(
+        scrollPixel,
+        cursorPosition.x -
+          tableEdgeLeft -
+          tableView.getBoundingClientRect().left,
+      ),
+    );
+
+    tableView.scrollLeft -= scrollableLength;
+    tableViewScrollData.updatedLeft -= scrollableLength;
+    cursorPosition.x -= scrollableLength;
+  }
+}
+
+function setRectangleEdges(cursorPosition, shouldFlip) {
+  let adjustedY = getAdjustedY(
+    cursorPosition.y,
+    tableViewScrollData.scrollingY,
+  );
+  let adjustedX = getAdjustedX(
+    cursorPosition.x,
+    tableViewScrollData.scrollingX,
+  );
+
+  if (shouldFlip) {
+    if (adjustedX < RECTANGLE.initPoint.relativeX) {
+      RECTANGLE.topLeft.relativeX = adjustedX; // shift topleft to the left
+      RECTANGLE.bottomRight.relativeX = RECTANGLE.initPoint.relativeX;
+      RECTANGLE.bottomRight.relativeY = adjustedY; // adjusts horizontal width of rect
+    }
+
+    if (adjustedY < RECTANGLE.initPoint.relativeY) {
+      RECTANGLE.topLeft.relativeY = adjustedY; // shift topleft up
+      RECTANGLE.bottomRight.relativeY = RECTANGLE.initPoint.relativeY; // anchor rectangle to init point
+      if (adjustedX < RECTANGLE.initPoint.relativeX)
+        // anchor rectangle to init point
+        RECTANGLE.bottomRight.relativeX = RECTANGLE.initPoint.relativeX;
+      // set horizontal width of rect
+      else RECTANGLE.bottomRight.relativeX = adjustedX;
+    }
+  } else {
+    RECTANGLE.bottomRight.relativeX = adjustedX;
+    RECTANGLE.bottomRight.relativeY = adjustedY;
+  }
+}
+
+function getAdjustedX(x) {
+  let adjustedX =
+    x -
+    tableViewScrollData.actualTableBoundingRect.left +
+    tableViewScrollData.updatedLeft -
+    parseFloat(
+      tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-left"),
+    );
+
+  return adjustedX;
+}
+
+function getAdjustedY(y) {
+  let tableBottom = tableViewScrollData.actualTableBoundingRect.bottom;
+  let updatedTop = tableViewScrollData.updatedTop;
+  let paddingTop = parseFloat(
+    tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-top"),
+  );
+
+  return y - tableBottom + updatedTop + paddingTop;
+}
+
+function reverseAdjustedX(adjustedX) {
+  let x =
+    adjustedX +
+    tableViewScrollData.actualTableBoundingRect.left -
+    tableViewScrollData.updatedLeft +
+    parseFloat(
+      tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-left"),
+    );
+  return x;
+}
+
+function reverseAdjustedY(adjustedY) {
+  let tableBottom = tableViewScrollData.actualTableBoundingRect.bottom;
+  let updatedTop = tableViewScrollData.updatedTop;
+  let paddingTop = parseFloat(
+    tableViewScrollData.currentTableCSSProps.getPropertyValue("padding-top"),
+  );
+
+  let y = adjustedY + tableBottom - updatedTop - paddingTop;
+
+  return y;
+}
+
+function getPadding(el, side) {
+  return parseFloat(window.getComputedStyle(el, null).getPropertyValue(side));
 }
 
 function deleteRectangle() {
@@ -1660,56 +1974,37 @@ function deleteRectangle() {
 }
 
 function selectCellsInRectangle() {
-  const cellRep = document.querySelector(".cell--container");
-  let { width, height } = cellRep.getBoundingClientRect();
-
-  let cellWidth = Math.round(width);
-  let cellHeight = Math.round(height);
+  let cells = Array.from(document.getElementsByClassName("cell--input"));
 
   const selectedCells = [];
-  const selectedCellsContainerList = [];
 
-  let row = Math.round(RECTANGLE.topLeft.y);
-  let col = Math.round(RECTANGLE.topLeft.x);
+  if (cells.length === 0) return selectedCells;
 
-  while (row <= RECTANGLE.bottomRight.y) {
-    col = Math.round(RECTANGLE.topLeft.x);
-    while (col <= RECTANGLE.bottomRight.x) {
-      const elements = document.elementsFromPoint(col, row);
+  let cellBoundingRect = cells[0].getBoundingClientRect();
 
-      elements.forEach((el) => {
-        if (el?.classList.contains("cell--container") && !el.__selected) {
-          Array.from(el.children).forEach((cell) => {
-            if (cell.getAttribute("iscell")) selectedCells.push(cell);
-          });
-          el.__selected = true;
-          selectedCellsContainerList.push(el);
-        }
-      });
+  // use half cell height and width to pad select box so as to
+  // select cells half highlighted
+  let halfCellHeight = cellBoundingRect.height / 2;
+  let halfCellWidth = cellBoundingRect.width / 2;
 
-      if (
-        RECTANGLE.bottomRight.x !== col &&
-        col + cellWidth > RECTANGLE.bottomRight.x
-      ) {
-        // record last edge of box - x axis
-        col = RECTANGLE.bottomRight.x - cellWidth;
-      }
+  let topLeftX = reverseAdjustedX(RECTANGLE.topLeft.relativeX) - halfCellWidth;
+  let topLeftY = reverseAdjustedY(RECTANGLE.topLeft.relativeY) - halfCellHeight;
+  let bottomRightX =
+    reverseAdjustedX(RECTANGLE.bottomRight.relativeX) + halfCellWidth;
+  let bottomRightY =
+    reverseAdjustedY(RECTANGLE.bottomRight.relativeY) + halfCellHeight;
 
-      col += cellWidth;
-    }
-
+  cells.forEach((cell) => {
+    cellBoundingRect = cell.getBoundingClientRect();
     if (
-      RECTANGLE.bottomRight.y !== row &&
-      row + cellHeight > RECTANGLE.bottomRight.y
+      Math.floor(cellBoundingRect.left) >= topLeftX &&
+      Math.floor(cellBoundingRect.top) >= topLeftY &&
+      Math.floor(cellBoundingRect.right) <= bottomRightX &&
+      Math.floor(cellBoundingRect.bottom) <= bottomRightY
     ) {
-      // record last edge of box - y axis
-      row = RECTANGLE.bottomRight.y - cellHeight;
+      selectedCells.push(cell);
     }
-
-    row += cellHeight;
-  }
-
-  selectedCellsContainerList.forEach((el) => (el.__selected = undefined)); // clean up
+  });
 
   return selectedCells;
 }
@@ -1918,7 +2213,7 @@ function loadTableDataAsCurrentTable(tableData, tableName) {
   setRecordsStateWrapper(recordState, `tables.${tableName}`, {
     data: tableData,
     noOfRows: Object.values(tableData).length,
-    noOfCols: Math.max(...Object.values(tableData).map(row => row.length)),// tableData[1].length,
+    noOfCols: Math.max(...Object.values(tableData).map((row) => row.length)), // tableData[1].length,
     ruleMode: false,
     currentRule: "",
     altered: true,
