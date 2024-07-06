@@ -23,6 +23,7 @@ const CLASS_CELL_IS_SELECTED = "cell--is--selected";
 const SELECTED_CELLS_ACCUMULATOR = [];
 
 export default function TableView(props) {
+  return <div>hi</div>
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
 
   const clearFormObj = {
