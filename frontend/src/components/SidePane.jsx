@@ -5,7 +5,9 @@ export default function SidePane(props) {
   const tableList = [];
   const { currentTable } = props.records;
 
-  for (const tableName in tables) {
+  let sortedTableNamesByTimeClicked = sortTableNamesByTimeClicked(tables)
+
+  for (const tableName of sortedTableNamesByTimeClicked) {
     tableList.push(
       <h3
         onClick={(event) =>
@@ -42,15 +44,17 @@ export default function SidePane(props) {
       <br />
       <button onClick={showId}>show ID</button>
       <br />
-      <div className="table--list">
-        {/* currentTable is not undefined? */}
-        {currentTable ? (
+      <br />
+      {currentTable ? (
           <button onClick={(event) => modifyTable(currentTable, props.records)}>
             modify table
           </button>
         ) : (
           ""
-        )}
+        )
+      }
+
+      <div className="table--list">
         {tableList}
       </div>
     </div>
@@ -62,6 +66,16 @@ function setCurrentTableToFirstPos(tablesList, currentTable) {
   let indexOfCurrTable = findIndex(tablesList, currentTable);
   if (!indexOfCurrTable) return;
   swapCurrTableToFront(tablesList, indexOfCurrTable);
+}
+
+function sortTableNamesByTimeClicked(tables) {
+  if (!tables) return []
+  return Object.keys(tables).sort((a, b) => {
+    let aTimeClicked = tables[a].lastTimeClicked || 0
+    let bTimeClicked = tables[b].lastTimeClicked || 0
+    if (bTimeClicked > aTimeClicked) return 1
+    return -1
+  })
 }
 
 function findIndex(tablesList, currentTable) {
@@ -80,6 +94,7 @@ function swapCurrTableToFront(tablesList, index) {
 }
 
 function handleTableClick(tableName, recordState, setRecordsStateWrapper) {
+  if (recordState?.tables[tableName]) recordState.tables[tableName].lastTimeClicked = Date.now().toString()
   setRecordsStateWrapper(recordState, "currentTable", tableName);
 }
 

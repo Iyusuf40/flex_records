@@ -1,7 +1,7 @@
 body {
   box-sizing: border-box;
   margin: 0;
-  background-color: rgb(197, 220, 226);
+  background-color: rgb(237, 241, 241);
   font-family: "Abhaya Libre", sans-serif;
   font-weight: 400;
   min-height: 100vh;
@@ -12,9 +12,9 @@ body {
 
 h1,
 h2 {
-  font-family: Georgia;
+  font-family:'Times New Roman', Times, serif;
   font-weight: bold;
-  color: white;
+  color: rgb(78, 72, 72);
 }
 
 p {
@@ -49,7 +49,7 @@ footer {
 
 .outer--container {
   height: 100%;
-  width: 99%;
+  width: 95%;
   margin: auto;
 }
 
@@ -67,106 +67,50 @@ footer {
   align-items: center;
 }
 
-.compute--text,
-.intro--text {
+.descriptions--container {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 5%;
+}
+
+.hero--container {
   width: 100%;
+  text-align: center;
 }
 
-.side--pane {
-  width: 20%;
-  max-width: 25%;
-  height: 80vh;
-  border-right: 1px solid rgba(83, 67, 163, 0.426);
-  padding: 20px;
+.hero--container h1 {
+  font-size: 5rem;
 }
 
-.table--list {
-  padding-top: 20px;
+.intro--container,
+.compute--container,
+.access--anywhere--container {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 10px;
+  margin: 30px auto;
+  border-radius: 10px;
+  background-color: rgb(221, 218, 214);
 }
 
-.table--list > h3 {
+.about--container h2 {
   text-align: left;
 }
 
-.table--list > h3:hover {
-  color: rgba(0, 0, 255);
-  font-size: 1.2em;
-}
-
-button {
-  width: 100px;
-  background-color: #522081;
-  border-radius: 5px;
-  color: rgb(206, 206, 240);
-  border-width: 0;
-  padding: 5px;
-}
-
-button:hover {
-  background-color: rgb(180, 53, 53);
-  cursor: pointer;
-}
-
-.current--table--name {
-  color: #aa4a44;
+.access--anywhere--container {
+  grid-column-start: 1;
+  grid-column-end: 3;
 }
 
 .text {
-  background-image: linear-gradient(
-    to bottom right,
-    rgb(117, 204, 226),
-    rgb(218, 224, 131)
-  );
   padding: 5px 15px;
   border-radius: 20px;
 }
 
 .text > h1,
-h2,
-h3,
-h4 {
+h2 {
   text-align: center;
-}
-
-.intro--container,
-.compute--container,
-.access--anywhere--container,
-.about--container {
-  display: flex;
-  flex-direction: column;
-  padding: 5px 10px;
-  width: 70%;
-  margin: 30px auto;
-}
-
-.hero--container {
-  background-image: url("table_image.png");
-  background-repeat: no-repeat, repeat;
-  background-position: center;
-  background-size: contain;
-  height: 500px;
-  margin-top: 1rem;
-  border-radius: 40%;
-}
-
-.hero--overlay--color {
-  background-image: linear-gradient(
-    to bottom right,
-    rgba(31, 169, 187, 0.8),
-    rgba(235, 225, 86, 0.8)
-  );
-  height: 100%;
-  width: 100%;
-  border-radius: 20px;
-}
-
-.hero--overlay--color h1 {
-  text-align: center;
-  color: rgb(255, 255, 255);
-  width: 70%;
-  margin: auto;
-  font-size: 3rem;
-  padding-top: 8rem;
+  font-size: 2rem;
 }
 
 .compute--image img,
@@ -176,9 +120,11 @@ h4 {
   border-radius: 10px;
 }
 
-p {
+.text p, p {
   padding: 2px 13px;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+  font-family:'Times New Roman', Times, serif;
+  font-weight: 500;
 }
 
 .tutorial--container {
@@ -206,55 +152,6 @@ p {
   padding: 20px;
 }
 
-.docs--architecture > img {
-  width: 95%;
-  border-radius: 10px;
-  padding: 20px;
-}
-
-.create--form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  width: 50%;
-  padding: 0.5rem 0;
-  align-items: center;
-  border: 1px solid rgba(83, 67, 163, 0.426);
-  margin-bottom: 2rem;
-  border-radius: 10px;
-  /* background-color: ; */
-}
-
-.form--block {
-  display: flex;
-  justify-content: space-between;
-  width: 80%;
-}
-
-.form--block label,
-.form--block input {
-  display: block;
-  padding-bottom: 4px;
-}
-
-.form--block input {
-  margin-right: 20px;
-  width: 50%;
-}
-
-.create--form--btns button {
-  margin: 0.5rem;
-}
-
-.cancel--btn {
-  background-color: rgba(225, 10, 10, 0.518);
-  color: rgba(255, 255, 255, 0.837);
-}
-
-.cancel--btn:hover {
-  background-color: rgba(255, 0, 0, 0.3);
-}
-
 .hide {
   display: none;
 }
@@ -280,33 +177,19 @@ p {
     margin: auto;
   }
 
-  .hero--container {
-    background-image: url("table_image.png");
-    background-repeat: no-repeat, repeat;
-    background-position: center;
-    background-size: cover;
-    height: 500px;
-    margin-top: 1rem;
-    border-radius: 20px;
+  .descriptions--container {
+    display: grid;
+    grid-template-columns: auto;
   }
 
-  .hero--overlay--color {
-    background-image: linear-gradient(
-      to bottom right,
-      rgba(31, 169, 187, 0.8),
-      rgba(235, 225, 86, 0.8)
-    );
-    height: 100%;
-    width: 100%;
-    border-radius: 20px;
+  .access--anywhere--container {
+    grid-column-start: 1;
+    grid-column-end: 2;
   }
 
-  .hero--overlay--color h1 {
-    text-align: center;
-    width: 70%;
-    margin: auto;
-    font-size: 2rem;
-    padding-top: 4rem;
+  .hero--container h1 {
+    font-size: 3rem;
+    text-align: left;
   }
 
   .docs--container {
@@ -335,11 +218,5 @@ p {
   iframe {
     width: 95vw;
     height: 58vw;
-  }
-
-  .docs--architecture > img {
-    width: 100%;
-    border-radius: 10px;
-    padding: 0;
   }
 }
