@@ -23,7 +23,6 @@ const CLASS_CELL_IS_SELECTED = "cell--is--selected";
 const SELECTED_CELLS_ACCUMULATOR = [];
 
 export default function TableView(props) {
-  return <div>hi</div>
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
 
   const clearFormObj = {
@@ -87,7 +86,7 @@ export default function TableView(props) {
       <div className={`create--form--container ${classForCreateTableMode}`}>
         <form className="create--form">
           <div className="form--block">
-            <label htmlFor="table--name">Table name</label>
+            <label htmlFor="table--name">Table name:</label>
             <input
               type="text"
               id="table--name"
@@ -98,7 +97,7 @@ export default function TableView(props) {
             />
           </div>
           <div className="form--block">
-            <label htmlFor="no--of--rows">rows</label>
+            <label htmlFor="no--of--rows">number of rows:</label>
             <input
               type="text"
               id="no--of--rows"
@@ -111,7 +110,7 @@ export default function TableView(props) {
             />
           </div>
           <div className="form--block">
-            <label htmlFor="no--of--cols">columns</label>
+            <label htmlFor="no--of--cols">number of columns:</label>
             <input
               type="text"
               id="no--of--cols"
@@ -125,6 +124,7 @@ export default function TableView(props) {
           </div>
           <div className="create--form--btns">
             <button
+              className="blue"
               onClick={(e) => {
                 parseCreateTableForm(formObj, e, props.records);
               }}
@@ -140,55 +140,57 @@ export default function TableView(props) {
           </div>
         </form>
       </div>
+
       <div className="rules--buttons">
         <button
           onClick={(e) =>
             addColumn(props.setRecordsStateWrapper, currentTable, props.records)
           }
         >
-          add column +
+          add column to the right
         </button>
         <button
           onClick={(e) =>
             delColumn(props.setRecordsStateWrapper, currentTable, props.records)
           }
         >
-          del column -
+          delete right-most column
         </button>
         <button
           onClick={(e) =>
             addRow(props.setRecordsStateWrapper, currentTable, props.records)
           }
         >
-          add row +
+          add row at the bottom
         </button>
         <button
           onClick={(e) =>
             delRow(props.setRecordsStateWrapper, currentTable, props.records)
           }
         >
-          del row -
+          del row from the bottom
         </button>
         <button onClick={(e) => setInsertMode(currentTable, props.records)}>
-          insert
+          insert row or column
         </button>
         <button onClick={(e) => setDeleteMode(currentTable, props.records)}>
-          delete
+          delete row or column
         </button>
-      </div>
 
-      <div className="rules--buttons">
+        <br />
+
         <button onClick={(e) => clearRule(currentTable, props.records)}>
-          clear functions
+          clear all registered functions
         </button>
+
         <button onClick={(e) => unSetRuleModeToDisplayBtns()}>
-          off rule mode
+          switch off rule mode
         </button>
         <button onClick={(e) => increaseCellSize(currentTable, props.records)}>
-          cell size +
+          increase cell size
         </button>
         <button onClick={(e) => decreaseCellSize(currentTable, props.records)}>
-          cell size -
+          decrease cell size
         </button>
         <button
           className={table.selectTool ? `red` : ``}
@@ -196,16 +198,16 @@ export default function TableView(props) {
             toggleSelectTool(currentTable, props.records);
           }}
         >
-          select tool
+          {table.selectTool ? `disable select tool` : `enable select tool`}
         </button>
         <button onClick={(e) => toggleShowOrHideRegisteredFunctions()}>
           {table?.showOrHideRegisteredFunctions
             ? "hide functions"
             : "show functions"}
         </button>
-      </div>
 
-      <div className="rules--buttons">
+        <br />
+        
         <button onClick={(e) => handleDownloadCSV()}>export to csv</button>
         <button>
           <label className="pointer">
@@ -283,7 +285,7 @@ export default function TableView(props) {
         ""
       )}
 
-      <div className="current--table">
+      <div className={"current--table" + (table.selectTool ? " cross--chair--cursor" : "")}>
         {tableView.length ? tableView : <h1>No table selected</h1>}
       </div>
     </div>
@@ -294,8 +296,11 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   const currentTable = props.records.currentTable;
   if (!currentTable) return;
   const table = props.records.tables[currentTable];
-  const cellClassName = getClassName(table);
+  let cellClassName = getClassName(table);
   const tableData = table.data;
+
+  let crossChairCursor = table.selectTool ? " cross--chair--cursor" : ""
+  cellClassName += crossChairCursor
 
   const colorRowsAndCols = table.colorRowsAndCols;
 
@@ -321,7 +326,9 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
             <input
               type="text"
               key={`${row}:${colIndex}`}
-              className={(cellClassName || "") + extendInputClass}
+              className={
+                cellClassName + extendInputClass
+              }
               value={currentRow[colIndex] ? currentRow[colIndex] : ""}
               col={colIndex}
               row={row}
@@ -446,6 +453,8 @@ will be overwritten`);
     `tables.${name}`,
     newTable(noOfRows, noOfCols),
   );
+
+  recordState.tables[name].lastTimeClicked = Date.now().toString()
   persist(recordState);
   return recordState;
 }

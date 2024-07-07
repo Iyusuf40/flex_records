@@ -12,6 +12,7 @@ nav li :hover {
   border-bottom: 4px solid rgba(83, 67, 163);
 }
 
+
 header {
   display: flex;
   width: 100%;
@@ -33,6 +34,7 @@ header ul {
 
 header a {
   text-decoration: none;
+  color: rgb(1, 19, 19);
 }
 
 @media screen and (max-width: 600px) {
