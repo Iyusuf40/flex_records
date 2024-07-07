@@ -1,7 +1,7 @@
 body {
   box-sizing: border-box;
   margin: 0;
-  background-color: rgb(193, 197, 197);
+  background-color: rgb(237, 241, 241);
   font-family: "Abhaya Libre", sans-serif;
   font-weight: 400;
   min-height: 100vh;
@@ -90,11 +90,16 @@ footer {
   padding: 5px 10px;
   margin: 30px auto;
   border-radius: 10px;
-  background-color: rgba(250, 235, 215, 0.2);
+  background-color: rgb(221, 218, 214);
 }
 
 .about--container h2 {
   text-align: left;
+}
+
+.access--anywhere--container {
+  grid-column-start: 1;
+  grid-column-end: 3;
 }
 
 .text {
@@ -175,7 +180,11 @@ h2 {
   .descriptions--container {
     display: grid;
     grid-template-columns: auto;
-    column-gap: 5%;
+  }
+
+  .access--anywhere--container {
+    grid-column-start: 1;
+    grid-column-end: 2;
   }
 
   .hero--container h1 {
