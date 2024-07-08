@@ -1,10 +1,7 @@
 .table--view {
   height: 90vh;
   padding: 20px;
-  /* position: relative; */
   overflow: auto;
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
 }
 
 .current--table {
@@ -121,9 +118,19 @@ button:hover {
   cursor: pointer;
 }
 
-
+/* width */
 .table--view::-webkit-scrollbar {
-  display: none;
+  width: 10px;
+}
+
+/* Track */
+.table--view::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+.table--view::-webkit-scrollbar-thumb {
+  background: #888;
 }
 
 .create--form--container {
