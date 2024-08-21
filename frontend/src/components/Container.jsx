@@ -5,6 +5,9 @@ import * as utils from "../utils";
 
 Object.assign(window, utils); // make all utils functions global
 
+let tableSearchWordMap = {tableSearchWordMap: {}}
+Object.assign(window, tableSearchWordMap)
+
 export default function Container() {
   let [recordState, setRecordsState] = React.useState({});
 
