@@ -286,7 +286,9 @@ export default function TableView(props) {
       )}
 
       <div className={"current--table" + (table.selectTool ? " cross--chair--cursor" : "")}>
-        {tableView.length ? tableView : <h1>No table selected</h1>}
+        {tableView.length ? tableView 
+        : tableSearchWordMap[currentTable] ? <h1>No row contains search word: {tableSearchWordMap[currentTable]}</h1>
+        :<h1>No table selected</h1>}
       </div>
     </div>
   );
@@ -307,6 +309,15 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   if (tableData) {
     for (let row = 1; row <= noOfRows; row++) {
       const currentRow = tableData[row];
+
+      if (tableSearchWordMap[currentTable]) {
+        let searchWord = tableSearchWordMap[currentTable]
+        let concatenatedRowContent = currentRow.join("")
+        if (!concatenatedRowContent.toLowerCase().includes(searchWord.toLowerCase())) {
+          continue
+        }
+      }
+
       const rowContainer = [];
       for (let colIndex = 0; colIndex < noOfCols; colIndex++) {
         let extendInputClass = getColorClassForApplicableRowsAndCols(

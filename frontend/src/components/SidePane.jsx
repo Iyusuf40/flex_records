@@ -54,6 +54,24 @@ export default function SidePane(props) {
         )
       }
 
+      <br />
+      <br />
+      {currentTable ? (
+          <input  
+            type="text"
+            placeholder="search" 
+            onInput={(e) => {
+            tableSearchWordMap[currentTable] = e.target.value
+            // force refresh
+            setRecordsStateWrapper(recordState, "currentTable", currentTable);
+          }}
+          >
+          </input>
+        ) : (
+          ""
+        )
+      }
+
       <div className="table--list">
         {tableList}
       </div>
