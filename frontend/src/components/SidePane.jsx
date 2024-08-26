@@ -3,27 +3,40 @@ import React from "react";
 export default function SidePane(props) {
   const { tables } = props.records;
   const tableList = [];
+  let isInventory = props.isInventory
   const { currentTable } = props.records;
 
-  let sortedTableNamesByTimeClicked = sortTableNamesByTimeClicked(tables)
+  let sortedTableNamesByTimeClicked = sortTableNamesByTimeClicked(tables);
 
   for (const tableName of sortedTableNamesByTimeClicked) {
-    tableList.push(
-      <h3
-        onClick={(event) =>
-          handleTableClick(
-            tableName,
-            props.records,
-            props.setRecordsStateWrapper,
-          )
-        }
-        key={tableName}
-        className={tableName === currentTable ? "current--table--name" : ""}
-        data-name={tableName}
-      >
-        {tableName}
-      </h3>,
-    );
+    let push = false
+    if (isInventory) {
+      if (tableName.includes("inventory")) {
+        push = true
+      }
+    } else {
+      if (!tableName.includes("inventory")) {
+        push = true
+      }
+    }
+    if (push) {
+      tableList.push(
+        <h3
+          onClick={(event) =>
+            handleTableClick(
+              tableName,
+              props.records,
+              props.setRecordsStateWrapper,
+            )
+          }
+          key={tableName}
+          className={tableName === currentTable ? "current--table--name" : ""}
+          data-name={tableName}
+        >
+          {tableName}
+        </h3>,
+      );
+    }
   }
 
   setCurrentTableToFirstPos(tableList, currentTable);
@@ -32,7 +45,8 @@ export default function SidePane(props) {
     <div className="side--pane">
       <button
         onClick={() => {
-          createTableBtnClicked(props.setRecordsStateWrapper, props.records);
+          if (isInventory) createInventoryTable()
+          else createTableBtnClicked(props.setRecordsStateWrapper, props.records);
         }}
       >
         create table +
@@ -46,35 +60,28 @@ export default function SidePane(props) {
       <br />
       <br />
       {currentTable ? (
-          <button onClick={(event) => modifyTable(currentTable, props.records)}>
-            modify table
-          </button>
-        ) : (
-          ""
-        )
-      }
-
+        <button onClick={(event) => modifyTable(currentTable, props.records)}>
+          modify table
+        </button>
+      ) : (
+        ""
+      )}
       <br />
       <br />
       {currentTable ? (
-          <input  
-            type="text"
-            placeholder="search" 
-            onInput={(e) => {
-            tableSearchWordMap[currentTable] = e.target.value
+        <input
+          type="text"
+          placeholder="search"
+          onInput={(e) => {
+            tableSearchWordMap[currentTable] = e.target.value;
             // force refresh
             setRecordsStateWrapper(recordState, "currentTable", currentTable);
           }}
-          >
-          </input>
-        ) : (
-          ""
-        )
-      }
-
-      <div className="table--list">
-        {tableList}
-      </div>
+        ></input>
+      ) : (
+        ""
+      )}
+      <div className="table--list">{tableList}</div>
     </div>
   );
 }
@@ -87,13 +94,13 @@ function setCurrentTableToFirstPos(tablesList, currentTable) {
 }
 
 function sortTableNamesByTimeClicked(tables) {
-  if (!tables) return []
+  if (!tables) return [];
   return Object.keys(tables).sort((a, b) => {
-    let aTimeClicked = tables[a].lastTimeClicked || 0
-    let bTimeClicked = tables[b].lastTimeClicked || 0
-    if (bTimeClicked > aTimeClicked) return 1
-    return -1
-  })
+    let aTimeClicked = tables[a].lastTimeClicked || 0;
+    let bTimeClicked = tables[b].lastTimeClicked || 0;
+    if (bTimeClicked > aTimeClicked) return 1;
+    return -1;
+  });
 }
 
 function findIndex(tablesList, currentTable) {
@@ -112,7 +119,8 @@ function swapCurrTableToFront(tablesList, index) {
 }
 
 function handleTableClick(tableName, recordState, setRecordsStateWrapper) {
-  if (recordState?.tables[tableName]) recordState.tables[tableName].lastTimeClicked = Date.now().toString()
+  if (recordState?.tables[tableName])
+    recordState.tables[tableName].lastTimeClicked = Date.now().toString();
   setRecordsStateWrapper(recordState, "currentTable", tableName);
 }
 
@@ -142,4 +150,16 @@ async function switchUser() {
 function showId() {
   const flexId = localStorage.getItem("flexId");
   alert("your ID is: " + flexId);
+}
+
+function createInventoryTable() {
+  let name = prompt("enter the name of the table") + "-inventory"
+  createTable(recordState, name, 50, 5)
+  let currentTable = recordState.currentTable
+  recordState.tables[currentTable].data[1][0] = "product"
+  recordState.tables[currentTable].data[1][1] = "start stock"
+  recordState.tables[currentTable].data[1][2] = "sold"
+  recordState.tables[currentTable].data[1][3] = "returned"
+  recordState.tables[currentTable].data[1][4] = "current stock"
+  setRecordsStateWrapper(recordState, "currentTable", currentTable)
 }

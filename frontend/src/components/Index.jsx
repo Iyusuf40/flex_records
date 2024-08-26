@@ -4,11 +4,10 @@ import { Link } from "react-router-dom";
 export default function Index() {
   return (
     <div className="welcome--container">
-
       <div className="hero--container">
         <h1>
-            Save Alphanumeric Data in Tables and Carryout Computations on Them
-            Easily
+          Save Alphanumeric Data in Tables and Carryout Computations on Them
+          Easily
         </h1>
       </div>
 
@@ -20,11 +19,11 @@ export default function Index() {
               With flex_records, it is very easy working with <span> </span>
               <Link to="records">tables</Link>. You define the size of the table
               you want and the application creates it for you. Down the line, if
-              you figure the size you initially designed is inadequate, Just by a
-              click of a button you can increase or decrease the number of rows
-              and columns as you deem fit. With internet connection, you don't
-              have to worry about loosing your work. Changes made to the table are
-              instantly saved and sent to our servers for storage.
+              you figure the size you initially designed is inadequate, Just by
+              a click of a button you can increase or decrease the number of
+              rows and columns as you deem fit. With internet connection, you
+              don't have to worry about loosing your work. Changes made to the
+              table are instantly saved and sent to our servers for storage.
             </p>
           </div>
         </div>
@@ -37,12 +36,12 @@ export default function Index() {
             </h2>
             <p>
               The power of flex_records lies in its ability to perform
-              computations on your numeric data. Carrying out computations such as
-              sum, average etc on data in your table is very easy to achieve. You
-              can specify on which cell to store your computation and speficy its
-              input cells, or you can select a group of cells to serve as input to
-              a function. On update of your table values, the computations are
-              redone to reflect the updated data.
+              computations on your numeric data. Carrying out computations such
+              as sum, average etc on data in your table is very easy to achieve.
+              You can specify on which cell to store your computation and
+              speficy its input cells, or you can select a group of cells to
+              serve as input to a function. On update of your table values, the
+              computations are redone to reflect the updated data.
             </p>
             <p>
               When you want to stop applying a particular rule, you click on
@@ -51,8 +50,8 @@ export default function Index() {
               <strong> clear functions </strong> button.
             </p>
             <p>
-              Head on to the <Link to="tutorial">tutorial</Link> page to learn how
-              easy it is to apply functions on your table.
+              Head on to the <Link to="tutorial">tutorial</Link> page to learn
+              how easy it is to apply functions on your table.
             </p>
           </div>
         </div>
@@ -61,17 +60,16 @@ export default function Index() {
           <div className="text">
             <h2>Access From Anywhere and With Any Device</h2>
             <p>
-              When you visit <Link to="records">records</Link> for the first time,
-              a unique ID will be generated for you and stored in your browser.
-              Anytime you visit your records on a future date, that ID will be
-              used to retrieve all your records from our servers. You may want to
-              save that ID somewhere in case a need arise for you to access your
-              records from a different device.
+              When you visit <Link to="records">records</Link> for the first
+              time, a unique ID will be generated for you and stored in your
+              browser. Anytime you visit your records on a future date, that ID
+              will be used to retrieve all your records from our servers. You
+              may want to save that ID somewhere in case a need arise for you to
+              access your records from a different device.
             </p>
           </div>
           <div className="access--anywhere--image" />
         </div>
-        
       </div>
 
       <div className="about--container">

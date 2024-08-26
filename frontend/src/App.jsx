@@ -1,5 +1,6 @@
 import React from "react";
 import Container from "./components/Container";
+import Inventory from "./components/Inventory";
 import Index from "./components/Index";
 import Tutorial from "./components/Tutorial";
 import Root from "./components/Root";
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
       {
         path: "records",
         element: <Container />,
+      },
+      {
+        path: "inventory",
+        element: <Inventory />,
       },
       {
         path: "tutorial",

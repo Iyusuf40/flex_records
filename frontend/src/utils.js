@@ -30,6 +30,23 @@ export async function getAltUser(url, id, setRecordsState) {
   }
 }
 
+export async function getAltUserInventory(url, id, setRecordsState) {
+  let resp = null;
+  resp = await fetch(url + id)
+    .then((data) => data.json())
+    .then((data) => {
+      return data;
+    });
+  if (resp && Object.keys(resp).length) {
+    flexId = id
+    setRecordsState(resp);
+  } else {
+    alert(
+      "User not found, reload the page or get a correct link",
+    )
+  }
+}
+
 export function attemptToGetFlexId(setRecordsState) {
   const newFlexId = uuid();
   const id = prompt(`Could not get your ID from localStorage, please enter
@@ -41,6 +58,17 @@ export function attemptToGetFlexId(setRecordsState) {
     localStorage.setItem("flexId", newFlexId);
     alert(`here is your ID '${newFlexId}'. you may store it somewhere in case 
     you want to access  your records from a different device`);
+  }
+}
+
+export function attemptToGetFlexIdFrInventory(setRecordsState) {
+  const queryString = window.location.search;
+  const id = queryString.split('&').find(param => param.startsWith('flexId=')).split('=')[1];
+  if (id) {
+    getAltUserInventory(getUrl, id, setRecordsState);
+    return id
+  } else {
+    alert(`flexId not in link, get a correct link and reload the page`);
   }
 }
 
@@ -1044,6 +1072,48 @@ export function pasteSpan(x, y, bg = "red", size = 3) {
   sp.classList.add("select--box");
   const table = document.getElementsByClassName("current--table")[0];
   table?.appendChild(sp);
+}
+
+export function createTable(recordState, name, noOfRows, noOfCols) {
+  if (!name) {
+    return;
+  }
+
+  if (recordState.tables && recordState.tables[name]) {
+    const option = prompt(`Table ${name} already exist, if you type 'yes' it
+will be overwritten`);
+    if (option && option.toLowerCase() !== "yes") {
+      return;
+    }
+  }
+
+  noOfRows = Number(noOfRows);
+  noOfCols = Number(noOfCols);
+  if (validateParamsWhenCreatingTable(name, noOfRows, noOfCols)) {
+    return null;
+  }
+  const isWithinLimits = checkTableLimits(noOfRows, noOfCols);
+  if (!isWithinLimits) {
+    return;
+  }
+
+  recordState.altered = true;
+  recordState.createTableBtnClicked = false;
+  recordState.rowsAndColsNoSet = true;
+  recordState.currentTable = name;
+  recordState.id
+    ? recordState.id
+    : (recordState.id = localStorage.getItem("flexId"));
+  recordState.tables ? recordState.tables : (recordState.tables = {});
+  setRecordsStateWrapper(
+    recordState,
+    `tables.${name}`,
+    newTable(noOfRows, noOfCols),
+  )
+
+  recordState.tables[name].lastTimeClicked = Date.now().toString();
+  persist(recordState);
+  return recordState;
 }
 
 /**
