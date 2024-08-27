@@ -3,32 +3,44 @@ import React from "react";
 export default function SidePane(props) {
   const { tables } = props.records;
   const tableList = [];
-  let isInventory = props.isInventory
+  let isInventory = props.isInventory;
+  let isSales = props.isSales;
   const { currentTable } = props.records;
 
   let sortedTableNamesByTimeClicked = sortTableNamesByTimeClicked(tables);
 
   for (const tableName of sortedTableNamesByTimeClicked) {
-    let push = false
+    let push = false;
     if (isInventory) {
       if (tableName.includes("inventory")) {
-        push = true
+        push = true;
       }
     } else {
       if (!tableName.includes("inventory")) {
-        push = true
+        push = true;
       }
     }
     if (push) {
       tableList.push(
         <h3
-          onClick={(event) =>
-            handleTableClick(
-              tableName,
-              props.records,
-              props.setRecordsStateWrapper,
-            )
-          }
+          onClick={(event) => {
+            if (isInventory || isSales) {
+                getFromBackend(getUrl, flexId, setRecordsState, () => {})
+                .then((backendRecordState) => {
+                handleTableClick(
+                  tableName,
+                  backendRecordState,
+                  props.setRecordsStateWrapper,
+                )
+              })
+            } else {
+              handleTableClick(
+                tableName,
+                props.records,
+                props.setRecordsStateWrapper,
+              )
+            }
+          }}
           key={tableName}
           className={tableName === currentTable ? "current--table--name" : ""}
           data-name={tableName}
@@ -43,26 +55,46 @@ export default function SidePane(props) {
 
   return (
     <div className="side--pane">
-      <button
-        onClick={() => {
-          if (isInventory) createInventoryTable()
-          else createTableBtnClicked(props.setRecordsStateWrapper, props.records);
-        }}
-      >
-        create table +
-      </button>{" "}
-      <br />
-      <br />
-      <button onClick={switchUser}>switch user</button>
-      <br />
-      <br />
-      <button onClick={showId}>show ID</button>
-      <br />
-      <br />
-      {currentTable ? (
-        <button onClick={(event) => modifyTable(currentTable, props.records)}>
-          modify table
-        </button>
+      {currentTable && !isSales ? (
+        <>
+          <button
+            onClick={() => {
+              if (isInventory && !isSales) createInventoryTable();
+              else
+                createTableBtnClicked(
+                  props.setRecordsStateWrapper,
+                  props.records,
+                );
+            }}
+          >
+            create table +
+          </button>{" "}
+          <br />
+          <br />
+          <button onClick={switchUser}>switch user</button>
+          <br />
+          <br />
+          <button onClick={showId}>show ID</button>
+          <br />
+          <br />
+          <button onClick={(event) => modifyTable(currentTable, props.records)}>
+            modify table
+          </button>
+          {isInventory && (
+            <>
+              <br />
+              <br />
+              <button
+                onClick={(event) => {
+                  copySalesLink();
+                  alert("sales link copied");
+                }}
+              >
+                share sales link
+              </button>
+            </>
+          )}
+        </>
       ) : (
         ""
       )}
@@ -153,13 +185,20 @@ function showId() {
 }
 
 function createInventoryTable() {
-  let name = prompt("enter the name of the table") + "-inventory"
-  createTable(recordState, name, 50, 5)
-  let currentTable = recordState.currentTable
-  recordState.tables[currentTable].data[1][0] = "product"
-  recordState.tables[currentTable].data[1][1] = "start stock"
-  recordState.tables[currentTable].data[1][2] = "sold"
-  recordState.tables[currentTable].data[1][3] = "returned"
-  recordState.tables[currentTable].data[1][4] = "current stock"
-  setRecordsStateWrapper(recordState, "currentTable", currentTable)
+  let name = prompt("enter the name of the table") + "-inventory";
+  createTable(recordState, name, 50, 7);
+  let currentTable = recordState.currentTable;
+  recordState.tables[currentTable].data[1][0] = "product";
+  recordState.tables[currentTable].data[1][1] = "start stock";
+  recordState.tables[currentTable].data[1][2] = "sold";
+  recordState.tables[currentTable].data[1][3] = "returned";
+  recordState.tables[currentTable].data[1][4] = "current stock";
+  recordState.tables[currentTable].data[1][5] = "unit price";
+  recordState.tables[currentTable].data[1][6] = "price in stock";
+  setRecordsStateWrapper(recordState, "currentTable", currentTable);
+}
+
+function copySalesLink() {
+  let salesLink = getSalesLink();
+  navigator.clipboard.writeText(salesLink);
 }

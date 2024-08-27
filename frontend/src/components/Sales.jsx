@@ -9,7 +9,9 @@ Object.assign(window, utils); // make all utils functions global
 let tableSearchWordMap = { tableSearchWordMap: {} };
 Object.assign(window, tableSearchWordMap);
 
-export default function Inventory() {
+let flexId = "";
+
+export default function Sales() {
   let [recordState, setRecordsState] = React.useState({});
 
   // setup initial load and use as condition to fetch data from backend
@@ -19,17 +21,16 @@ export default function Inventory() {
     haveSetCurrentTable: false,
   });
 
-  let flexId = localStorage.getItem("flexId");
-  window.flexId = flexId
-
   if (!flexId) {
-    attemptToGetFlexId(setRecordsState);
+    flexId = attemptToGetFlexIdForInventory(setRecordsState);
   }
+
+  window.flexId = flexId
 
   getRecords(init, flexId, setRecordsState, setInit);
 
   save(recordState, init)
-  
+
   function setRecordsStateWrapper(prevState, pathToPropToChange, value) {
     changeValueInNestedObj(prevState, pathToPropToChange, value);
     setRecordsState({ ...prevState });
@@ -48,12 +49,14 @@ export default function Inventory() {
     <div className="container">
       <SidePane
         isInventory={true}
+        isSales={true}
         records={recordState}
         setRecordsStateWrapper={setRecordsStateWrapper}
         changeValueInNestedObj={utils.changeValueInNestedObj}
       />
       <TableView
         isInventory={true}
+        isSales={true}
         records={recordState}
         setRecordsStateWrapper={setRecordsStateWrapper}
         changeValueInNestedObj={utils.changeValueInNestedObj}

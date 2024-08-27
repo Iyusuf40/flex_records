@@ -5,6 +5,7 @@ import advancedutils from "./advancedutils";
 export const postUrl = "http://localhost:3001/records";
 export const putUrl = "http://localhost:3001/records";
 export const getUrl = "http://localhost:3001/records/";
+export const socketUrl = 'ws://localhost:3001/ws'
 
 export async function getAltUser(url, id, setRecordsState) {
   let resp = null;
@@ -38,12 +39,9 @@ export async function getAltUserInventory(url, id, setRecordsState) {
       return data;
     });
   if (resp && Object.keys(resp).length) {
-    flexId = id
     setRecordsState(resp);
   } else {
-    alert(
-      "User not found, reload the page or get a correct link",
-    )
+    alert("User not found, reload the page or get a correct link");
   }
 }
 
@@ -61,15 +59,25 @@ export function attemptToGetFlexId(setRecordsState) {
   }
 }
 
-export function attemptToGetFlexIdFrInventory(setRecordsState) {
+export function attemptToGetFlexIdForInventory(setRecordsState) {
   const queryString = window.location.search;
-  const id = queryString.split('&').find(param => param.startsWith('flexId=')).split('=')[1];
+  const queryStringSplit = queryString.split("=");
+  let id = "";
+  for (let i = 0; i < queryStringSplit.length; i++) {
+    if (queryStringSplit[i].includes("flexId")) {
+      id = queryStringSplit[i + 1];
+    }
+  }
   if (id) {
     getAltUserInventory(getUrl, id, setRecordsState);
-    return id
+    return id;
   } else {
     alert(`flexId not in link, get a correct link and reload the page`);
   }
+}
+
+export function getSalesLink() {
+  return window.location.href + "/sales?flexId=" + localStorage.flexId;
 }
 
 export function getRecords(init, flexId, setRecordsState, setInit) {
@@ -99,6 +107,7 @@ export async function getFromBackend(url, id, setRecordsState, setInit) {
     setRecordsState(resp);
   }
   setInit({ loaded: true, saved: false }); // set init the first time of load
+  return resp
 }
 
 export async function setAltUser(url, id, setRecordsState) {
@@ -1109,7 +1118,7 @@ will be overwritten`);
     recordState,
     `tables.${name}`,
     newTable(noOfRows, noOfCols),
-  )
+  );
 
   recordState.tables[name].lastTimeClicked = Date.now().toString();
   persist(recordState);

@@ -12,10 +12,10 @@ export default function Container() {
   let [recordState, setRecordsState] = React.useState({});
 
   // setup initial load and use as condition to fetch data from backend
-  let [init, setInit] = React.useState({ 
-    loaded: false, 
+  let [init, setInit] = React.useState({
+    loaded: false,
     saved: false,
-    haveSetCurrentTable: false 
+    haveSetCurrentTable: false,
   });
 
   let flexId = localStorage.getItem("flexId");
@@ -37,9 +37,10 @@ export default function Container() {
   window.setRecordsState = setRecordsState;
   window.recordState = recordState;
   if (!init.haveSetCurrentTable && init.loaded === true) {
-    if (recordState.currentTable?.includes("inventory")) setRecordsStateWrapper(recordState, "currentTable", "")
-    init.haveSetCurrentTable = true
-  } 
+    if (recordState.currentTable?.includes("inventory"))
+      setRecordsStateWrapper(recordState, "currentTable", "");
+    init.haveSetCurrentTable = true;
+  }
   return (
     <div className="container">
       <SidePane
