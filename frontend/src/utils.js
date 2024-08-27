@@ -6,6 +6,7 @@ export const postUrl = "https://flexrecords.cloza.org/records_api";
 export const putUrl = "https://flexrecords.cloza.org/records_api";
 export const deleteUrl = "https://flexrecords.cloza.org/records_api";
 export let getUrl = "https://flexrecords.cloza.org/records_api/";
+export const socketUrl = 'wss://flexrecords.cloza.org/ws'
 
 export async function getAltUser(url, id, setRecordsState) {
   let resp = null;
@@ -31,6 +32,20 @@ export async function getAltUser(url, id, setRecordsState) {
   }
 }
 
+export async function getAltUserInventory(url, id, setRecordsState) {
+  let resp = null;
+  resp = await fetch(url + id)
+    .then((data) => data.json())
+    .then((data) => {
+      return data;
+    });
+  if (resp && Object.keys(resp).length) {
+    setRecordsState(resp);
+  } else {
+    alert("User not found, reload the page or get a correct link");
+  }
+}
+
 export function attemptToGetFlexId(setRecordsState) {
   const newFlexId = uuid();
   const id = prompt(`Could not get your ID from localStorage, please enter
@@ -43,6 +58,27 @@ export function attemptToGetFlexId(setRecordsState) {
     alert(`here is your ID '${newFlexId}'. you may store it somewhere in case 
     you want to access  your records from a different device`);
   }
+}
+
+export function attemptToGetFlexIdForInventory(setRecordsState) {
+  const queryString = window.location.search;
+  const queryStringSplit = queryString.split("=");
+  let id = "";
+  for (let i = 0; i < queryStringSplit.length; i++) {
+    if (queryStringSplit[i].includes("flexId")) {
+      id = queryStringSplit[i + 1];
+    }
+  }
+  if (id) {
+    getAltUserInventory(getUrl, id, setRecordsState);
+    return id;
+  } else {
+    alert(`flexId not in link, get a correct link and reload the page`);
+  }
+}
+
+export function getSalesLink() {
+  return window.location.href + "/sales?flexId=" + localStorage.flexId;
 }
 
 export function getRecords(init, flexId, setRecordsState, setInit) {
@@ -72,6 +108,7 @@ export async function getFromBackend(url, id, setRecordsState, setInit) {
     setRecordsState(resp);
   }
   setInit({ loaded: true, saved: false }); // set init the first time of load
+  return resp
 }
 
 export async function setAltUser(url, id, setRecordsState) {
@@ -1045,6 +1082,48 @@ export function pasteSpan(x, y, bg = "red", size = 3) {
   sp.classList.add("select--box");
   const table = document.getElementsByClassName("current--table")[0];
   table?.appendChild(sp);
+}
+
+export function createTable(recordState, name, noOfRows, noOfCols) {
+  if (!name) {
+    return;
+  }
+
+  if (recordState.tables && recordState.tables[name]) {
+    const option = prompt(`Table ${name} already exist, if you type 'yes' it
+will be overwritten`);
+    if (option && option.toLowerCase() !== "yes") {
+      return;
+    }
+  }
+
+  noOfRows = Number(noOfRows);
+  noOfCols = Number(noOfCols);
+  if (validateParamsWhenCreatingTable(name, noOfRows, noOfCols)) {
+    return null;
+  }
+  const isWithinLimits = checkTableLimits(noOfRows, noOfCols);
+  if (!isWithinLimits) {
+    return;
+  }
+
+  recordState.altered = true;
+  recordState.createTableBtnClicked = false;
+  recordState.rowsAndColsNoSet = true;
+  recordState.currentTable = name;
+  recordState.id
+    ? recordState.id
+    : (recordState.id = localStorage.getItem("flexId"));
+  recordState.tables ? recordState.tables : (recordState.tables = {});
+  setRecordsStateWrapper(
+    recordState,
+    `tables.${name}`,
+    newTable(noOfRows, noOfCols),
+  );
+
+  recordState.tables[name].lastTimeClicked = Date.now().toString();
+  persist(recordState);
+  return recordState;
 }
 
 /**

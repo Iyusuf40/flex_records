@@ -22,8 +22,16 @@ const CLASS_CELL_IS_SELECTED = "cell--is--selected";
 
 const SELECTED_CELLS_ACCUMULATOR = [];
 
+let SHOW_FULL_INVENTORY = false;
+
+let socket = null
+
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
+
+  let isInventory = props.isInventory;
+  let isSales = props.isSales;
+  let hide = isInventory ? "hide" : "";
 
   const clearFormObj = {
     createTableMode: null,
@@ -42,7 +50,8 @@ export default function TableView(props) {
     e.preventDefault();
     const { noOfRows } = formObj.fields;
     const { noOfCols } = formObj.fields;
-    const { name } = formObj.fields;
+    let { name } = formObj.fields;
+    if (isInventory) name += "-inventory";
     createTable(recordState, name, noOfRows, noOfCols);
     setFormObj(clearFormObj);
   }
@@ -143,6 +152,7 @@ export default function TableView(props) {
 
       <div className="rules--buttons">
         <button
+          className={hide}
           onClick={(e) =>
             addColumn(props.setRecordsStateWrapper, currentTable, props.records)
           }
@@ -150,6 +160,7 @@ export default function TableView(props) {
           add column to the right
         </button>
         <button
+          className={hide}
           onClick={(e) =>
             delColumn(props.setRecordsStateWrapper, currentTable, props.records)
           }
@@ -170,20 +181,49 @@ export default function TableView(props) {
         >
           del row from the bottom
         </button>
-        <button onClick={(e) => setInsertMode(currentTable, props.records)}>
+        {isInventory && (
+          <button
+            onClick={(e) => {
+              let total = getTotatlStockPrice();
+              alert(`total price in stock is N${total}`);
+            }}
+          >
+            show total price in stock
+          </button>
+        )}
+        {isInventory && (
+          <button
+            onClick={(e) => {
+              SHOW_FULL_INVENTORY = !SHOW_FULL_INVENTORY;
+              setRecordsStateWrapper(recordState, "", "");
+            }}
+          >
+            display full inventory
+          </button>
+        )}
+        <button
+          className={hide}
+          onClick={(e) => setInsertMode(currentTable, props.records)}
+        >
           insert row or column
         </button>
-        <button onClick={(e) => setDeleteMode(currentTable, props.records)}>
+        <button
+          className={hide}
+          onClick={(e) => setDeleteMode(currentTable, props.records)}
+        >
           delete row or column
         </button>
 
         <br />
 
-        <button onClick={(e) => clearRule(currentTable, props.records)}>
+        <button
+          className={hide}
+          onClick={(e) => clearRule(currentTable, props.records)}
+        >
           clear all registered functions
         </button>
 
-        <button onClick={(e) => unSetRuleModeToDisplayBtns()}>
+        <button className={hide} onClick={(e) => unSetRuleModeToDisplayBtns()}>
           switch off rule mode
         </button>
         <button onClick={(e) => increaseCellSize(currentTable, props.records)}>
@@ -193,36 +233,41 @@ export default function TableView(props) {
           decrease cell size
         </button>
         <button
-          className={table.selectTool ? `red` : ``}
+          className={table.selectTool ? `red ` + hide : `` + hide}
           onClick={(e) => {
             toggleSelectTool(currentTable, props.records);
           }}
         >
           {table.selectTool ? `disable select tool` : `enable select tool`}
         </button>
-        <button onClick={(e) => toggleShowOrHideRegisteredFunctions()}>
+        <button
+          className={hide}
+          onClick={(e) => toggleShowOrHideRegisteredFunctions()}
+        >
           {table?.showOrHideRegisteredFunctions
             ? "hide functions"
             : "show functions"}
         </button>
 
         <br />
-        
+
         <button onClick={(e) => handleDownloadCSV()}>export to csv</button>
-        <button>
-          <label className="pointer">
-            load from csv
-            <input
-              type="file"
-              className="hide"
-              onChange={(e) => handleUploadCsv(e)}
-            />
-          </label>
-        </button>
+        {!isSales && (
+          <button>
+            <label className="pointer">
+              load from csv
+              <input
+                type="file"
+                className="hide"
+                onChange={(e) => handleUploadCsv(e)}
+              />
+            </label>
+          </button>
+        )}
       </div>
 
       {table.ruleMode ? (
-        <div className="rule--options">
+        <div className={`rule--options ${hide}`}>
           <input
             type="radio"
             id="sum--function"
@@ -285,10 +330,20 @@ export default function TableView(props) {
         ""
       )}
 
-      <div className={"current--table" + (table.selectTool ? " cross--chair--cursor" : "")}>
-        {tableView.length ? tableView 
-        : tableSearchWordMap[currentTable] ? <h1>No row contains search word: {tableSearchWordMap[currentTable]}</h1>
-        :<h1>No table selected</h1>}
+      <div
+        className={
+          "current--table" + (table.selectTool ? " cross--chair--cursor" : "")
+        }
+      >
+        {tableView.length ? (
+          tableView
+        ) : tableSearchWordMap[currentTable] ? (
+          <h1>
+            No row contains search word: {tableSearchWordMap[currentTable]}
+          </h1>
+        ) : (
+          <h1>No table selected</h1>
+        )}
       </div>
     </div>
   );
@@ -297,12 +352,21 @@ export default function TableView(props) {
 function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   const currentTable = props.records.currentTable;
   if (!currentTable) return;
+
+  const isInventory = props.isInventory;
+  const isSales = props.isSales;
+  let hide = "";
+  if (isInventory) {
+    hide = "hide";
+    computeStock();
+  }
+
   const table = props.records.tables[currentTable];
   let cellClassName = getClassName(table);
   const tableData = table.data;
 
-  let crossChairCursor = table.selectTool ? " cross--chair--cursor" : ""
-  cellClassName += crossChairCursor
+  let crossChairCursor = table.selectTool ? " cross--chair--cursor" : "";
+  cellClassName += crossChairCursor;
 
   const colorRowsAndCols = table.colorRowsAndCols;
 
@@ -311,15 +375,21 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
       const currentRow = tableData[row];
 
       if (tableSearchWordMap[currentTable]) {
-        let searchWord = tableSearchWordMap[currentTable]
-        let concatenatedRowContent = currentRow.join("")
-        if (!concatenatedRowContent.toLowerCase().includes(searchWord.toLowerCase())) {
-          continue
+        let searchWord = tableSearchWordMap[currentTable];
+        let concatenatedRowContent = currentRow.join("");
+        if (
+          !concatenatedRowContent
+            .toLowerCase()
+            .includes(searchWord.toLowerCase())
+        ) {
+          if ((isInventory || isSales) && row !== 1) continue;
+          else if (!(isInventory || isSales)) continue;
         }
       }
 
       const rowContainer = [];
-      for (let colIndex = 0; colIndex < noOfCols; colIndex++) {
+      let lastTwoCols = SHOW_FULL_INVENTORY ? 0 : 2;
+      for (let colIndex = 0; colIndex < noOfCols - lastTwoCols; colIndex++) {
         let extendInputClass = getColorClassForApplicableRowsAndCols(
           colorRowsAndCols,
           row,
@@ -332,20 +402,36 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
           props.records,
         );
 
+        let cellIsReadOnly = false;
+        if (isSales && isInventory && colIndex >= 1) {
+          cellIsReadOnly = true;
+        }
+
+        if (isInventory && colIndex >= 2) {
+          cellIsReadOnly = true;
+        }
+
         const cell = (
           <div className="cell--container" key={colIndex}>
             <input
               type="text"
               key={`${row}:${colIndex}`}
-              className={
-                cellClassName + extendInputClass
-              }
+              readOnly={cellIsReadOnly}
+              className={cellClassName + extendInputClass}
               value={currentRow[colIndex] ? currentRow[colIndex] : ""}
               col={colIndex}
               row={row}
               iscell={"true"}
               id={`${row}:${colIndex}`}
-              onChange={(e) =>
+              onChange={(e) => {
+                if ((isInventory || isSales) && !cellIsReadOnly) broadcast({
+                  type: "editable",
+                  tableName: currentTable,
+                  row,
+                  colIndex,
+                  value: e.target.value
+                })
+
                 updateTableView(
                   currentTable,
                   props.records,
@@ -353,7 +439,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
                   e.target.value,
                   row,
                 )
-              }
+              }}
               onClick={(e) => {
                 setCellInSelectedCells(
                   colorRowsAndCols,
@@ -402,18 +488,26 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
                   );
               }}
             />
-            <span
-              className="function--sign"
-              onClick={() => {
-                addToRowsAndColsToColor(row, colIndex, props.records);
-              }}
-            >
-              𝑓
-            </span>
+            {hide === "" && (
+              <span
+                className={`function--sign`}
+                onClick={() => {
+                  addToRowsAndColsToColor(row, colIndex, props.records);
+                }}
+              >
+                𝑓
+              </span>
+            )}
           </div>
         );
         rowContainer.push(cell);
       }
+
+      if (isInventory && row !== 1) {
+        rowContainer.push(createSellBtn(row));
+        rowContainer.push(createReturnBtn(row));
+      }
+
       tableView.push(
         <div key={row} className="row--container">
           {"" && <span className="numbering">{row}: </span>}
@@ -426,48 +520,6 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
 
 function unsetCreateTableBtnClicked(setRecordsStateWrapper, recordState) {
   setRecordsStateWrapper(recordState, "createTableBtnClicked", false);
-}
-
-function createTable(recordState, name, noOfRows, noOfCols) {
-  if (!name) {
-    return;
-  }
-
-  if (recordState.tables && recordState.tables[name]) {
-    const option = prompt(`Table ${name} already exist, if you type 'yes' it
-will be overwritten`);
-    if (option && option.toLowerCase() !== "yes") {
-      return;
-    }
-  }
-
-  noOfRows = Number(noOfRows);
-  noOfCols = Number(noOfCols);
-  if (validateParamsWhenCreatingTable(name, noOfRows, noOfCols)) {
-    return null;
-  }
-  const isWithinLimits = checkTableLimits(noOfRows, noOfCols);
-  if (!isWithinLimits) {
-    return;
-  }
-
-  recordState.altered = true;
-  recordState.createTableBtnClicked = false;
-  recordState.rowsAndColsNoSet = true;
-  recordState.currentTable = name;
-  recordState.id
-    ? recordState.id
-    : (recordState.id = localStorage.getItem("flexId"));
-  recordState.tables ? recordState.tables : (recordState.tables = {});
-  setRecordsStateWrapper(
-    recordState,
-    `tables.${name}`,
-    newTable(noOfRows, noOfCols),
-  );
-
-  recordState.tables[name].lastTimeClicked = Date.now().toString()
-  persist(recordState);
-  return recordState;
 }
 
 function addToRowsAndColsToColor(row, colIndex, recordState) {
@@ -492,12 +544,66 @@ function addToRowsAndColsToColor(row, colIndex, recordState) {
   );
 }
 
-function unSetApplicableRowsAndColsToColor(recordState) {
-  const currentTable = recordState.currentTable;
-  setRecordsStateWrapper(
-    recordState,
-    `tables.${currentTable}.colorRowsAndCols`,
-    null,
+function createSellBtn(rowNumber) {
+  return (
+    <button
+      className="transaction--btn"
+      key={Date.now()}
+      onClick={() => {
+        let currentTable = recordState.currentTable;
+        if (!currentTable) return;
+        let table = recordState.tables[currentTable];
+        let row = table.data[rowNumber];
+        let sold = Number(row[2]) || 0;
+        sold++;
+        let returned = Number(row[3]) || 1;
+        returned--;
+        let startStock = row[1];
+        let currentStock = Number(startStock) - Number(sold);
+        if (currentStock < 0) {
+          return alert(
+            `prohibited action: current stock cannot be negative aborting sell`,
+          );
+        }
+        broadcast({type: "sell", rowNumber})
+        row[2] = `${sold}`;
+        row[3] = `${returned}`;
+        setRecordsStateWrapper(recordState, "currentTable", currentTable);
+      }}
+    >
+      sell
+    </button>
+  );
+}
+
+function createReturnBtn(rowNumber) {
+  return (
+    <button
+      className="transaction--btn"
+      key={Date.now() + 1}
+      onClick={() => {
+        let currentTable = recordState.currentTable;
+        if (!currentTable) return;
+        let table = recordState.tables[currentTable];
+        let row = table.data[rowNumber];
+        let returned = Number(row[3]) || 0;
+        returned++;
+        let startStock = row[1];
+        let sold = row[2];
+        sold--;
+        let currentStock = Number(startStock) - Number(sold);
+        if (currentStock > Number(startStock)) {
+          return alert(`prohibited action: current stock cannot be greater than 
+            start stock. aborting return`);
+        }
+        broadcast({type: "return", rowNumber})
+        row[3] = `${returned}`;
+        row[2] = `${sold}`;
+        setRecordsStateWrapper(recordState, "currentTable", currentTable);
+      }}
+    >
+      return
+    </button>
   );
 }
 
@@ -2226,6 +2332,7 @@ function loadTableDataAsCurrentTable(tableData, tableName) {
     ) {
       let name = prompt("type in the name you want to call this table");
       if (!name) return;
+      name += "-inventory";
       return loadTableDataAsCurrentTable(tableData, name);
     }
   }
@@ -2239,4 +2346,125 @@ function loadTableDataAsCurrentTable(tableData, tableName) {
     currentRule: "",
     altered: true,
   });
+}
+
+function computeStock() {
+  let currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  let table = recordState.tables[currentTable];
+  let i = 1;
+  for (let row of Object.values(table.data)) {
+    if (i === 1) {
+      i++;
+      continue;
+    }
+    let startStock = row[1];
+    let sold = row[2];
+    let unitPrice = row[5];
+    let currentStock = Number(startStock) - Number(sold);
+    currentStock = Number(currentStock) || 0;
+    let priceInStock = currentStock * Number(unitPrice);
+    row[4] = `${currentStock}`;
+    row[6] = `${priceInStock}`;
+  }
+}
+
+function getTotatlStockPrice() {
+  let currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  let table = recordState.tables[currentTable];
+  let i = 1;
+  let total = 0;
+  for (let row of Object.values(table.data)) {
+    if (i === 1) {
+      i++;
+      continue;
+    }
+    let priceInStock = Number(row[6]);
+    total += priceInStock;
+  }
+  return total;
+}
+
+
+ export function createSocket() {
+
+  socket = new WebSocket(socketUrl);
+
+  socket.addEventListener('error', (err) => {
+    console.error(err)
+  })
+
+  socket.addEventListener('open', (event) => {
+    broadcast({type: "join"})
+  });
+
+  socket.addEventListener('message', (event) => {
+    const message = JSON.parse(event.data)
+    handleBroadcast(message)
+  });
+}
+
+function broadcast(message) {
+  if (!socket) return
+  message["tableId"] = `${recordState.currentTable}:${flexId}`
+  message = JSON.stringify(message)
+  socket.send(message)
+}
+
+function handleBroadcast(message) {
+  if (message.type === "sell") {
+    mimicSell(message.rowNumber)
+  }
+
+  if (message.type === "return"){
+    mimicReturn(message.rowNumber)
+  } 
+
+  if (message.type === "editable") {
+    let {tableName, row, colIndex, value} = message
+    recordState.tables[tableName].data[row][colIndex] = value
+    setRecordsStateWrapper(recordState, "", "")
+  }
+}
+
+function mimicSell(rowNumber) {
+  let currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  let table = recordState.tables[currentTable];
+  let row = table.data[rowNumber];
+  let sold = Number(row[2]) || 0;
+  sold++;
+  let returned = Number(row[3]) || 1;
+  returned--;
+  let startStock = row[1];
+  let currentStock = Number(startStock) - Number(sold);
+  if (currentStock < 0) {
+    return alert(
+      `prohibited action: current stock cannot be negative aborting sell`,
+    );
+  }
+  row[2] = `${sold}`;
+  row[3] = `${returned}`;
+  setRecordsStateWrapper(recordState, "", "");
+}
+
+function mimicReturn(rowNumber) {
+  let currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  let table = recordState.tables[currentTable];
+  let row = table.data[rowNumber];
+  let returned = Number(row[3]) || 0;
+  returned++;
+  let startStock = row[1];
+  let sold = row[2];
+  sold--;
+  let currentStock = Number(startStock) - Number(sold);
+  if (currentStock > Number(startStock)) {
+    return alert(`prohibited action: current stock cannot be greater than 
+      start stock. aborting return`);
+  }
+  row[3] = `${returned}`;
+  row[2] = `${sold}`;
+  setRecordsStateWrapper(recordState, "currentTable", currentTable);
 }

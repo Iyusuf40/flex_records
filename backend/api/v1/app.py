@@ -4,15 +4,54 @@
 
 from flask import Flask, request
 from flask_cors import CORS
+from flask_sock import Sock, ConnectionClosed
 from storage.storage import Storage
+import json
 from bson import json_util
 import os
 
 
 app = Flask(__name__)
+sock = Sock(app)
 CORS(app)
 server = os.getenv("server") or "primary"
 
+clients = set()
+clientsMap = {}
+
+def getClientsGroup(tableId):
+    if clientsMap.get(tableId) == None:
+        clientsMap[tableId] = set()
+    return clientsMap.get(tableId)
+
+def putInClientsGroup(client, tableId):
+    getClientsGroup(tableId).add(client)
+
+def removeFromCliensGroup(client, tableId):
+    getClientsGroup(tableId).remove(client)
+
+@sock.route('/ws')
+def broadcast(sock):
+    while True:
+        data = sock.receive()
+        try:
+            message = json.loads(data)
+        except ConnectionClosed:
+            removeFromCliensGroup(client, message.get("tableId"))
+        except Exception:
+            print("unable to load", data)
+        if message["type"] == "join":
+            putInClientsGroup(sock, message.get("tableId"))
+        else:
+            closedSockets = []
+            for client in getClientsGroup(message.get("tableId")):
+                if client != sock:
+                    try:
+                        client.send(json.dumps(message))
+                    except ConnectionClosed:
+                        closedSockets.append(client)
+            for closedSocket in closedSockets:
+                removeFromCliensGroup(closedSocket, message.get("tableId"))
 
 @app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):

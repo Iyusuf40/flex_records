@@ -13,6 +13,9 @@ export default function Header() {
             <Link to="records">Records</Link>
           </li>
           <li>
+            <Link to="inventory">Inventory</Link>
+          </li>
+          <li>
             <Link to="tutorial">Tutorial</Link>
           </li>
         </ul>

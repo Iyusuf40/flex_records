@@ -1,6 +1,7 @@
 import React from "react";
 import SidePane from "./SidePane";
-import TableView from "./TableView";
+import TableView, { createSocket } from "./TableView";
+
 import * as utils from "../utils";
 
 Object.assign(window, utils); // make all utils functions global
@@ -8,7 +9,9 @@ Object.assign(window, utils); // make all utils functions global
 let tableSearchWordMap = { tableSearchWordMap: {} };
 Object.assign(window, tableSearchWordMap);
 
-export default function Container() {
+let flexId = "";
+
+export default function Sales() {
   let [recordState, setRecordsState] = React.useState({});
 
   // setup initial load and use as condition to fetch data from backend
@@ -18,15 +21,15 @@ export default function Container() {
     haveSetCurrentTable: false,
   });
 
-  let flexId = localStorage.getItem("flexId");
-
   if (!flexId) {
-    attemptToGetFlexId(setRecordsState);
+    flexId = attemptToGetFlexIdForInventory(setRecordsState);
   }
+
+  window.flexId = flexId
 
   getRecords(init, flexId, setRecordsState, setInit);
 
-  setTimeout(save, 1000, recordState, init);
+  save(recordState, init)
 
   function setRecordsStateWrapper(prevState, pathToPropToChange, value) {
     changeValueInNestedObj(prevState, pathToPropToChange, value);
@@ -37,18 +40,23 @@ export default function Container() {
   window.setRecordsState = setRecordsState;
   window.recordState = recordState;
   if (!init.haveSetCurrentTable && init.loaded === true) {
-    if (recordState.currentTable?.includes("inventory"))
+    if (!recordState.currentTable?.includes("inventory"))
       setRecordsStateWrapper(recordState, "currentTable", "");
     init.haveSetCurrentTable = true;
+    createSocket()
   }
   return (
     <div className="container">
       <SidePane
+        isInventory={true}
+        isSales={true}
         records={recordState}
         setRecordsStateWrapper={setRecordsStateWrapper}
         changeValueInNestedObj={utils.changeValueInNestedObj}
       />
       <TableView
+        isInventory={true}
+        isSales={true}
         records={recordState}
         setRecordsStateWrapper={setRecordsStateWrapper}
         changeValueInNestedObj={utils.changeValueInNestedObj}
