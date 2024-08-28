@@ -2395,13 +2395,22 @@ export function createSocket() {
   });
 
   socket.addEventListener("open", (event) => {
-    broadcast({ type: "join" });
+    if (socket.readyState === 1)
+      broadcast({ type: "join" }); 
+    else sleep(2000).then(() => {
+      if (socket.readyState !== 1) throw new Error("taking too long to connect to socket")
+      broadcast({ type: "join" }); 
+    })
   });
 
   socket.addEventListener("message", (event) => {
     const message = JSON.parse(event.data);
     handleBroadcast(message);
   });
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export function broadcast(message) {
