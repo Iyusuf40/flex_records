@@ -24,7 +24,7 @@ const SELECTED_CELLS_ACCUMULATOR = [];
 
 let SHOW_FULL_INVENTORY = false;
 
-let socket = null
+let socket = null;
 
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
@@ -424,13 +424,14 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
               iscell={"true"}
               id={`${row}:${colIndex}`}
               onChange={(e) => {
-                if ((isInventory || isSales) && !cellIsReadOnly) broadcast({
-                  type: "editable",
-                  tableName: currentTable,
-                  row,
-                  colIndex,
-                  value: e.target.value
-                })
+                if ((isInventory || isSales) && !cellIsReadOnly)
+                  broadcast({
+                    type: "editable",
+                    tableName: currentTable,
+                    row,
+                    colIndex,
+                    value: e.target.value,
+                  });
 
                 updateTableView(
                   currentTable,
@@ -438,7 +439,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
                   colIndex,
                   e.target.value,
                   row,
-                )
+                );
               }}
               onClick={(e) => {
                 setCellInSelectedCells(
@@ -565,7 +566,7 @@ function createSellBtn(rowNumber) {
             `prohibited action: current stock cannot be negative aborting sell`,
           );
         }
-        broadcast({type: "sell", rowNumber})
+        broadcast({ type: "sell", rowNumber });
         row[2] = `${sold}`;
         row[3] = `${returned}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -596,7 +597,7 @@ function createReturnBtn(rowNumber) {
           return alert(`prohibited action: current stock cannot be greater than 
             start stock. aborting return`);
         }
-        broadcast({type: "return", rowNumber})
+        broadcast({ type: "return", rowNumber });
         row[3] = `${returned}`;
         row[2] = `${sold}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -2386,45 +2387,48 @@ function getTotatlStockPrice() {
   return total;
 }
 
-
- export function createSocket() {
-
+export function createSocket() {
   socket = new WebSocket(socketUrl);
 
-  socket.addEventListener('error', (err) => {
-    console.error(err)
-  })
-
-  socket.addEventListener('open', (event) => {
-    broadcast({type: "join"})
+  socket.addEventListener("error", (err) => {
+    console.error(err);
   });
 
-  socket.addEventListener('message', (event) => {
-    const message = JSON.parse(event.data)
-    handleBroadcast(message)
+  socket.addEventListener("open", (event) => {
+    broadcast({ type: "join" });
+  });
+
+  socket.addEventListener("message", (event) => {
+    const message = JSON.parse(event.data);
+    handleBroadcast(message);
   });
 }
 
-function broadcast(message) {
-  if (!socket) return
-  message["tableId"] = `${recordState.currentTable}:${flexId}`
-  message = JSON.stringify(message)
-  socket.send(message)
+export function broadcast(message) {
+  if (!socket) return;
+  message["tableId"] = `${recordState.currentTable}:${flexId}`;
+  message = JSON.stringify(message);
+  socket.send(message);
 }
 
 function handleBroadcast(message) {
   if (message.type === "sell") {
-    mimicSell(message.rowNumber)
+    mimicSell(message.rowNumber);
   }
 
-  if (message.type === "return"){
-    mimicReturn(message.rowNumber)
-  } 
+  if (message.type === "return") {
+    mimicReturn(message.rowNumber);
+  }
+
+  if (message.type === "delete") {
+    alert("This table has been deleted")
+    window.location.href = "/"
+  }
 
   if (message.type === "editable") {
-    let {tableName, row, colIndex, value} = message
-    recordState.tables[tableName].data[row][colIndex] = value
-    setRecordsStateWrapper(recordState, "", "")
+    let { tableName, row, colIndex, value } = message;
+    recordState.tables[tableName].data[row][colIndex] = value;
+    setRecordsStateWrapper(recordState, "", "");
   }
 }
 

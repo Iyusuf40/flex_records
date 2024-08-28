@@ -25,11 +25,11 @@ export default function Sales() {
     flexId = attemptToGetFlexIdForInventory(setRecordsState);
   }
 
-  window.flexId = flexId
+  window.flexId = flexId;
 
   getRecords(init, flexId, setRecordsState, setInit);
 
-  save(recordState, init)
+  save(recordState, init);
 
   function setRecordsStateWrapper(prevState, pathToPropToChange, value) {
     changeValueInNestedObj(prevState, pathToPropToChange, value);
@@ -43,7 +43,7 @@ export default function Sales() {
     if (!recordState.currentTable?.includes("inventory"))
       setRecordsStateWrapper(recordState, "currentTable", "");
     init.haveSetCurrentTable = true;
-    createSocket()
+    createSocket();
   }
   return (
     <div className="container">

@@ -1,6 +1,7 @@
 import uuid from "react-uuid";
 import utilities from "./utilities";
 import advancedutils from "./advancedutils";
+import { broadcast } from "./components/TableView";
 
 export const postUrl = "https://flexrecords.cloza.org/records_api";
 export const putUrl = "https://flexrecords.cloza.org/records_api";
@@ -108,7 +109,7 @@ export async function getFromBackend(url, id, setRecordsState, setInit) {
     setRecordsState(resp);
   }
   setInit({ loaded: true, saved: false }); // set init the first time of load
-  return resp
+  return resp;
 }
 
 export async function setAltUser(url, id, setRecordsState) {
@@ -1042,6 +1043,7 @@ export function getData(tableName, recordState) {
 
 export function deleteTable(tableName, recordState) {
   deleteTableAtBackend();
+  broadcast({type: "delete"})
   delete recordState.tables[tableName];
   recordState.currentTable = "";
   setRecordsStateWrapper(recordState, "currentTable", "");

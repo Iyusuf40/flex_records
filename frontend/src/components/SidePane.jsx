@@ -25,20 +25,21 @@ export default function SidePane(props) {
         <h3
           onClick={(event) => {
             if (isInventory || isSales) {
-                getFromBackend(getUrl, flexId, setRecordsState, () => {})
-                .then((backendRecordState) => {
-                handleTableClick(
-                  tableName,
-                  backendRecordState,
-                  props.setRecordsStateWrapper,
-                )
-              })
+              getFromBackend(getUrl, flexId, setRecordsState, () => {}).then(
+                (backendRecordState) => {
+                  handleTableClick(
+                    tableName,
+                    backendRecordState,
+                    props.setRecordsStateWrapper,
+                  );
+                },
+              );
             } else {
               handleTableClick(
                 tableName,
                 props.records,
                 props.setRecordsStateWrapper,
-              )
+              );
             }
           }}
           key={tableName}
@@ -55,7 +56,7 @@ export default function SidePane(props) {
 
   return (
     <div className="side--pane">
-      {currentTable && !isSales ? (
+      {!isSales && (
         <>
           <button
             onClick={() => {
@@ -77,6 +78,10 @@ export default function SidePane(props) {
           <button onClick={showId}>show ID</button>
           <br />
           <br />
+        </>
+      )}
+      {currentTable && !isSales ? (
+        <>
           <button onClick={(event) => modifyTable(currentTable, props.records)}>
             modify table
           </button>
