@@ -1,11 +1,12 @@
 import uuid from "react-uuid";
 import utilities from "./utilities";
 import advancedutils from "./advancedutils";
+import { broadcast } from "./components/TableView";
 
 export const postUrl = "http://localhost:3001/records";
 export const putUrl = "http://localhost:3001/records";
 export const getUrl = "http://localhost:3001/records/";
-export const socketUrl = 'ws://localhost:3001/ws'
+export const socketUrl = "ws://localhost:3001/ws";
 
 export async function getAltUser(url, id, setRecordsState) {
   let resp = null;
@@ -107,7 +108,7 @@ export async function getFromBackend(url, id, setRecordsState, setInit) {
     setRecordsState(resp);
   }
   setInit({ loaded: true, saved: false }); // set init the first time of load
-  return resp
+  return resp;
 }
 
 export async function setAltUser(url, id, setRecordsState) {
@@ -1041,6 +1042,7 @@ export function getData(tableName, recordState) {
 
 export function deleteTable(tableName, recordState) {
   deleteTableAtBackend();
+  broadcast({type: "delete"})
   delete recordState.tables[tableName];
   recordState.currentTable = "";
   setRecordsStateWrapper(recordState, "currentTable", "");

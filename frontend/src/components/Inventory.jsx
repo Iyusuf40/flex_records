@@ -20,7 +20,7 @@ export default function Inventory() {
   });
 
   let flexId = localStorage.getItem("flexId");
-  window.flexId = flexId
+  window.flexId = flexId;
 
   if (!flexId) {
     attemptToGetFlexId(setRecordsState);
@@ -28,8 +28,8 @@ export default function Inventory() {
 
   getRecords(init, flexId, setRecordsState, setInit);
 
-  save(recordState, init)
-  
+  save(recordState, init);
+
   function setRecordsStateWrapper(prevState, pathToPropToChange, value) {
     changeValueInNestedObj(prevState, pathToPropToChange, value);
     setRecordsState({ ...prevState });
@@ -42,7 +42,7 @@ export default function Inventory() {
     if (!recordState.currentTable?.includes("inventory"))
       setRecordsStateWrapper(recordState, "currentTable", "");
     init.haveSetCurrentTable = true;
-    createSocket()
+    createSocket();
   }
   return (
     <div className="container">
