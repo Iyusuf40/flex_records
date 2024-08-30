@@ -14,7 +14,7 @@ export default function Index() {
       <div className="descriptions--container">
         <div className="intro--container">
           <div className="text">
-            <h2>Working with tabulated data made easy</h2>
+            <h2>Working With Tabulated Data Made Easy</h2>
             <p>
               With flex_records, it is very easy working with <span> </span>
               <Link to="records">tables</Link>. You define the size of the table
@@ -24,6 +24,21 @@ export default function Index() {
               rows and columns as you deem fit. With internet connection, you
               don't have to worry about loosing your work. Changes made to the
               table are instantly saved and sent to our servers for storage.
+            </p>
+          </div>
+
+          <div className="text">
+            <h2>We Support Inventory Records Keeping Too</h2>
+            <p>
+              If you have simple requirements for inventory, say a small
+              business that sells items, you can keep your inventory
+              records with us. It has been designed with required functions
+              preconfigured for you such as a button click to see the total
+              worth of all products you have remaining; automatic updated inventory after
+              actions such as sales and returns. You can even share a link to 
+              your employees, a sales link which has limited functionalities partaining
+              just to sales. Start keeping your inventory records with us at <span> </span>
+              <Link to="inventory">flex inventory</Link>.
             </p>
           </div>
         </div>
