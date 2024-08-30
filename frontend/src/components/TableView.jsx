@@ -414,8 +414,12 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
           cellIsReadOnly = true;
         }
 
-        if (isInventory && colIndex >= 2 && colIndex !== 5) {
+        if (isInventory && colIndex >= 2) {
           cellIsReadOnly = true;
+        }
+
+        if (!isSales && isInventory && colIndex === 5) {
+          cellIsReadOnly = false;
         }
 
         const cell = (
