@@ -1228,3 +1228,7 @@ function getQuoteClosureIndexAhead(row, index) {
   }
   return -1;
 }
+
+export function isInInventoryOrSalesRoute() {
+  return window.location.pathname.includes("inventory")
+}

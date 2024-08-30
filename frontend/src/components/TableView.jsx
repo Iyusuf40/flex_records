@@ -5,6 +5,7 @@ import {
   clearRule,
   createEl,
   extractCSVFromData,
+  isInInventoryOrSalesRoute,
   removeCol,
 } from "../utils";
 
@@ -180,6 +181,12 @@ export default function TableView(props) {
           }
         >
           del row from the bottom
+        </button>
+
+        <button
+          onClick={(e) => setDeleteMode(currentTable, props.records)}
+        >
+          delete row
         </button>
         {isInventory && (
           <button
@@ -407,7 +414,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
           cellIsReadOnly = true;
         }
 
-        if (isInventory && colIndex >= 2) {
+        if (isInventory && colIndex >= 2 && colIndex !== 5) {
           cellIsReadOnly = true;
         }
 
@@ -1337,9 +1344,15 @@ function handleDelete(
 ) {
   const validRowOrCol = ["row", "col"];
   let shouldRetainRules;
-  let rowOrCOl = prompt(
-    `type 'row' or 'col' to delete an entire row or column`,
-  );
+  let rowOrCOl = ""
+  if (isInInventoryOrSalesRoute()) {
+    rowOrCOl = "row"
+  } else {
+    rowOrCOl = prompt(
+      `type 'row' or 'col' to delete an entire row or column`,
+    );
+  }
+
   if (!rowOrCOl) return unSetDeleteMode(tableName, recordState);
   rowOrCOl = rowOrCOl ? rowOrCOl.toLowerCase() : "";
   if (!validRowOrCol.includes(rowOrCOl)) {
@@ -2264,13 +2277,31 @@ function batchSetCellsInSelectedCells(initialSelection, placementDesc) {
 function handleDownloadCSV() {
   if (!recordState) throw new Error("recordState undefined");
   if (!recordState.currentTable) throw new Error("currentTable undefined");
-  const tableName = recordState.currentTable;
+  let tableName = recordState.currentTable;
 
   const tableData = recordState.tables[tableName].data;
   const csv = extractCSVFromData(tableData);
 
+  if (tableName.includes("-inventory")) {
+    let split = tableName.split("-")
+    let start = split[0]
+    tableName = `${start}-${getCurrentDate()}-inventory`
+  }
+
   downloadFile(tableName, csv);
 }
+
+function getCurrentDate() {
+  const date = new Date();
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  const dayName = daysOfWeek[date.getDay()];
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
+  const year = date.getFullYear();
+
+  return `${dayName}-${day}-${month}-${year}`;
+};
 
 // function adapted from https://stackoverflow.com/a/33542499
 function downloadFile(filename, content) {
@@ -2333,7 +2364,9 @@ function loadTableDataAsCurrentTable(tableData, tableName) {
     ) {
       let name = prompt("type in the name you want to call this table");
       if (!name) return;
-      name += "-inventory";
+      if (window.location.pathname.includes("inventory") && !name.includes("inventory")) {
+        name += "-inventory";
+      }
       return loadTableDataAsCurrentTable(tableData, name);
     }
   }
