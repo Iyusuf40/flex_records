@@ -1375,6 +1375,13 @@ quirky behavior, to keep rules type 'yes'`);
   }
   if (rowOrCOl === "row") {
     deleteEntireRow(tableName, row, recordState);
+    if (isInInventoryOrSalesRoute()) {
+      broadcast({
+        type: "rowDelete",
+        tableName,
+        row
+      })
+    }
   } else {
     deleteEntireCol(tableName, colIndex, recordState);
   }
@@ -2471,6 +2478,11 @@ function handleBroadcast(message) {
     let { tableName, row, colIndex, value } = message;
     recordState.tables[tableName].data[row][colIndex] = value;
     setRecordsStateWrapper(recordState, "", "");
+  }
+
+  if (message.type === "rowDelete") {
+    let {tableName, row} = message
+    deleteEntireRow(tableName, row, recordState);
   }
 }
 
