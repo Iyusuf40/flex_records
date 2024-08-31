@@ -174,6 +174,9 @@ or any other word(s) to rename it as such`);
   if (option.toLowerCase() === "delete") {
     deleteTable(tableName, recordState);
   } else {
+    if (option.includes(".")) {
+      return alert("failed to change name. table name must not have a dot")
+    }
     changeTableName(tableName, option, recordState);
   }
 }
