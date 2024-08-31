@@ -395,7 +395,8 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
       }
 
       const rowContainer = [];
-      let lastTwoCols = SHOW_FULL_INVENTORY ? 0 : 2;
+      let lastTwoCols = 0
+      if (isInInventoryOrSalesRoute()) lastTwoCols = SHOW_FULL_INVENTORY ? 0 : 2;
       for (let colIndex = 0; colIndex < noOfCols - lastTwoCols; colIndex++) {
         let extendInputClass = getColorClassForApplicableRowsAndCols(
           colorRowsAndCols,
