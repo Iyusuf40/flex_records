@@ -365,6 +365,8 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   let hide = "";
   if (isInventory) {
     hide = "hide";
+    convertToInventoryShape()
+    noOfCols = 7
     computeStock();
   }
 
@@ -1622,15 +1624,15 @@ function getCurrentTableProps(props) {
   const { currentTable } = props.records;
   const tableData =
     currentTable && props.records.tables
-      ? props.records.tables[currentTable].data
+      ? props.records.tables[currentTable]?.data || {}
       : null;
   const noOfCols =
     currentTable && props.records.tables
-      ? props.records.tables[currentTable].noOfCols
+      ? props.records.tables[currentTable]?.noOfCols || 0
       : null;
   const noOfRows =
     currentTable && props.records.tables
-      ? props.records.tables[currentTable].noOfRows
+      ? props.records.tables[currentTable]?.noOfRows || 0
       : null;
   const table =
     currentTable && props.records.tables
@@ -2339,7 +2341,9 @@ function handleUploadCsv(event) {
     const csv = e.target.result;
     const tableData = buildTableDataFromCsv(csv);
     if (!isValidTableData(tableData)) throw new Error("Invalid table data");
-    const tableName = file.name.replace(".csv", "");
+    let tableName = file.name.replace(".csv", "");
+    if (tableName.includes(".")) tableName = tableName.replace(".", "")
+    if(isInInventoryOrSalesRoute() && !tableName.includes("inventory")) tableName += "-inventory"
     loadTableDataAsCurrentTable(tableData, tableName);
   };
 
@@ -2413,6 +2417,27 @@ function computeStock() {
     row[4] = `${currentStock}`;
     row[6] = `${priceInStock}`;
   }
+}
+
+function convertToInventoryShape() {
+  let currentTable = recordState.currentTable;
+  if (!currentTable) return;
+  let table = recordState.tables[currentTable];
+  if (table.data[1]?.length === 7) return
+  for (let row of Object.values(table.data)) {
+    row.length = 7
+    for (let i = 0; i < row.length; i++) {
+      row[i] = row[i]  === undefined ? "" : row[i]
+    }
+  }
+  insertRowAboveImpl(1, recordState.tables[currentTable].data)
+  recordState.tables[currentTable].data[1][0] = "product";
+  recordState.tables[currentTable].data[1][1] = "start stock";
+  recordState.tables[currentTable].data[1][2] = "sold";
+  recordState.tables[currentTable].data[1][3] = "returned";
+  recordState.tables[currentTable].data[1][4] = "current stock";
+  recordState.tables[currentTable].data[1][5] = "unit price";
+  recordState.tables[currentTable].data[1][6] = "price in stock";
 }
 
 function getTotatlStockPrice() {

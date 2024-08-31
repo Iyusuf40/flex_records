@@ -133,8 +133,8 @@ function setCurrentTableToFirstPos(tablesList, currentTable) {
 function sortTableNamesByTimeClicked(tables) {
   if (!tables) return [];
   return Object.keys(tables).sort((a, b) => {
-    let aTimeClicked = tables[a].lastTimeClicked || 0;
-    let bTimeClicked = tables[b].lastTimeClicked || 0;
+    let aTimeClicked = tables[a]?.lastTimeClicked || 0;
+    let bTimeClicked = tables[b]?.lastTimeClicked || 0;
     if (bTimeClicked > aTimeClicked) return 1;
     return -1;
   });
