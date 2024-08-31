@@ -1090,6 +1090,8 @@ export function createTable(recordState, name, noOfRows, noOfCols) {
     return;
   }
 
+  if (name.includes(".")) return alert("failed to create table. table name must not have a dot")
+
   if (recordState.tables && recordState.tables[name]) {
     const option = prompt(`Table ${name} already exist, if you type 'yes' it
 will be overwritten`);
