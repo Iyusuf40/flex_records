@@ -33,6 +33,7 @@ export default function TableView(props) {
   let isInventory = props.isInventory;
   let isSales = props.isSales;
   let hide = isInventory ? "hide" : "";
+  let hideIfIsSales = isSales ? "hide" : "";
 
   const clearFormObj = {
     createTableMode: null,
@@ -169,6 +170,7 @@ export default function TableView(props) {
           delete right-most column
         </button>
         <button
+          className={hideIfIsSales}
           onClick={(e) =>
             addRow(props.setRecordsStateWrapper, currentTable, props.records)
           }
@@ -176,6 +178,7 @@ export default function TableView(props) {
           add row at the bottom
         </button>
         <button
+          className={hideIfIsSales}
           onClick={(e) =>
             delRow(props.setRecordsStateWrapper, currentTable, props.records)
           }
@@ -184,6 +187,7 @@ export default function TableView(props) {
         </button>
 
         <button
+          className={hideIfIsSales}
           onClick={(e) => setDeleteMode(currentTable, props.records)}
         >
           delete row
@@ -271,6 +275,15 @@ export default function TableView(props) {
             </label>
           </button>
         )}
+        {
+          isInventory && (
+            <>
+              <br />
+              <button onClick={(e) => handleGetTodaySales()}>get today's sales</button>
+              <button onClick={(e) => handleGetdaySales()}>get day's sales</button>
+            </>
+          )
+        }
       </div>
 
       {table.ruleMode ? (
@@ -397,9 +410,10 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
       }
 
       const rowContainer = [];
-      let lastTwoCols = 0
-      if (isInInventoryOrSalesRoute()) lastTwoCols = SHOW_FULL_INVENTORY ? 0 : 2;
-      for (let colIndex = 0; colIndex < noOfCols - lastTwoCols; colIndex++) {
+      let hideLastNCols = 0
+      if (isInInventoryOrSalesRoute()) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 2;
+      if (isSalesRoute()) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 4;
+      for (let colIndex = 0; colIndex < noOfCols - hideLastNCols; colIndex++) {
         let extendInputClass = getColorClassForApplicableRowsAndCols(
           colorRowsAndCols,
           row,
@@ -581,6 +595,7 @@ function createSellBtn(rowNumber) {
           );
         }
         broadcast({ type: "sell", rowNumber });
+        updateDaySales({ type: "sell", rowNumber })
         row[2] = `${sold}`;
         row[3] = `${returned}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -612,6 +627,7 @@ function createReturnBtn(rowNumber) {
             start stock. aborting return`);
         }
         broadcast({ type: "return", rowNumber });
+        updateDaySales({ type: "return", rowNumber })
         row[3] = `${returned}`;
         row[2] = `${sold}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -837,7 +853,7 @@ function delColumn(setRecordsStateWrapper, tableName, recordState) {
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, newTableData);
 }
 
-function addRow(setRecordsStateWrapper, tableName, recordState) {
+function addRow(setRecordsStateWrapper, tableName, recordState, shouldBroadcast = true) {
   if (recordState.currentTable === "") {
     alert("No table selected");
     return null;
@@ -855,6 +871,12 @@ function addRow(setRecordsStateWrapper, tableName, recordState) {
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, tableData);
   applyRuleOnModification(recordState);
   runRegisteredFunctions(recordState, tableName);
+  if (isInInventoryOrSalesRoute() && shouldBroadcast) {
+    broadcast({
+      type: "rowAppend",
+      tableName
+    })
+  }
 }
 
 function delRow(setRecordsStateWrapper, tableName, recordState) {
@@ -867,6 +889,15 @@ function delRow(setRecordsStateWrapper, tableName, recordState) {
   delete recordState.tables[tableName].data[noOfRows];
   let newNoOfRows = noOfRows - 1;
   if (newNoOfRows < 0) newNoOfRows = 0;
+  else {
+    if (isInInventoryOrSalesRoute) {
+      broadcast({
+        type: "rowDelete",
+        tableName,
+        row: noOfRows
+      })
+    }
+  }
 
   setRecordsStateWrapper(
     recordState,
@@ -2317,6 +2348,12 @@ function getCurrentDate() {
   return `${dayName}-${day}-${month}-${year}`;
 };
 
+function getCurrentDayName() {
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = daysOfWeek[date.getDay()];
+  return dayName
+}
+
 // function adapted from https://stackoverflow.com/a/33542499
 function downloadFile(filename, content) {
   const blob = new Blob([content], { type: "text/csv" });
@@ -2514,6 +2551,12 @@ function handleBroadcast(message) {
     let {tableName, row} = message
     deleteEntireRow(tableName, row, recordState);
   }
+
+  if (message.type === "rowAppend") {
+    let {tableName} = message
+    let shouldBroadcast = false
+    addRow(setRecordsStateWrapper, tableName, recordState, shouldBroadcast)
+  }
 }
 
 function mimicSell(rowNumber) {
@@ -2555,4 +2598,17 @@ function mimicReturn(rowNumber) {
   row[3] = `${returned}`;
   row[2] = `${sold}`;
   setRecordsStateWrapper(recordState, "currentTable", currentTable);
+}
+
+function updateDaySales(message) {
+  message["tableId"] = `${recordState.currentTable}:${flexId}`
+  
+}
+
+function handleGetTodaySales() {
+
+}
+
+function handleGetdaySales() {
+
 }

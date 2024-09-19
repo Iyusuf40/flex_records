@@ -3,6 +3,7 @@ import utilities from "./utilities";
 import advancedutils from "./advancedutils";
 import { broadcast } from "./components/TableView";
 
+export const baseApiUrl = "http://localhost:3001/records/";
 export const postUrl = "http://localhost:3001/records";
 export const putUrl = "http://localhost:3001/records";
 export const getUrl = "http://localhost:3001/records/";
@@ -1233,4 +1234,8 @@ function getQuoteClosureIndexAhead(row, index) {
 
 export function isInInventoryOrSalesRoute() {
   return window.location.pathname.includes("inventory")
+}
+
+export function isSalesRoute() {
+  return window.location.pathname.includes("sales")
 }
