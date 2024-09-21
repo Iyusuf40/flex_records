@@ -146,6 +146,16 @@ def delete_records():
     else:
         return json_util.dumps({}), 409
 
+
+@app.route("/records/day_sales", methods=["PUT"], strict_slashes=False)
+def update_daily_sales():
+    pass
+
+@app.route("/records/day_sales/<day_name>", methods=["GET"], strict_slashes=False)
+def get_daily_sales(day_name):
+    tableId = request.args.get("tableId")
+
+
 def update_current_table_in_db(current_table, key, db):
     operation = "$set"
     update_key = "data.currentTable"

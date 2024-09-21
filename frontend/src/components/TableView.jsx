@@ -224,6 +224,12 @@ export default function TableView(props) {
         >
           delete row or column
         </button>
+        <button
+          className={hide}
+          onClick={(e) => emptySelectedCells(currentTable)}
+        >
+          empty selected cells
+        </button>
 
         <br />
 
@@ -384,6 +390,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   }
 
   const table = props.records.tables[currentTable];
+  if (!table) return
   let cellClassName = getClassName(table);
   const tableData = table.data;
 
@@ -791,6 +798,7 @@ function getTargetRowAndCol(colorRowsAndCols, row, colIndex) {
 }
 
 function setRuleModeToDisplayBtns(recordState) {
+  if (!recordState) return;
   const currentTable = recordState.currentTable;
   if (!currentTable) return;
   // allow rule selection
@@ -909,6 +917,22 @@ function delRow(setRecordsStateWrapper, tableName, recordState) {
 function setDeleteMode(tableName, recordState) {
   alert("click on the cell you want to delete its row or column");
   setRecordsStateWrapper(recordState, `tables.${tableName}.deleteMode`, true);
+}
+
+function emptySelectedCells(tableName) {
+  let table = recordState.tables[tableName]
+  if (!table) return
+  const initialCellsSelected = SELECTED_CELLS_ACCUMULATOR[0];
+  
+  if (!initialCellsSelected) return
+
+  for (let el of initialCellsSelected) {
+    const row = Number(el.getAttribute("row"));
+    const col = Number(el.getAttribute("col"));
+    table.data[row][col] = ""
+  }
+  unSetRuleModeToDisplayBtns()
+  runRegisteredFunctions(recordState, tableName);
 }
 
 function setInsertMode(tableName, recordState) {
@@ -2349,6 +2373,7 @@ function getCurrentDate() {
 };
 
 function getCurrentDayName() {
+  const date = new Date();
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayName = daysOfWeek[date.getDay()];
   return dayName
@@ -2601,14 +2626,33 @@ function mimicReturn(rowNumber) {
 }
 
 function updateDaySales(message) {
+  return
   message["tableId"] = `${recordState.currentTable}:${flexId}`
-  
+  let dayName = getCurrentDayName()
+  message.dayName = dayName
+
+  fetch(putUrl + "/day_sales", {
+    method: "PUT",
+    body: JSON.stringify(message),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
 }
 
 function handleGetTodaySales() {
-
+  let dayName = getCurrentDayName()
+  handleGetdaySales(dayName)
 }
 
-function handleGetdaySales() {
-
+function handleGetdaySales(dayName) {
+  let tableId = `${recordState.currentTable}:${flexId}`
+  fetch(getUrl + "day_sales/" + dayName + `?tableId=${tableId}`)
+  .then((data) => data.json())
+  .then((data) => {
+    console.log(data);
+    // route to /inventory/day_sales route with data json
+    // and display
+  })
 }
