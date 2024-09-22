@@ -418,8 +418,8 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
 
       const rowContainer = [];
       let hideLastNCols = 0
-      if (isInInventoryOrSalesRoute()) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 2;
-      if (isSalesRoute()) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 4;
+      if (isInventory) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 2;
+      if (isSales) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 4;
       for (let colIndex = 0; colIndex < noOfCols - hideLastNCols; colIndex++) {
         let extendInputClass = getColorClassForApplicableRowsAndCols(
           colorRowsAndCols,
@@ -2360,39 +2360,6 @@ function handleDownloadCSV() {
   downloadFile(tableName, csv);
 }
 
-function getCurrentDate() {
-  const date = new Date();
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  
-  const dayName = daysOfWeek[date.getDay()];
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
-  const year = date.getFullYear();
-
-  return `${dayName}-${day}-${month}-${year}`;
-};
-
-function getCurrentDayName() {
-  const date = new Date();
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dayName = daysOfWeek[date.getDay()];
-  return dayName
-}
-
-// function adapted from https://stackoverflow.com/a/33542499
-function downloadFile(filename, content) {
-  const blob = new Blob([content], { type: "text/csv" });
-  const elem = window.document.createElement("a");
-  elem.style.display = "none";
-  const url = window.URL.createObjectURL(blob);
-  elem.href = url;
-  elem.download = filename;
-  document.body.appendChild(elem);
-  elem.click();
-  document.body.removeChild(elem);
-  URL.revokeObjectURL(url);
-}
-
 function handleUploadCsv(event) {
   const file = event.target.files?.item(0);
   if (!file) return;
@@ -2517,6 +2484,25 @@ function getTotatlStockPrice() {
     total += priceInStock;
   }
   return total;
+}
+
+function getCurrentDate() {
+  const date = new Date();
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  const dayName = daysOfWeek[date.getDay()];
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
+  const year = date.getFullYear();
+
+  return `${dayName}-${day}-${month}-${year}`;
+};
+
+function getCurrentDayName() {
+  const date = new Date();
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = daysOfWeek[date.getDay()];
+  return dayName
 }
 
 export function createSocket() {
@@ -2647,10 +2633,13 @@ function handleGetTodaySales() {
 
 function handleGetInputDaySales() {
   let dayName = prompt("enter the day of week to get daily sales report")
+  if (!dayName) return
   const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  if (!daysOfWeek.includes(dayName.trim().toLowerCase())) {
+  dayName = dayName.trim().toLowerCase()
+  if (!daysOfWeek.includes(dayName)) {
     return alert(`error: ${dayName} not a valid day of the week.`)
   }
+  dayName = dayName[0].toUpperCase() + dayName.slice(1)
   getdaySales(dayName)
 }
 
@@ -2659,8 +2648,29 @@ function getdaySales(dayName) {
   fetch(getUrl + "day_sales/" + dayName + `?tableId=${tableId}`)
   .then((data) => data.json())
   .then((data) => {
-    console.log(data);
+    let salesData = data[dayName]
+    if (!salesData || !Object.keys(salesData).length) {
+      return alert("no daily sales record for " + dayName)
+    }
+    buildTableDataForDaySales(salesData, dayName)
     // route to /inventory/day_sales route with data json
     // and display
   })
+}
+
+function buildTableDataForDaySales(salesData, dayName) {
+  let row = 1
+  let tableData = {}
+  let totalSales = 0
+  tableData[row] = ["item", "quantity sold", "total price"]
+  row++
+  for (let item of Object.values(salesData)) {
+    tableData[row] = [item.item, item.quantity, item.total_price]
+    totalSales += Number(item.total_price) || 0
+    row++
+  }
+  tableData[row] = ["total sales", "", totalSales]
+  localStorage.setItem("daySales", JSON.stringify(tableData))
+  localStorage.setItem("dayName", dayName)
+  window.open('/inventory/day_sales', '_blank')
 }

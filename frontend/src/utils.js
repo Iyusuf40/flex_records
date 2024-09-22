@@ -3,9 +3,9 @@ import utilities from "./utilities";
 import advancedutils from "./advancedutils";
 import { broadcast } from "./components/TableView";
 
-export const postUrl = "http://localhost:3001/records";
-export const putUrl = "http://localhost:3001/records";
-export const getUrl = "http://localhost:3001/records/";
+export const postUrl = "http://localhost:3001/records_api";
+export const putUrl = "http://localhost:3001/records_api";
+export const getUrl = "http://localhost:3001/records_api/";
 export const socketUrl = "ws://localhost:3001/ws";
 
 export async function getAltUser(url, id, setRecordsState) {
@@ -1127,6 +1127,20 @@ will be overwritten`);
   recordState.tables[name].lastTimeClicked = Date.now().toString();
   persist(recordState);
   return recordState;
+}
+
+// function adapted from https://stackoverflow.com/a/33542499
+export function downloadFile(filename, content) {
+  const blob = new Blob([content], { type: "text/csv" });
+  const elem = window.document.createElement("a");
+  elem.style.display = "none";
+  const url = window.URL.createObjectURL(blob);
+  elem.href = url;
+  elem.download = filename;
+  document.body.appendChild(elem);
+  elem.click();
+  document.body.removeChild(elem);
+  URL.revokeObjectURL(url);
 }
 
 /**

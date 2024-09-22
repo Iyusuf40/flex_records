@@ -53,7 +53,7 @@ def broadcast(sock):
             for closedSocket in closedSockets:
                 removeFromCliensGroup(closedSocket, message.get("tableId"))
 
-@app.route("/records/<record_id>", strict_slashes=False)
+@app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):
     """ retrieves records from db """
     key = "records-" + record_id
@@ -65,7 +65,7 @@ def get_records(record_id):
     return json_util.dumps(res)
 
 
-@app.route("/records", methods=["POST"], strict_slashes=False)
+@app.route("/records_api", methods=["POST"], strict_slashes=False)
 def create_records():
     """ creates new record """
     res = {}
@@ -89,7 +89,7 @@ def create_records():
         return json_util.dumps(res), 200
 
 
-@app.route("/records", methods=["PUT"], strict_slashes=False)
+@app.route("/records_api", methods=["PUT"], strict_slashes=False)
 def update_records():
     """ creates new record """
     error = False
@@ -118,7 +118,7 @@ def update_records():
     else:
         return json_util.dumps({}), 409
 
-@app.route("/records", methods=["DELETE"], strict_slashes=False)
+@app.route("/records_api", methods=["DELETE"], strict_slashes=False)
 def delete_records():
     """ deletes a record """
     error = False
@@ -147,7 +147,7 @@ def delete_records():
         return json_util.dumps({}), 409
 
 
-@app.route("/records/day_sales", methods=["PUT"], strict_slashes=False)
+@app.route("/records_api/day_sales", methods=["PUT"], strict_slashes=False)
 def update_daily_sales():
     req_payload = request.get_json()
     table_id = req_payload.get("tableId")
@@ -158,14 +158,14 @@ def update_daily_sales():
     db = Storage(server, key)
     error = False
     try:
-        prev_day_sales = db.find_one({"_id": key})
+        day_sales = db.find_one({"_id": key})
         item = req_payload["item"]
         quantity = req_payload["quantity"]
         price = req_payload["price"]
         transaction_type = req_payload["type"]
         if transaction_type == "return":
             price = -price
-        if not prev_day_sales:
+        if not day_sales:
             newVal = {
                 day: {
                     item: {
@@ -175,17 +175,27 @@ def update_daily_sales():
                     }
                 }
             }
-            new_day_sales = {"_id": key, "day_sales": newVal}
+            new_day_sales = {"_id": key, "day_sales": newVal, "current_day": day}
             db.insert_one(new_day_sales)
         else:
-            if prev_day_sales["day_sales"].get(day) and prev_day_sales["day_sales"][day].get(item):
-                prev_quantity = prev_day_sales["day_sales"][day][item]["quantity"]
-                prev_total_price = prev_day_sales["day_sales"][day][item]["total_price"]
-                prev_day_sales["day_sales"][day][item]["quantity"] = prev_quantity + quantity
-                prev_day_sales["day_sales"][day][item]["total_price"] = prev_total_price + price
+            if day_sales["day_sales"].get("current_day") != day:
+                # start new day sales record
+                day_sales["day_sales"]["current_day"] = day
+                day_sales["day_sales"][day] = {}
+                operation = "$set"
+                update_key = f"day_sales"
+                update_desc = {operation: {update_key: day_sales["day_sales"]}}
+                filter_ = {"_id": key}
+                db.update_one(filter_, update_desc)
+
+            if day_sales["day_sales"].get(day) and day_sales["day_sales"][day].get(item):
+                prev_quantity = day_sales["day_sales"][day][item]["quantity"]
+                prev_total_price = day_sales["day_sales"][day][item]["total_price"]
+                day_sales["day_sales"][day][item]["quantity"] = prev_quantity + quantity
+                day_sales["day_sales"][day][item]["total_price"] = prev_total_price + price
                 operation = "$set"
                 update_key = f"day_sales.{day}.{item}"
-                update_desc = {operation: {update_key: prev_day_sales["day_sales"][day][item]}}
+                update_desc = {operation: {update_key: day_sales["day_sales"][day][item]}}
                 filter_ = {"_id": key}
                 db.update_one(filter_, update_desc)
             else:
@@ -209,7 +219,7 @@ def update_daily_sales():
     
 
 
-@app.route("/records/day_sales/<day_name>", methods=["GET"], strict_slashes=False)
+@app.route("/records_api/day_sales/<day_name>", methods=["GET"], strict_slashes=False)
 def get_daily_sales(day_name):
     table_id = request.args.get("tableId")
 

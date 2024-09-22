@@ -6,6 +6,7 @@ import Tutorial from "./components/Tutorial";
 import Root from "./components/Root";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Sales from "./components/Sales";
+import DaySales from "./components/DaySales";
 
 const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "inventory/sales",
         element: <Sales />,
+      },
+      {
+        path: "inventory/day_sales",
+        element: <DaySales />,
       },
       {
         path: "tutorial",
