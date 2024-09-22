@@ -149,11 +149,91 @@ def delete_records():
 
 @app.route("/records/day_sales", methods=["PUT"], strict_slashes=False)
 def update_daily_sales():
-    pass
+    req_payload = request.get_json()
+    table_id = req_payload.get("tableId")
+    if not table_id:
+        return json_util.dumps({}), 409
+    key = table_id
+    day = req_payload["dayName"]
+    db = Storage(server, key)
+    error = False
+    try:
+        prev_day_sales = db.find_one({"_id": key})
+        item = req_payload["item"]
+        quantity = req_payload["quantity"]
+        price = req_payload["price"]
+        transaction_type = req_payload["type"]
+        if transaction_type == "return":
+            price = -price
+        if not prev_day_sales:
+            newVal = {
+                day: {
+                    item: {
+                        "item": item,
+                        "quantity": quantity,
+                        "total_price": price
+                    }
+                }
+            }
+            new_day_sales = {"_id": key, "day_sales": newVal}
+            db.insert_one(new_day_sales)
+        else:
+            if prev_day_sales["day_sales"].get(day) and prev_day_sales["day_sales"][day].get(item):
+                prev_quantity = prev_day_sales["day_sales"][day][item]["quantity"]
+                prev_total_price = prev_day_sales["day_sales"][day][item]["total_price"]
+                prev_day_sales["day_sales"][day][item]["quantity"] = prev_quantity + quantity
+                prev_day_sales["day_sales"][day][item]["total_price"] = prev_total_price + price
+                operation = "$set"
+                update_key = f"day_sales.{day}.{item}"
+                update_desc = {operation: {update_key: prev_day_sales["day_sales"][day][item]}}
+                filter_ = {"_id": key}
+                db.update_one(filter_, update_desc)
+            else:
+                updateVal = {
+                    "item": item,
+                    "quantity": quantity,
+                    "total_price": price
+                }
+                operation = "$set"
+                update_key = f"day_sales.{day}.{item}"
+                update_desc = {operation: {update_key: updateVal}}
+                filter_ = {"_id": key}
+                db.update_one(filter_, update_desc)
+    except Exception:
+        error = True
+    db.close()
+    if not error:
+        return json_util.dumps({"success": True}), 201
+    else:
+        return json_util.dumps({"success": False, "error": True}), 409
+    
+
 
 @app.route("/records/day_sales/<day_name>", methods=["GET"], strict_slashes=False)
 def get_daily_sales(day_name):
-    tableId = request.args.get("tableId")
+    table_id = request.args.get("tableId")
+
+    if not table_id:
+        return json_util.dumps({}), 409
+
+    key = table_id
+    day = day_name
+    response_payload = {}
+    db = Storage(server, key)
+    error = False
+    try:
+        prev_day_sales = db.find_one({"_id": key})
+        if prev_day_sales and prev_day_sales["day_sales"].get(day):
+            response_payload[day] = prev_day_sales["day_sales"].get(day)
+    except Exception as e:
+        print(e)
+        error = True
+    db.close()
+    if not error:
+        return json_util.dumps(response_payload), 200
+    else:
+        return json_util.dumps({"error": True}), 409
+
 
 
 def update_current_table_in_db(current_table, key, db):

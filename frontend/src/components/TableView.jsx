@@ -286,7 +286,7 @@ export default function TableView(props) {
             <>
               <br />
               <button onClick={(e) => handleGetTodaySales()}>get today's sales</button>
-              <button onClick={(e) => handleGetdaySales()}>get day's sales</button>
+              <button onClick={(e) => handleGetInputDaySales()}>get day's sales</button>
             </>
           )
         }
@@ -602,7 +602,7 @@ function createSellBtn(rowNumber) {
           );
         }
         broadcast({ type: "sell", rowNumber });
-        updateDaySales({ type: "sell", rowNumber })
+        updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         row[2] = `${sold}`;
         row[3] = `${returned}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -634,7 +634,7 @@ function createReturnBtn(rowNumber) {
             start stock. aborting return`);
         }
         broadcast({ type: "return", rowNumber });
-        updateDaySales({ type: "return", rowNumber })
+        updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         row[3] = `${returned}`;
         row[2] = `${sold}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -2626,7 +2626,6 @@ function mimicReturn(rowNumber) {
 }
 
 function updateDaySales(message) {
-  return
   message["tableId"] = `${recordState.currentTable}:${flexId}`
   let dayName = getCurrentDayName()
   message.dayName = dayName
@@ -2643,10 +2642,19 @@ function updateDaySales(message) {
 
 function handleGetTodaySales() {
   let dayName = getCurrentDayName()
-  handleGetdaySales(dayName)
+  getdaySales(dayName)
 }
 
-function handleGetdaySales(dayName) {
+function handleGetInputDaySales() {
+  let dayName = prompt("enter the day of week to get daily sales report")
+  const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  if (!daysOfWeek.includes(dayName.trim().toLowerCase())) {
+    return alert(`error: ${dayName} not a valid day of the week.`)
+  }
+  getdaySales(dayName)
+}
+
+function getdaySales(dayName) {
   let tableId = `${recordState.currentTable}:${flexId}`
   fetch(getUrl + "day_sales/" + dayName + `?tableId=${tableId}`)
   .then((data) => data.json())
