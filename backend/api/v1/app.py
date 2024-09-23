@@ -219,13 +219,8 @@ def update_daily_sales():
     
 
 
-@app.route("/records_api/day_sales/<day_name>", methods=["GET"], strict_slashes=False)
-def get_daily_sales(day_name):
-    table_id = request.args.get("tableId")
-
-    if not table_id:
-        return json_util.dumps({"error": "no tableId in payload"}), 409
-
+@app.route("/records_api/day_sales/<day_name>/<table_id>", methods=["GET"], strict_slashes=False)
+def get_daily_sales(day_name, table_id):
     key = table_id
     day = day_name
     response_payload = {}
