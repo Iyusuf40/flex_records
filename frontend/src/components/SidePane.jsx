@@ -72,6 +72,9 @@ export default function SidePane(props) {
           </button>{" "}
           <br />
           <br />
+          <button onClick={duplicateTable}>duplicate table</button>
+          <br />
+          <br />
           <button onClick={switchUser}>switch user</button>
           <br />
           <br />
@@ -185,6 +188,16 @@ async function switchUser() {
   const id = promptForId();
   if (!id) return;
   await setAltUser(getUrl, id, setRecordsState);
+}
+
+function duplicateTable() {
+  let currentTable = recordState.currentTable
+  if (!currentTable) return
+  let tableToDup = recordState.tables[currentTable]
+  let duplicate = JSON.parse(JSON.stringify(tableToDup))
+  let duplicateTableName = `${currentTable} (copy)`
+  recordState.tables[duplicateTableName] = duplicate
+  setRecordsStateWrapper(recordState, "currentTable", duplicateTableName)
 }
 
 function showId() {

@@ -49,7 +49,7 @@ input {
 .side--pane {
   width: 20%;
   max-width: 25%;
-  height: 80vh;
+  height: 90vh;
   border-right: 1px solid rgba(83, 67, 163, 0.426);
   padding: 20px;
 }

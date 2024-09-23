@@ -33,6 +33,7 @@ export default function TableView(props) {
   let isInventory = props.isInventory;
   let isSales = props.isSales;
   let hide = isInventory ? "hide" : "";
+  let hideIfIsSales = isSales ? "hide" : "";
 
   const clearFormObj = {
     createTableMode: null,
@@ -169,6 +170,7 @@ export default function TableView(props) {
           delete right-most column
         </button>
         <button
+          className={hideIfIsSales}
           onClick={(e) =>
             addRow(props.setRecordsStateWrapper, currentTable, props.records)
           }
@@ -176,6 +178,7 @@ export default function TableView(props) {
           add row at the bottom
         </button>
         <button
+          className={hideIfIsSales}
           onClick={(e) =>
             delRow(props.setRecordsStateWrapper, currentTable, props.records)
           }
@@ -184,6 +187,7 @@ export default function TableView(props) {
         </button>
 
         <button
+          className={hideIfIsSales}
           onClick={(e) => setDeleteMode(currentTable, props.records)}
         >
           delete row
@@ -219,6 +223,12 @@ export default function TableView(props) {
           onClick={(e) => setDeleteMode(currentTable, props.records)}
         >
           delete row or column
+        </button>
+        <button
+          className={hide}
+          onClick={(e) => emptySelectedCells(currentTable)}
+        >
+          empty selected cells
         </button>
 
         <br />
@@ -271,6 +281,15 @@ export default function TableView(props) {
             </label>
           </button>
         )}
+        {
+          isInventory && (
+            <>
+              <br />
+              <button onClick={(e) => handleGetTodaySales()}>get today's sales</button>
+              <button onClick={(e) => handleGetInputDaySales()}>get day's sales</button>
+            </>
+          )
+        }
       </div>
 
       {table.ruleMode ? (
@@ -371,6 +390,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
   }
 
   const table = props.records.tables[currentTable];
+  if (!table) return
   let cellClassName = getClassName(table);
   const tableData = table.data;
 
@@ -397,9 +417,10 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
       }
 
       const rowContainer = [];
-      let lastTwoCols = 0
-      if (isInInventoryOrSalesRoute()) lastTwoCols = SHOW_FULL_INVENTORY ? 0 : 2;
-      for (let colIndex = 0; colIndex < noOfCols - lastTwoCols; colIndex++) {
+      let hideLastNCols = 0
+      if (isInventory) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 2;
+      if (isSales) hideLastNCols = SHOW_FULL_INVENTORY ? 0 : 4;
+      for (let colIndex = 0; colIndex < noOfCols - hideLastNCols; colIndex++) {
         let extendInputClass = getColorClassForApplicableRowsAndCols(
           colorRowsAndCols,
           row,
@@ -581,6 +602,7 @@ function createSellBtn(rowNumber) {
           );
         }
         broadcast({ type: "sell", rowNumber });
+        updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         row[2] = `${sold}`;
         row[3] = `${returned}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -612,6 +634,7 @@ function createReturnBtn(rowNumber) {
             start stock. aborting return`);
         }
         broadcast({ type: "return", rowNumber });
+        updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         row[3] = `${returned}`;
         row[2] = `${sold}`;
         setRecordsStateWrapper(recordState, "currentTable", currentTable);
@@ -775,6 +798,7 @@ function getTargetRowAndCol(colorRowsAndCols, row, colIndex) {
 }
 
 function setRuleModeToDisplayBtns(recordState) {
+  if (!recordState) return;
   const currentTable = recordState.currentTable;
   if (!currentTable) return;
   // allow rule selection
@@ -837,7 +861,7 @@ function delColumn(setRecordsStateWrapper, tableName, recordState) {
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, newTableData);
 }
 
-function addRow(setRecordsStateWrapper, tableName, recordState) {
+function addRow(setRecordsStateWrapper, tableName, recordState, shouldBroadcast = true) {
   if (recordState.currentTable === "") {
     alert("No table selected");
     return null;
@@ -855,6 +879,12 @@ function addRow(setRecordsStateWrapper, tableName, recordState) {
   setRecordsStateWrapper(recordState, `tables.${tableName}.data`, tableData);
   applyRuleOnModification(recordState);
   runRegisteredFunctions(recordState, tableName);
+  if (isInInventoryOrSalesRoute() && shouldBroadcast) {
+    broadcast({
+      type: "rowAppend",
+      tableName
+    })
+  }
 }
 
 function delRow(setRecordsStateWrapper, tableName, recordState) {
@@ -867,6 +897,15 @@ function delRow(setRecordsStateWrapper, tableName, recordState) {
   delete recordState.tables[tableName].data[noOfRows];
   let newNoOfRows = noOfRows - 1;
   if (newNoOfRows < 0) newNoOfRows = 0;
+  else {
+    if (isInInventoryOrSalesRoute) {
+      broadcast({
+        type: "rowDelete",
+        tableName,
+        row: noOfRows
+      })
+    }
+  }
 
   setRecordsStateWrapper(
     recordState,
@@ -878,6 +917,22 @@ function delRow(setRecordsStateWrapper, tableName, recordState) {
 function setDeleteMode(tableName, recordState) {
   alert("click on the cell you want to delete its row or column");
   setRecordsStateWrapper(recordState, `tables.${tableName}.deleteMode`, true);
+}
+
+function emptySelectedCells(tableName) {
+  let table = recordState.tables[tableName]
+  if (!table) return
+  const initialCellsSelected = SELECTED_CELLS_ACCUMULATOR[0];
+  
+  if (!initialCellsSelected) return
+
+  for (let el of initialCellsSelected) {
+    const row = Number(el.getAttribute("row"));
+    const col = Number(el.getAttribute("col"));
+    table.data[row][col] = ""
+  }
+  unSetRuleModeToDisplayBtns()
+  runRegisteredFunctions(recordState, tableName);
 }
 
 function setInsertMode(tableName, recordState) {
@@ -2305,32 +2360,6 @@ function handleDownloadCSV() {
   downloadFile(tableName, csv);
 }
 
-function getCurrentDate() {
-  const date = new Date();
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  
-  const dayName = daysOfWeek[date.getDay()];
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
-  const year = date.getFullYear();
-
-  return `${dayName}-${day}-${month}-${year}`;
-};
-
-// function adapted from https://stackoverflow.com/a/33542499
-function downloadFile(filename, content) {
-  const blob = new Blob([content], { type: "text/csv" });
-  const elem = window.document.createElement("a");
-  elem.style.display = "none";
-  const url = window.URL.createObjectURL(blob);
-  elem.href = url;
-  elem.download = filename;
-  document.body.appendChild(elem);
-  elem.click();
-  document.body.removeChild(elem);
-  URL.revokeObjectURL(url);
-}
-
 function handleUploadCsv(event) {
   const file = event.target.files?.item(0);
   if (!file) return;
@@ -2457,6 +2486,25 @@ function getTotatlStockPrice() {
   return total;
 }
 
+function getCurrentDate() {
+  const date = new Date();
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  
+  const dayName = daysOfWeek[date.getDay()];
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
+  const year = date.getFullYear();
+
+  return `${dayName}-${day}-${month}-${year}`;
+};
+
+function getCurrentDayName() {
+  const date = new Date();
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = daysOfWeek[date.getDay()];
+  return dayName
+}
+
 export function createSocket() {
   socket = new WebSocket(socketUrl);
 
@@ -2514,6 +2562,12 @@ function handleBroadcast(message) {
     let {tableName, row} = message
     deleteEntireRow(tableName, row, recordState);
   }
+
+  if (message.type === "rowAppend") {
+    let {tableName} = message
+    let shouldBroadcast = false
+    addRow(setRecordsStateWrapper, tableName, recordState, shouldBroadcast)
+  }
 }
 
 function mimicSell(rowNumber) {
@@ -2555,4 +2609,68 @@ function mimicReturn(rowNumber) {
   row[3] = `${returned}`;
   row[2] = `${sold}`;
   setRecordsStateWrapper(recordState, "currentTable", currentTable);
+}
+
+function updateDaySales(message) {
+  message["tableId"] = `${recordState.currentTable}:${flexId}`
+  let dayName = getCurrentDayName()
+  message.dayName = dayName
+
+  fetch(putUrl + "/day_sales", {
+    method: "PUT",
+    body: JSON.stringify(message),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+}
+
+function handleGetTodaySales() {
+  let dayName = getCurrentDayName()
+  getdaySales(dayName)
+}
+
+function handleGetInputDaySales() {
+  let dayName = prompt("enter the day of week to get daily sales report")
+  if (!dayName) return
+  const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  dayName = dayName.trim().toLowerCase()
+  if (!daysOfWeek.includes(dayName)) {
+    return alert(`error: ${dayName} not a valid day of the week.`)
+  }
+  dayName = dayName[0].toUpperCase() + dayName.slice(1)
+  getdaySales(dayName)
+}
+
+function getdaySales(dayName) {
+  let tableId = `${recordState.currentTable}:${flexId}`
+  fetch(getUrl + "day_sales/" + dayName + `?tableId=${tableId}`)
+  .then((data) => data.json())
+  .then((data) => {
+    let salesData = data[dayName]
+    if (!salesData || !Object.keys(salesData).length) {
+      return alert("no daily sales record for " + dayName)
+    }
+    buildTableDataForDaySales(salesData, dayName)
+    // route to /inventory/day_sales route with data json
+    // and display
+  })
+}
+
+function buildTableDataForDaySales(salesData, dayName) {
+  let row = 1
+  let tableData = {}
+  let totalSales = 0
+  tableData[row] = ["item", "quantity sold", "total price"]
+  row++
+  for (let item of Object.values(salesData)) {
+    tableData[row] = [item.item, item.quantity, item.total_price]
+    totalSales += Number(item.total_price) || 0
+    row++
+  }
+  tableData[row] = ["total sales", "", totalSales]
+  localStorage.setItem("daySales", JSON.stringify(tableData))
+  localStorage.setItem("dayName", dayName)
+  window.open('/inventory/day_sales', '_blank')
 }

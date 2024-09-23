@@ -1130,6 +1130,20 @@ will be overwritten`);
   return recordState;
 }
 
+// function adapted from https://stackoverflow.com/a/33542499
+export function downloadFile(filename, content) {
+  const blob = new Blob([content], { type: "text/csv" });
+  const elem = window.document.createElement("a");
+  elem.style.display = "none";
+  const url = window.URL.createObjectURL(blob);
+  elem.href = url;
+  elem.download = filename;
+  document.body.appendChild(elem);
+  elem.click();
+  document.body.removeChild(elem);
+  URL.revokeObjectURL(url);
+}
+
 /**
  *
  * @param data map of keys to rows, 1: [a, b, c]
@@ -1234,4 +1248,8 @@ function getQuoteClosureIndexAhead(row, index) {
 
 export function isInInventoryOrSalesRoute() {
   return window.location.pathname.includes("inventory")
+}
+
+export function isSalesRoute() {
+  return window.location.pathname.includes("sales")
 }
