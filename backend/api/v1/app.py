@@ -224,7 +224,7 @@ def get_daily_sales(day_name):
     table_id = request.args.get("tableId")
 
     if not table_id:
-        return json_util.dumps({}), 409
+        return json_util.dumps({"error": "no tableId in payload"}), 409
 
     key = table_id
     day = day_name
