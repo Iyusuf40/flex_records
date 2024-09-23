@@ -2645,7 +2645,7 @@ function handleGetInputDaySales() {
 
 function getdaySales(dayName) {
   let tableId = `${recordState.currentTable}:${flexId}`
-  fetch(getUrl + "day_sales/" + dayName + `?tableId=${tableId}`)
+  fetch(getUrl + "day_sales/" + dayName + `/?tableId=${tableId}`)
   .then((data) => data.json())
   .then((data) => {
     let salesData = data[dayName]
