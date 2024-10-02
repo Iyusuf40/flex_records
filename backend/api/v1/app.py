@@ -16,7 +16,6 @@ sock = Sock(app)
 CORS(app)
 server = os.getenv("server") or "primary"
 
-clients = set()
 clientsMap = {}
 
 def getClientsGroup(tableId):
@@ -27,17 +26,17 @@ def getClientsGroup(tableId):
 def putInClientsGroup(client, tableId):
     getClientsGroup(tableId).add(client)
 
-def removeFromCliensGroup(client, tableId):
+def removeFromClientsGroup(client, tableId):
     getClientsGroup(tableId).remove(client)
 
 @sock.route('/ws')
 def broadcast(sock):
     while True:
-        data = sock.receive()
         try:
+            data = sock.receive()
             message = json.loads(data)
         except ConnectionClosed:
-            removeFromCliensGroup(client, message.get("tableId"))
+            removeFromClientsGroup(sock, message.get("tableId"))
         except Exception:
             print("unable to load", data)
         if message["type"] == "join":
@@ -51,7 +50,7 @@ def broadcast(sock):
                     except ConnectionClosed:
                         closedSockets.append(client)
             for closedSocket in closedSockets:
-                removeFromCliensGroup(closedSocket, message.get("tableId"))
+                removeFromClientsGroup(closedSocket, message.get("tableId"))
 
 @app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):
