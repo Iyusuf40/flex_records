@@ -6,6 +6,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_sock import Sock, ConnectionClosed
 from storage.storage import Storage
+from time import sleep
 import json
 from bson import json_util
 import os
@@ -51,6 +52,7 @@ def broadcast(sock):
                         closedSockets.append(client)
             for closedSocket in closedSockets:
                 removeFromClientsGroup(closedSocket, message.get("tableId"))
+        sleep(0.0001)
 
 @app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):
