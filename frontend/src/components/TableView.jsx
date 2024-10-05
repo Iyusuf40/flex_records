@@ -186,12 +186,14 @@ export default function TableView(props) {
           del row from the bottom
         </button>
 
-        <button
-          className={hideIfIsSales}
-          onClick={(e) => setDeleteMode(currentTable, props.records)}
-        >
-          delete row
-        </button>
+        {isInventory && (
+          <button
+            className={hideIfIsSales}
+            onClick={(e) => setDeleteMode(currentTable, props.records)}
+          >
+            delete row
+          </button>
+        )}
         {isInventory && (
           <button
             onClick={(e) => {
@@ -434,16 +436,8 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
         );
 
         let cellIsReadOnly = false;
-        if (isSales && isInventory && colIndex >= 1) {
+        if (isSales && colIndex >= 1) {
           cellIsReadOnly = true;
-        }
-
-        if (isInventory && colIndex >= 2) {
-          cellIsReadOnly = true;
-        }
-
-        if (!isSales && isInventory && colIndex === 5) {
-          cellIsReadOnly = false;
         }
 
         const cell = (
