@@ -161,7 +161,7 @@ export async function save(record, init) {
 
   const json = JSON.stringify(payload);
 
-  await fetch(putUrl, {
+  return await fetch(putUrl, {
     method: "PUT",
     body: json,
     headers: {
