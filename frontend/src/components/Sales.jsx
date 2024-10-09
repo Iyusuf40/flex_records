@@ -29,11 +29,11 @@ export default function Sales() {
 
   getRecords(init, flexId, setRecordsState, setInit);
 
-  save(recordState, init);
-
-  function setRecordsStateWrapper(prevState, pathToPropToChange, value) {
+  function setRecordsStateWrapper(prevState, pathToPropToChange, value, shouldSave = true) {
     changeValueInNestedObj(prevState, pathToPropToChange, value);
     setRecordsState({ ...prevState });
+    if (shouldSave === false) return {}
+    return save(recordState, init);
   }
 
   window.setRecordsStateWrapper = setRecordsStateWrapper;

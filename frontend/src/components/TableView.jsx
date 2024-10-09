@@ -26,6 +26,7 @@ const SELECTED_CELLS_ACCUMULATOR = [];
 let SHOW_FULL_INVENTORY = false;
 
 let socket = null;
+const mySockId = Date.now()
 
 export default function TableView(props) {
   let { currentTable, noOfCols, noOfRows, table } = getCurrentTableProps(props);
@@ -579,7 +580,7 @@ function createSellBtn(rowNumber) {
     <button
       className="transaction--btn"
       key={Date.now()}
-      onClick={() => {
+      onClick={async () => {
         let currentTable = recordState.currentTable;
         if (!currentTable) return;
         let table = recordState.tables[currentTable];
@@ -595,11 +596,16 @@ function createSellBtn(rowNumber) {
             `prohibited action: current stock cannot be negative aborting sell`,
           );
         }
-        broadcast({ type: "sell", rowNumber });
-        updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         row[2] = `${sold}`;
         row[3] = `${returned}`;
-        setRecordsStateWrapper(recordState, "currentTable", currentTable);
+        let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
+        if (resp.ok) {
+          alert("successful")
+        } else {
+          return alert("error: sell failed, please ensure you have a good network connection")
+        }
+        broadcast({ type: "sell", rowNumber });
+        updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
       }}
     >
       sell
@@ -612,7 +618,7 @@ function createReturnBtn(rowNumber) {
     <button
       className="transaction--btn"
       key={Date.now() + 1}
-      onClick={() => {
+      onClick={async () => {
         let currentTable = recordState.currentTable;
         if (!currentTable) return;
         let table = recordState.tables[currentTable];
@@ -627,11 +633,16 @@ function createReturnBtn(rowNumber) {
           return alert(`prohibited action: current stock cannot be greater than 
             start stock. aborting return`);
         }
-        broadcast({ type: "return", rowNumber });
-        updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         row[3] = `${returned}`;
         row[2] = `${sold}`;
-        setRecordsStateWrapper(recordState, "currentTable", currentTable);
+        let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
+        if (resp.ok) {
+          alert("successful")
+        } else {
+          return alert("error: sell failed, please ensure you have a good network connection")
+        }
+        broadcast({ type: "return", rowNumber });
+        updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
       }}
     >
       return
@@ -2528,11 +2539,14 @@ function sleep(ms) {
 export function broadcast(message) {
   if (!socket) return;
   message["tableId"] = `${recordState.currentTable}:${flexId}`;
+  message["socketId"] = mySockId
   message = JSON.stringify(message);
   socket.send(message);
 }
 
 function handleBroadcast(message) {
+  if (message.socketId == mySockId) return
+
   if (message.type === "sell") {
     mimicSell(message.rowNumber);
   }
@@ -2546,10 +2560,11 @@ function handleBroadcast(message) {
     window.location.href = "/"
   }
 
+  let doNotSave = false
   if (message.type === "editable") {
     let { tableName, row, colIndex, value } = message;
     recordState.tables[tableName].data[row][colIndex] = value;
-    setRecordsStateWrapper(recordState, "", "");
+    setRecordsStateWrapper(recordState, "", "", doNotSave);
   }
 
   if (message.type === "rowDelete") {
@@ -2582,7 +2597,7 @@ function mimicSell(rowNumber) {
   }
   row[2] = `${sold}`;
   row[3] = `${returned}`;
-  setRecordsStateWrapper(recordState, "", "");
+  setRecordsStateWrapper(recordState, "", "", false);
 }
 
 function mimicReturn(rowNumber) {
@@ -2602,7 +2617,7 @@ function mimicReturn(rowNumber) {
   }
   row[3] = `${returned}`;
   row[2] = `${sold}`;
-  setRecordsStateWrapper(recordState, "currentTable", currentTable);
+  setRecordsStateWrapper(recordState, "currentTable", currentTable, false);
 }
 
 function updateDaySales(message) {
@@ -2622,33 +2637,43 @@ function updateDaySales(message) {
 
 function handleGetTodaySales() {
   let dayName = getCurrentDayName()
-  getdaySales(dayName)
+  getDaySalesAndViewIt(dayName)
 }
 
 function handleGetInputDaySales() {
-  let dayName = prompt("enter the day of week to get daily sales report")
-  if (!dayName) return
+  let dayOrDaysRange = prompt(`enter the day of week to get daily sales report e.g. friday,
+    or a range of days e.g. monday - sunday`)
+  if (!dayOrDaysRange) return
   const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  dayName = dayName.trim().toLowerCase()
-  if (!daysOfWeek.includes(dayName)) {
-    return alert(`error: ${dayName} not a valid day of the week.`)
+  dayOrDaysRange = dayOrDaysRange.trim().toLowerCase().replace(/ /g, '')
+  if (dayOrDaysRange.includes('-')) return getAggregateDaySales(dayOrDaysRange)
+  if (dayOrDaysRange === "all") return getAggregateDaySales('sunday-saturday')
+  if (!daysOfWeek.includes(dayOrDaysRange)) {
+    return alert(`error: ${dayOrDaysRange} not a valid day of the week.`)
   }
-  dayName = dayName[0].toUpperCase() + dayName.slice(1)
-  getdaySales(dayName)
+  let dayName = dayOrDaysRange[0].toUpperCase() + dayOrDaysRange.slice(1)
+  getDaySalesAndViewIt(dayName)
 }
 
-function getdaySales(dayName) {
+async function getdaySales(dayName) {
+  dayName = dayName[0].toUpperCase() + dayName.slice(1)
   let tableId = `${recordState.currentTable}:${flexId}`
-  fetch(getUrl + "day_sales/" + dayName + `/${tableId}`)
-  .then((data) => data.json())
-  .then((data) => {
-    let salesData = data[dayName]
-    if (!salesData || !Object.keys(salesData).length) {
-      return alert("no daily sales record for " + dayName)
+  let resp = await fetch(getUrl + "day_sales/" + dayName + `/${tableId}`)
+  return await resp.json()
+}
+
+function getDaySalesAndViewIt(dayName) {
+  getdaySales(dayName)
+  .then(data => {
+    if (data) {
+      let salesData = data[dayName]
+      if (!salesData || !Object.keys(salesData).length) {
+        return alert("no daily sales record for " + dayName)
+      }
+      buildTableDataForDaySales(salesData, dayName)
+    } else {
+      return alert("failed to get sales record for " + dayName)
     }
-    buildTableDataForDaySales(salesData, dayName)
-    // route to /inventory/day_sales route with data json
-    // and display
   })
 }
 
@@ -2667,4 +2692,59 @@ function buildTableDataForDaySales(salesData, dayName) {
   localStorage.setItem("daySales", JSON.stringify(tableData))
   localStorage.setItem("dayName", dayName)
   window.open('/inventory/day_sales', '_blank')
+}
+
+async function getAggregateDaySales(daysRange) {
+  const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  let [day1, day2] = daysRange.split("-")
+  if (daysOfWeek.includes(day1) === false) {
+    return alert(`${day1} not a valid day of week`)
+  }
+  if (daysOfWeek.includes(day2) === false) {
+    return alert(`${day2} not a valid day of week`)
+  }
+  let indexOfDay1 = daysOfWeek.indexOf(day1)
+  let indexOfDay2 = daysOfWeek.indexOf(day2)
+
+  if (indexOfDay2 == indexOfDay1) {
+    return alert(`${day2} and ${day1} are the same same day, records are kept for 7 days only not 8`)
+  }
+
+
+  let reqArray = []
+
+  for (let i = indexOfDay1;; i = (i + 1) % 7) {
+    let day = daysOfWeek[i]
+    reqArray.push(getdaySales(day))
+    if (i == indexOfDay2) break
+  }
+
+  Promise.all(reqArray)
+  .then(aggregateSales => {
+    let merged = mergeAggregateSales(aggregateSales)
+    buildTableDataForDaySales(merged, daysRange)
+  })
+
+}
+
+function mergeAggregateSales(aggregateSales) {
+  let merged = {}
+  aggregateSales.forEach(salesData => {
+    for (let sale of Object.values(salesData)) {
+      if (sale) {
+        for (let item of Object.values(sale)) {
+          if (item) {
+            if (!merged[item.item]) {
+              merged[item.item] = {item: item.item, quantity: item.quantity, total_price: item.total_price}
+            } else {
+              merged[item.item].quantity += Number(item.quantity)
+              merged[item.item].total_price += (Number(item.total_price) || 0)
+            }
+          }
+        }
+      }
+    }
+  })
+
+  return merged
 }
