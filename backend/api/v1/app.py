@@ -166,6 +166,7 @@ def update_daily_sales():
         transaction_type = req_payload["type"]
         if transaction_type == "return":
             price = -price
+            quantity = -quantity
         if not day_sales:
             newVal = {
                 day: {

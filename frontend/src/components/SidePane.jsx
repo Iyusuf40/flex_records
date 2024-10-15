@@ -115,7 +115,8 @@ export default function SidePane(props) {
           onInput={(e) => {
             tableSearchWordMap[currentTable] = e.target.value;
             // force refresh
-            setRecordsStateWrapper(recordState, "currentTable", currentTable);
+            let shouldSave = false
+            setRecordsStateWrapper(recordState, "currentTable", currentTable, shouldSave);
           }}
         ></input>
       ) : (
