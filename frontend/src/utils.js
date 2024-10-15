@@ -161,13 +161,15 @@ export async function save(record, init) {
 
   const json = JSON.stringify(payload);
 
-  return await fetch(putUrl, {
+  let res = await fetch(putUrl, {
     method: "PUT",
     body: json,
     headers: {
       "Content-Type": "application/json",
     },
-  });
+  })
+  
+  return res;
 }
 
 export function persist(record) {

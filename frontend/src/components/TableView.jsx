@@ -601,11 +601,11 @@ function createSellBtn(rowNumber) {
         let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
         if (resp.ok) {
           alert("successful")
+          broadcast({ type: "sell", rowNumber });
+          updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         } else {
           return alert("error: sell failed, please ensure you have a good network connection")
         }
-        broadcast({ type: "sell", rowNumber });
-        updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
       }}
     >
       sell
@@ -638,11 +638,11 @@ function createReturnBtn(rowNumber) {
         let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
         if (resp.ok) {
           alert("successful")
+          broadcast({ type: "return", rowNumber });
+          updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         } else {
           return alert("error: sell failed, please ensure you have a good network connection")
         }
-        broadcast({ type: "return", rowNumber });
-        updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
       }}
     >
       return
