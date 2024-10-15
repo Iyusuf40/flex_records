@@ -2511,6 +2511,7 @@ function getCurrentDayName() {
 }
 
 export function createSocket() {
+  if (socket) return
   socket = new WebSocket(socketUrl);
 
   socket.addEventListener("error", (err) => {
