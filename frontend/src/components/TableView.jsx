@@ -601,7 +601,8 @@ function createSellBtn(rowNumber) {
         let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
         if (resp.ok) {
           alert("successful")
-          broadcast({ type: "sell", rowNumber });
+          let broadcastId = Date.now()
+          broadcast({ type: "sell", rowNumber, broadcastId });
           updateDaySales({ type: "sell", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         } else {
           return alert("error: sell failed, please ensure you have a good network connection")
@@ -638,7 +639,8 @@ function createReturnBtn(rowNumber) {
         let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
         if (resp.ok) {
           alert("successful")
-          broadcast({ type: "return", rowNumber });
+          let broadcastId = Date.now()
+          broadcast({ type: "return", rowNumber, broadcastId });
           updateDaySales({ type: "return", item: row[0], quantity: 1, price: Number(row[5]) || 0 })
         } else {
           return alert("error: sell failed, please ensure you have a good network connection")
@@ -2545,8 +2547,18 @@ export function broadcast(message) {
   socket.send(message);
 }
 
+let processedMessages = {}
+
 function handleBroadcast(message) {
   if (message.socketId == mySockId) return
+
+  if (message.broadcastId && processedMessages[message.broadcastId]) {
+    return
+  }
+
+  if (message.broadcastId) {
+    processedMessages[message.broadcastId] = true
+  }
 
   if (message.type === "sell") {
     mimicSell(message.rowNumber);
