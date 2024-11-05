@@ -9,6 +9,8 @@ sudo systemctl daemon-reload
 sudo systemctl enable flex_records_fe
 sudo systemctl enable flex_records_api
 
+sudo service mongod stop
+
 cd
 
 # deploy frontend
@@ -22,5 +24,11 @@ sudo service flex_records_fe start
 
 cd
 
+sudo service mongod start
+
 #deploy backend
 sudo service flex_records_api start
+
+# setup nginx reverse proxy
+bash setup_nginx_conf.sh
+
