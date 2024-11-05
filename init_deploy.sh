@@ -16,9 +16,9 @@ cd
 # deploy frontend
 cd flex_records/frontend
 git checkout deployment
-rm -rf node_modules
+rm -rf node_modules package-lock.json
 git pull
-npm install --production
+npm install --omit=dev
 rm -rf build
 npm run build
 sudo service flex_records_fe start
