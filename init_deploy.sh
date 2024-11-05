@@ -18,7 +18,6 @@ cd flex_records/frontend
 git checkout deployment
 rm -rf node_modules
 git pull
-npm config set jobs 1
 npm install
 rm -rf build
 npm run build
