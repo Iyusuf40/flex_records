@@ -18,7 +18,7 @@ cd flex_records/frontend
 git checkout deployment
 rm -rf node_modules
 git pull
-NODE_OPTIONS="--max-old-space-size=512" npm install --no-optional
+npm install --production
 rm -rf build
 npm run build
 sudo service flex_records_fe start
