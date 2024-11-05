@@ -9,7 +9,8 @@ sudo systemctl daemon-reload
 sudo systemctl enable flex_records_fe
 sudo systemctl enable flex_records_api
 
-sudo service mongod stop
+cd flex_records
+bash stop_services.sh
 
 cd
 
@@ -18,18 +19,19 @@ cd flex_records/frontend
 git checkout deployment
 rm -rf node_modules package-lock.json
 git pull
-NODE_OPTIONS=--max_old_space_size=512 npm install
+npm install --jobs=1
 rm -rf build
 npm run build
 sudo service flex_records_fe start
 
 cd
 
-sudo service mongod start
-
 #deploy backend
 sudo service flex_records_api start
 
 # setup nginx reverse proxy
 bash setup_nginx_conf.sh
+
+cd flex_records
+bash start_services.sh
 
