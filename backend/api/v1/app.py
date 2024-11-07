@@ -52,7 +52,7 @@ def broadcast(sock):
                         closedSockets.append(client)
             for closedSocket in closedSockets:
                 removeFromClientsGroup(closedSocket, message.get("tableId"))
-        sleep(0.0001)
+        sleep(0.01)
 
 @app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):
