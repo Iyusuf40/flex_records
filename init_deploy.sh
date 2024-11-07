@@ -19,7 +19,7 @@ cd flex_records/frontend
 git checkout deployment
 rm -rf node_modules package-lock.json
 git pull
-npm install --jobs=1
+npm install
 rm -rf build
 npm run build
 sudo service flex_records_fe start
@@ -31,6 +31,9 @@ sudo service flex_records_api start
 
 # setup nginx reverse proxy
 bash setup_nginx_conf.sh
+
+# setup ssl
+bash setup_ssl_cert.sh
 
 cd flex_records
 bash start_services.sh
