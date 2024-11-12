@@ -1254,3 +1254,37 @@ export function isInInventoryOrSalesRoute() {
 export function isSalesRoute() {
   return window.location.pathname.includes("sales")
 }
+
+export function alertForSeconds(message, seconds=2) {
+  // Create the dialog box
+  const dialogBox = document.createElement('div');
+  dialogBox.style.position = 'absolute';
+  dialogBox.style.top = '50%';
+  dialogBox.style.left = '50%';
+  dialogBox.style.transform = 'translate(-50%, -50%)';
+  dialogBox.style.backgroundColor = '#fff';
+  dialogBox.style.padding = '20px';
+  dialogBox.style.border = '1px solid #ddd';
+  dialogBox.style.borderRadius = '10px';
+  dialogBox.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
+  dialogBox.style.width = '300px';
+  dialogBox.style.textAlign = 'center';
+  dialogBox.innerHTML = `
+    <h2>${message}</h2>
+    <button id="close-button" style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;">close</button>
+  `;
+
+  // Add the dialog box to the body
+  document.body.appendChild(dialogBox);
+
+  // Add event listener to close button
+  const closeButton = dialogBox.querySelector('#close-button');
+  closeButton.addEventListener('click', () => {
+    dialogBox.remove();
+  });
+
+  // Remove the dialog box after the specified time
+  setTimeout(() => {
+    dialogBox.remove();
+  }, seconds * 1000);
+}

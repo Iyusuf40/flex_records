@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import {
+  alertForSeconds,
   buildTableDataFromCsv,
   changeValueInNestedObj,
   clearRule,
@@ -343,6 +344,16 @@ export default function TableView(props) {
 
           <input
             type="radio"
+            id="div--function"
+            name="rules"
+            onClick={(e) =>
+              registerFunction(props.records, currentTable, "applyDivFunction")
+            }
+          />
+          <label htmlFor="div--function">divide function</label>
+
+          <input
+            type="radio"
             id="average--function"
             name="rules"
             onClick={(e) =>
@@ -354,6 +365,16 @@ export default function TableView(props) {
             }
           />
           <label htmlFor="average--function">average function</label>
+
+          <input
+            type="radio"
+            id="custom--op--function"
+            name="rules"
+            onClick={(e) =>
+              registerFunction(props.records, currentTable, "applyCustomArithmeticFunction")
+            }
+          />
+          <label htmlFor="custom--op--function">custom arithmetic operation</label>
         </div>
       ) : (
         ""
@@ -1225,7 +1246,26 @@ function registerFunction(recordState, tableName, functionName) {
     recordState.tables[tableName].registeredFunctions = [];
   }
 
-  const cellsToOperateOnAsAGroup = Object.values(selectedCells);
+  let cellsToOperateOnAsAGroup = Object.values(selectedCells);
+  if (functionName === "applyCustomArithmeticFunction") {    
+    let expr = prompt(`enter expression to evaluate on each selected cell e.g + 5, * 2 etc. 
+      valid operators are: + (addition),- (subtraction),* (multiplication), and / (division)`) || ""
+    expr = expr.trim()
+    let op = expr[0]
+    let operand = expr.slice(1)
+    if (!["+", "-", "*", "/"].includes(op) || !parseFloat(operand)) {
+      alertForSeconds("invalid operator or operand")
+      unSetRuleModeToDisplayBtns()
+      return
+    }
+
+    cellsToOperateOnAsAGroup.forEach(group => {
+      group.forEach(cell => {
+        cell.expression = [op, operand]
+      })
+    })
+  }
+
   recordState.tables[tableName].registeredFunctions.push({
     functionName,
     cellsToOperateOnAsAGroup: cellsToOperateOnAsAGroup,
@@ -1251,7 +1291,9 @@ function runRegisteredFunctions(recordState, tableName) {
     applySubFunction: applySubFunction,
     applyReverseSubFunction: applyReverseSubFunction,
     applyMulFunction: applyMulFunction,
+    applyDivFunction: applyDivFunction,
     applyAverageFunction: applyAverageFunction,
+    applyCustomArithmeticFunction: applyCustomArithmeticFunction
   };
 
   if (!tableName) return;
@@ -1353,6 +1395,33 @@ function mulFunctionImpl(data, cellsToOperateOnAsAGroup) {
   return data;
 }
 
+function applyDivFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = divFunctionImpl(data, cellsToOperateOnAsAGroup);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function divFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
+  let res = Number(relevantData[0]);
+
+  for (let i = 1; i < relevantData.length; i++) {
+    let currentVal = Number(relevantData[i])
+    if (!currentVal) {
+      res = "Error: division by 0"
+      data[targetRow][targetCol] = `${res}`;
+      return data
+    } else {
+      res /= currentVal
+    }
+  }
+
+  data[targetRow][targetCol] = `${res.toFixed(2)}`;
+  return data;
+}
+
 function applyAverageFunction(
   recordState,
   tableName,
@@ -1371,6 +1440,44 @@ function averageFunctionImpl(data, cellsToOperateOnAsAGroup) {
   relevantData.forEach((v) => (sum += Number(v)));
   let res = sum / relevantData.length;
   data[targetRow][targetCol] = res.toFixed(2);
+  return data;
+}
+
+function applyCustomArithmeticFunction(
+  recordState,
+  tableName,
+  cellsToOperateOnAsAGroup,
+) {
+  const data = recordState.tables[tableName].data;
+  const updatedData = customArithmeticFunctionImpl(data, cellsToOperateOnAsAGroup);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  clearSelectedCells(tableName, recordState);
+}
+
+function customArithmeticFunctionImpl(data, cellsToOperateOnAsAGroup) {
+  let [op, operand] = cellsToOperateOnAsAGroup[0].expression
+  const relevantData = extractRelevantData(data, cellsToOperateOnAsAGroup);
+  const { targetRow, targetCol } = cellsToOperateOnAsAGroup[0];
+  let result = 0;
+  switch (op) {
+    case "+":
+      relevantData.forEach((v) => (result = Number(v) + Number(operand)));
+      break
+    case "-":
+      relevantData.forEach((v) => (result = Number(v) - Number(operand)));
+      break
+    case "*":
+      relevantData.forEach((v) => (result = Number(v) * Number(operand)));
+      break
+    case "/":
+      if (!Number(operand)) result = "Error: division by 0"
+      else relevantData.forEach((v) => (result = Number(v) / Number(operand)));
+      break
+    default:
+      alertForSeconds(`unknown operator ${op}`)
+      return data
+  }
+  data[targetRow][targetCol] = result;
   return data;
 }
 
