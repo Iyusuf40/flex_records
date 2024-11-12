@@ -56,7 +56,6 @@ def broadcast(sock):
 
 @app.route("/records_api/<record_id>", strict_slashes=False)
 def get_records(record_id):
-    """ retrieves records from db """
     key = "records-" + record_id
     con = Storage(server, key)
     res = {}
@@ -68,7 +67,6 @@ def get_records(record_id):
 
 @app.route("/records_api", methods=["POST"], strict_slashes=False)
 def create_records():
-    """ creates new record """
     res = {}
     error = False
     req = request.get_json()
@@ -92,7 +90,6 @@ def create_records():
 
 @app.route("/records_api", methods=["PUT"], strict_slashes=False)
 def update_records():
-    """ creates new record """
     error = False
     req = request.get_json()
     id = req.get("id")
@@ -101,10 +98,17 @@ def update_records():
     key = "records-" + id
     db = Storage(server, key)
     updated_table = req.get("tableData")
+    update_val = updated_table
+    changed_row = req.get("changedRow")
     table_name = req.get('tableName')
     operation = "$set"
     update_key = f"data.tables.{table_name}"
-    update_desc = {operation: {update_key: updated_table}}
+    
+    if changed_row:
+        update_key = f"data.tables.{table_name}.data.{changed_row}"
+        update_val = updated_table["data"][f"{changed_row}"]
+
+    update_desc = {operation: {update_key: update_val}}
     filter_ = {"_id": key}
     try:
         db.update_one(filter_, update_desc)
@@ -121,7 +125,6 @@ def update_records():
 
 @app.route("/records_api", methods=["DELETE"], strict_slashes=False)
 def delete_records():
-    """ deletes a record """
     error = False
     req = request.get_json()
     id = req.get("id")

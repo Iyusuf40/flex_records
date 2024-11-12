@@ -157,7 +157,10 @@ export async function save(record, init) {
     tableName,
     tableData,
     id: record.id,
+    changedRow: tableData.changedRow
   };
+
+  delete(tableData.changedRow)
 
   const json = JSON.stringify(payload);
 

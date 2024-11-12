@@ -210,7 +210,7 @@ export default function TableView(props) {
           <button
             onClick={(e) => {
               SHOW_FULL_INVENTORY = !SHOW_FULL_INVENTORY;
-              setRecordsStateWrapper(recordState, "", "");
+              setRecordsStateWrapper(recordState, "", "", false);
             }}
           >
             display full inventory
@@ -571,7 +571,7 @@ function createTableRepresentation(props, tableView, noOfRows, noOfCols) {
 }
 
 function unsetCreateTableBtnClicked(setRecordsStateWrapper, recordState) {
-  setRecordsStateWrapper(recordState, "createTableBtnClicked", false);
+  setRecordsStateWrapper(recordState, "createTableBtnClicked", false, false);
 }
 
 function addToRowsAndColsToColor(row, colIndex, recordState) {
@@ -590,6 +590,7 @@ function addToRowsAndColsToColor(row, colIndex, recordState) {
     recordState,
     `tables.${currentTable}.colorRowsAndCols`,
     colorRowsAndCols,
+    false
   );
   alert(
     "select the cells across the row or along the column you wish to apply a function to",
@@ -619,6 +620,10 @@ function createSellBtn(rowNumber) {
         }
         row[2] = `${sold}`;
         row[3] = `${returned}`;
+
+        let tableName = currentTable
+        if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = rowNumber
+
         let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
         if (resp.ok) {
           alert("successful")
@@ -657,6 +662,10 @@ function createReturnBtn(rowNumber) {
         }
         row[3] = `${returned}`;
         row[2] = `${sold}`;
+
+        let tableName = currentTable
+        if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = rowNumber
+
         let resp = await setRecordsStateWrapper(recordState, "currentTable", currentTable);
         if (resp.ok) {
           alert("successful")
@@ -785,7 +794,7 @@ function setCellInSelectedCells(colorRowsAndCols, row, colIndex, recordState) {
       targetCol,
     );
 
-    setRecordsStateWrapper(recordState, "currentTable", currentTable);
+    setRecordsStateWrapper(recordState, "currentTable", currentTable, false);
   }
 }
 
@@ -843,7 +852,7 @@ function unSetRuleModeToDisplayBtns() {
   recordState.tables[currentTable].colorRowsAndCols = [];
 
   resetSelecetedCellsAccumulator();
-  setRecordsStateWrapper(recordState, `tables.${currentTable}.ruleMode`, false);
+  setRecordsStateWrapper(recordState, `tables.${currentTable}.ruleMode`, false, false);
 }
 
 function addColumn(setRecordsStateWrapper, tableName, recordState) {
@@ -863,6 +872,7 @@ function addColumn(setRecordsStateWrapper, tableName, recordState) {
     recordState,
     `tables.${tableName}.noOfCols`,
     newNoOfCols,
+    true
   );
   applyRuleOnModification(recordState);
   runRegisteredFunctions(recordState, tableName);
@@ -886,7 +896,7 @@ function delColumn(setRecordsStateWrapper, tableName, recordState) {
     `tables.${tableName}.noOfCols`,
     newNoOfCols,
   );
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, newTableData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, newTableData, true);
 }
 
 function addRow(setRecordsStateWrapper, tableName, recordState, shouldBroadcast = true) {
@@ -904,7 +914,7 @@ function addRow(setRecordsStateWrapper, tableName, recordState, shouldBroadcast 
   changeValueInNestedObj(tableData, `${newNoOfRows}`, createArray(noOfCols));
 
   recordState.altered = true;
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, tableData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, tableData, true);
   applyRuleOnModification(recordState);
   runRegisteredFunctions(recordState, tableName);
   if (isInInventoryOrSalesRoute() && shouldBroadcast) {
@@ -939,12 +949,13 @@ function delRow(setRecordsStateWrapper, tableName, recordState) {
     recordState,
     `tables.${tableName}.noOfRows`,
     newNoOfRows,
+    true
   );
 }
 
 function setDeleteMode(tableName, recordState) {
   alert("click on the cell you want to delete its row or column");
-  setRecordsStateWrapper(recordState, `tables.${tableName}.deleteMode`, true);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.deleteMode`, true, false);
 }
 
 function emptySelectedCells(tableName) {
@@ -965,19 +976,7 @@ function emptySelectedCells(tableName) {
 
 function setInsertMode(tableName, recordState) {
   alert("click on the cell you want to insert row or column around");
-  setRecordsStateWrapper(recordState, `tables.${tableName}.insertMode`, true);
-}
-
-function addRule(tableName, recordState) {
-  recordState.altered = true;
-  recordState.tables[tableName].ruleModeAdv = false;
-  setRecordsStateWrapper(recordState, `tables.${tableName}.ruleMode`, true);
-}
-
-function addRuleAdv(tableName, recordState) {
-  recordState.altered = true;
-  recordState.tables[tableName].ruleMode = false;
-  setRecordsStateWrapper(recordState, `tables.${tableName}.ruleModeAdv`, true);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.insertMode`, true, false);
 }
 
 function increaseCellSize(tableName, recordState) {
@@ -992,7 +991,8 @@ function increaseCellSize(tableName, recordState) {
   }
 
   recordState.altered = true;
-  setRecordsStateWrapper(recordState, `tables.${tableName}.cellSize`, size);
+  if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = 1
+  setRecordsStateWrapper(recordState, `tables.${tableName}.cellSize`, size, true);
 }
 
 function decreaseCellSize(tableName, recordState) {
@@ -1007,7 +1007,9 @@ function decreaseCellSize(tableName, recordState) {
   }
 
   recordState.altered = true;
-  setRecordsStateWrapper(recordState, `tables.${tableName}.cellSize`, size);
+  if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = 1
+
+  setRecordsStateWrapper(recordState, `tables.${tableName}.cellSize`, size, true);
 }
 
 /**
@@ -1016,29 +1018,16 @@ function decreaseCellSize(tableName, recordState) {
 function updateTableView(tableName, recordState, colIndex, value, row) {
   // SN is serial number, used as key in storing rows in
   // records.tables.tableName.data
+  if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = row
+
   setRecordsStateWrapper(
     recordState,
     `tables.${tableName}.data.${row}`,
     replaceAtIndex(recordState.tables[tableName].data[row], colIndex, value),
+    true
   );
   applyRuleOnModification(recordState);
   runRegisteredFunctions(recordState, tableName);
-}
-
-/**
- * afterRulePick - handles event after user chooses a rule to apply.
- * sets the currentTable to ruleMode which signals for rule
- * application
- */
-function afterRulePick(ruleName, tableName, recordState) {
-  alert("click on the row or column you want to apply rule");
-
-  recordState.tables[tableName].ruleMode = true;
-  setRecordsStateWrapper(
-    recordState,
-    `tables.${tableName}.currentRule`,
-    ruleName,
-  );
 }
 
 function displayRegisteredFunctions() {
@@ -1271,7 +1260,9 @@ function registerFunction(recordState, tableName, functionName) {
     cellsToOperateOnAsAGroup: cellsToOperateOnAsAGroup,
   });
 
-  setRecordsStateWrapper(recordState, "currentTable", tableName);
+  if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = 1
+
+  setRecordsStateWrapper(recordState, "currentTable", tableName, true);
   // force function application
   runRegisteredFunctions(recordState, tableName);
 }
@@ -1280,7 +1271,8 @@ function deleteRegisteredFunctionAtIndex(index) {
   if (!recordState) return;
   const tableName = recordState.currentTable;
   recordState.tables[tableName].registeredFunctions.splice(index, 1);
-  setRecordsStateWrapper(recordState, "currentTable", tableName);
+  if (recordState.tables[tableName].noOfRows > 0) recordState.tables[tableName].changedRow = 1
+  setRecordsStateWrapper(recordState, "currentTable", tableName, true);
   // force function application
   runRegisteredFunctions(recordState, tableName);
 }
@@ -1314,7 +1306,7 @@ function runRegisteredFunctions(recordState, tableName) {
 function applySumFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
   const updatedData = sumFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1330,7 +1322,7 @@ function sumFunctionImpl(data, cellsToOperateOnAsAGroup) {
 function applySubFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
   const updatedData = subFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1358,7 +1350,7 @@ function applyReverseSubFunction(
 ) {
   const data = recordState.tables[tableName].data;
   const updatedData = reverseSubFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1382,7 +1374,7 @@ function reverseSubFunctionImpl(data, cellsToOperateOnAsAGroup) {
 function applyMulFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
   const updatedData = mulFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1398,7 +1390,7 @@ function mulFunctionImpl(data, cellsToOperateOnAsAGroup) {
 function applyDivFunction(recordState, tableName, cellsToOperateOnAsAGroup) {
   const data = recordState.tables[tableName].data;
   const updatedData = divFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1429,7 +1421,7 @@ function applyAverageFunction(
 ) {
   const data = recordState.tables[tableName].data;
   const updatedData = averageFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1450,7 +1442,7 @@ function applyCustomArithmeticFunction(
 ) {
   const data = recordState.tables[tableName].data;
   const updatedData = customArithmeticFunctionImpl(data, cellsToOperateOnAsAGroup);
-  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.data`, updatedData, true);
   clearSelectedCells(tableName, recordState);
 }
 
@@ -1492,22 +1484,6 @@ function extractRelevantData(data, selectedCells) {
     }
   }
   return relevantData;
-}
-
-/**
- * afterRulePickAdv - handles event after user chooses an advanced rule to apply.
- * sets the currentTable to ruleModeAdv which signals for rule
- * application
- */
-function afterRulePickAdv(ruleName, tableName, recordState) {
-  alert("click on the row or column you want to apply rule");
-
-  recordState.tables[tableName].ruleModeAdv = true;
-  setRecordsStateWrapper(
-    recordState,
-    `tables.${tableName}.currentRule`,
-    ruleName,
-  );
 }
 
 function handleDelete(
@@ -1770,11 +1746,11 @@ function insertRowAboveImpl(partition, data) {
 }
 
 export function unSetInsertMode(tableName, recordState) {
-  setRecordsStateWrapper(recordState, `tables.${tableName}.insertMode`, false);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.insertMode`, false, false);
 }
 
 export function unSetDeleteMode(tableName, recordState) {
-  setRecordsStateWrapper(recordState, `tables.${tableName}.deleteMode`, false);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.deleteMode`, false, false);
 }
 
 function getClassName(table) {
@@ -1830,7 +1806,7 @@ function resetRectangle() {
 function toggleSelectTool(tableName, recordState) {
   const value = recordState.tables[tableName].selectTool ? false : true;
   recordState.altered = true;
-  setRecordsStateWrapper(recordState, `tables.${tableName}.selectTool`, value);
+  setRecordsStateWrapper(recordState, `tables.${tableName}.selectTool`, value, false);
 }
 
 function toggleShowOrHideRegisteredFunctions() {
@@ -1843,6 +1819,7 @@ function toggleShowOrHideRegisteredFunctions() {
     recordState,
     `tables.${tableName}.showOrHideRegisteredFunctions`,
     value,
+    false
   );
 }
 
@@ -2454,7 +2431,7 @@ function batchSetCellsInSelectedCells(initialSelection, placementDesc) {
     );
   }
 
-  setRecordsStateWrapper(recordState, "currentTable", currentTable);
+  setRecordsStateWrapper(recordState, "currentTable", currentTable, false);
 }
 
 function handleDownloadCSV() {
@@ -2538,7 +2515,7 @@ function loadTableDataAsCurrentTable(tableData, tableName) {
     ruleMode: false,
     currentRule: "",
     altered: true,
-  });
+  }, true);
 }
 
 function computeStock() {
