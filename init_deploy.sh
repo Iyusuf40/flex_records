@@ -27,6 +27,8 @@ sudo service flex_records_fe start
 cd
 
 #deploy backend
+cd flex_records/backend
+source myenv/bin/activate
 sudo service flex_records_api start
 
 # setup nginx reverse proxy
