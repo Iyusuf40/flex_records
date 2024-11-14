@@ -8,7 +8,7 @@ Group=www-data
 Restart=on-failure
 WorkingDirectory=/home/ubuntu/flex_records/backend
 Environment=server=primary
-ExecStart=./home/ubuntu/flex_records/backend/start_backend_prod.sh
+ExecStart=/usr/bin/bash start_backend_prod.sh
 
 [Install]
 WantedBy=multi-user.target
