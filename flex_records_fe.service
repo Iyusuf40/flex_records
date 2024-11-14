@@ -7,7 +7,7 @@ User=ubuntu
 Group=www-data
 Restart=on-failure
 WorkingDirectory=/home/ubuntu/flex_records/frontend
-ExecStart=/home/ubuntu/.nvm/versions/node/v22.11.0/bin/serve -s build
+ExecStart=./home/ubuntu/flex_records/frontend/start_frontend_prod.sh
 
 [Install]
 WantedBy=multi-user.target
