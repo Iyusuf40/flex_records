@@ -7,7 +7,7 @@ User=ubuntu
 Group=www-data
 Restart=on-failure
 WorkingDirectory=/home/ubuntu/flex_records/frontend
-ExecStart=/usr/bin/serve -s build
+ExecStart=serve -s build
 
 [Install]
 WantedBy=multi-user.target
